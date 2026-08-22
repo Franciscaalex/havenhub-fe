@@ -1,3 +1,100 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.page-header {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 80px;
+    position: sticky;
+}
+
+.nav-links ul{
+    display: flex;
+    gap: 36px;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color:#16191F;
+    font-weight: 500;
+    font-size: 17px;
+}
+
+.nav-links a:hover {
+    color: #17ea65;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-icon {
+  width: auto;
+  height: 18px;
+  margin-right: 5px;
+
+}
+
+.haven-logo,
+.hub-logo {
+    font-family: 'Roboto', sans-serif;
+    font-size: 23px;
+    letter-spacing: 2px;
+    font-weight: 200;
+}
+
+.haven-logo {
+    color: #1b2a4a;
+}
+
+.hub-logo {
+    color: #c4704a;
+}
+
+.footer-container {
+    background-color: #ffffff;
+    padding: 30px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-links a {
+    text-decoration: underline;
+    color: #16191F;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.copy-right,
+.all-rights {
+  font-weight: 600;
+  font-size: 18px;
+  color: #1a1a1a;
+}
 /* 1. GLOBAL VARIABLES & BASE STYLES          */
 :root {
   --color-primary: #1B253F;       
