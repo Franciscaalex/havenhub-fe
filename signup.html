@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Havenhub-Signup</title>
+    <link rel="icon" type="image/png" href="images/favicon-32x32.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+   <!-- SIGNUP VIEW -->
+  <div id="signupView" class="auth-view active-view">
+    <div class="signup-page">
+      <div class="signup-card">
+        <div class="signup-image-panel">
+          <img src="images/HavenHubLogo-iconmark-.png" alt="HavenHub Logo" class="signup-brand-icon">
+        </div>
+
+        <div class="signup-form-panel">
+          <h2 class="signup-title">SIGN UP</h2>
+
+          <form id="signupForm" novalidate>
+            <div class="form-group">
+              <input type="text" id="firstName" class="form-control" placeholder="First Name">
+              <span class="error-text">First name is required</span>
+            </div>
+
+            <div class="form-group">
+              <input type="text" id="lastName" class="form-control" placeholder="Last Name">
+              <span class="error-text">Last name is required</span>
+            </div>
+
+            <div class="form-group">
+              <input type="email" id="signupEmail" class="form-control" placeholder="Email Address">
+              <span class="error-text">Incorrect email</span>
+            </div>
+
+            <div class="form-group">
+              <div class="input-wrapper">
+                <input type="password" id="signupPassword" class="form-control" placeholder="Password">
+                <img src="images/EyeClosed.png" alt="Toggle Password" class="toggle-password-img" data-target="signupPassword">
+              </div>
+              <span class="error-text">Password is required</span>
+            </div>
+
+            <div class="terms-group">
+              <label class="checkbox-container">
+                <input type="checkbox" id="terms">
+                <span class="terms-label">I agree to the <a href="#">Terms</a> and <a href="#">Conditions</a></span>
+              </label>
+              <span class="error-text">You must accept the terms</span>
+            </div>
+
+            <div class="form-status" id="signupStatus" aria-live="polite"></div>
+
+            <button type="submit" class="btn-register">Register</button>
+
+            <div class="divider"><span>or</span></div>
+
+            <div class="social-group">
+              <button type="button" class="btn-social btn-google"><i class="fa-brands fa-google"></i> Sign up with Google</button>
+              <button type="button" class="btn-social btn-apple"><i class="fa-brands fa-apple"></i> Sign up with Apple</button>
+            </div>
+
+            <div class="signup-footer" style="margin-top: 1.25rem; text-align: center;">
+              <span>Already have an account? </span>
+        <a href="login.html" id="switchToLogin" class="signup-link">Login</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/forms.js"></script> 
+</body>
+</html>

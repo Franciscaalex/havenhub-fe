@@ -1,46 +1,15 @@
-console.log("app.js is connected");
-
-fetch("header.html")
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("header-placeholder").innerHTML = data;
-  });
-
-
-fetch("footer.html")
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("footer-placeholder").innerHTML = data;
-  });
-
-
-
-function loginUser(username) {
-  localStorage.setItem("isLoggedIn", "true");
-  localStorage.setItem("username", username);
-}
-
-function logoutUser() {
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("username");
-}
-
-function isUserLoggedIn() {
-  return localStorage.getItem("isLoggedIn") === "true";
-}
-
-function getCurrentUsername() {
-  return localStorage.getItem("username");
-}
+/* api.js */
 
 const CONFIG = {
-  BASE_URL: 'https://api.yourrealestatesite.com',
-  USE_MOCK_DATA: true,
+  BASE_URL: 'https://havenhub-be.onrender.com/api/v1',
+  USE_MOCK_DATA: false,
   MOCK_BASE_PATH: '/mock-data',
 
   TOKEN_KEY: 'auth_token',
   TOKEN_EXPIRY_KEY: 'auth_token_expiry',
 };
+
+/* ---------- Token storage ---------- */
 
 function getToken() {
   return localStorage.getItem(CONFIG.TOKEN_KEY);
@@ -61,15 +30,17 @@ function clearSession() {
 
 function isTokenExpired() {
   const expiry = localStorage.getItem(CONFIG.TOKEN_EXPIRY_KEY);
-  if (!expiry) return false; 
+  if (!expiry) return false;
   return Date.now() > Number(expiry);
 }
 
 function redirectToLogin() {
   clearSession();
   const returnTo = encodeURIComponent(window.location.pathname);
-  window.location.href = `/login.html?redirect=${returnTo}`;
+  window.location.href = `login.html?redirect=${returnTo}`;
 }
+
+/* JWT interceptor + request wrapper  */
 
 async function apiRequest(endpoint, options = {}) {
   const token = getToken();
@@ -85,7 +56,7 @@ async function apiRequest(endpoint, options = {}) {
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`; // <-- the interceptor
   }
 
   const isMock = CONFIG.USE_MOCK_DATA;
@@ -95,6 +66,7 @@ async function apiRequest(endpoint, options = {}) {
 
   const fetchOptions = { ...options, headers };
 
+  // Mock JSON files can only be GET (static files), so force that in mock mode
   if (isMock) {
     fetchOptions.method = 'GET';
     delete fetchOptions.body;
@@ -117,23 +89,18 @@ async function apiRequest(endpoint, options = {}) {
     try {
       const errorBody = await response.json();
       message = errorBody.message || message;
-    } catch (_) {
-      
-    }
+    } catch (_) { }
     throw new Error(message);
   }
 
-  if (response.status === 204) return null; 
+  if (response.status === 204) return null;
   return response.json();
 }
 
-
 const api = {
   get: (endpoint) => apiRequest(endpoint, { method: 'GET' }),
-  post: (endpoint, data) =>
-    apiRequest(endpoint, { method: 'POST', body: JSON.stringify(data) }),
-  put: (endpoint, data) =>
-    apiRequest(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+  post: (endpoint, data) => apiRequest(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+  put: (endpoint, data) => apiRequest(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
 
   setToken,

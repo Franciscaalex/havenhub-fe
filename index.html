@@ -1,169 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Havenhub-Home</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    
-    <div id="header-placeholder"></div>
-
-
-
-
-
-    <div id="footer-placeholder"></div>
-
-
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HavenHub - Authentication</title>
-  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <title>HavenHub - Home</title>
+  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <link rel="icon" type="image/png" sizes="32x32" href="favicon-BAHD TEDDI19.
-   32x32.png">
 </head>
-<body class="auth-page">
-  
-  <!-- LOGIN VIEW -->
-  
-  <div id="loginView" class="auth-view active-view">
-    <div class="login-bg-wrapper">
-      
-      <!-- Mobile Floating Header (Visible on Mobile Only) -->
-      <div class="brand-header mobile-only">
-        <img src="HavenHubLogo-iconmark-.png" alt="HavenHub Logo" class="brand-icon">
-        <h2 class="brand-name">HAVENHUB</h2>
-        <h1 class="form-title">LOGIN</h1>
-        <p class="form-subtitle">Welcome back, please login to your account</p>
-      </div>
+<body>
 
-      <!-- Main Login Container Card -->
-      <div class="login-card-container">
-        
-        <!-- Desktop Header (Inside Card on Desktop Only) -->
-        <div class="brand-header desktop-only">
-          <img src="HavenHubLogo-iconmark-.png" alt="HavenHub Logo" class="brand-icon">
-          <h2 class="brand-name">HAVENHUB</h2>
-          <h1 class="form-title">LOGIN</h1>
-          <p class="form-subtitle">Welcome back, please login to your account</p>
-        </div>
+  <div id="header-placeholder"></div>
 
-        <!-- Form Body -->
-        <form id="loginForm" novalidate>
-          
-          <div class="form-group">
-            <input type="email" id="loginEmail" class="form-control" placeholder="Enter a valid email address">
-            <span class="error-message">Incorrect email address</span>
-          </div>
+  <main class="page-content">
+    <!-- TODO(content team): hero banner + featured listings go here -->
+    <section style="padding: 80px;">
+      <h1>Find your next home with HavenHub</h1>
+      <p>Browse verified listings, book viewings, and message agents — all in one place.</p>
+    </section>
+  </main>
 
-          <div class="form-group">
-            <div class="input-wrapper">
-              <input type="password" id="loginPassword" class="form-control" placeholder="********">
-              <img src="EyeClosed.png" alt="Toggle Password" class="toggle-password-img" data-target="loginPassword">
-            </div>
-            <span class="error-message">Password is required</span>
-          </div>
+  <div id="footer-placeholder"></div>
 
-          <div class="forgot-link-wrapper">
-            <a href="#" class="forgot-link">Forgot Password?</a>
-          </div>
-
-          <button type="submit" class="btn-submit">Login</button>
-
-          <div class="signup-footer">
-            <span>Don't have an account? </span>
-            <a href="#" id="switchToSignup" class="signup-link">Sign Up</a>
-          </div>
-
-        </form>
-
-      </div>
-
-    </div>
-  </div>
-
-
-  <!-- ========================================== -->
-  <!-- 2. SIGNUP VIEW                             -->
-  <!-- ========================================== -->
-  <div id="signupView" class="auth-view hidden-view">
-    <div class="signup-page">
-      <div class="signup-card">
-        
-        <!-- Left Hero Image Panel -->
-        <div class="signup-image-panel">
-          <img src="HavenHubLogo-iconmark-.png" alt="HavenHub Logo" class="signup-brand-icon">
-        </div>
-
-        <!-- Right Form Panel -->
-        <div class="signup-form-panel">
-          <h2 class="signup-title">SIGN UP</h2>
-
-          <form id="signupForm" novalidate>
-            
-            <div class="form-group">
-              <input type="text" id="firstName" class="form-control" placeholder="First Name">
-              <span class="error-text">First name is required</span>
-            </div>
-
-            <div class="form-group">
-              <input type="text" id="lastName" class="form-control" placeholder="Last Name">
-              <span class="error-text">Last name is required</span>
-            </div>
-
-            <div class="form-group">
-              <input type="email" id="signupEmail" class="form-control" placeholder="Email Address">
-              <span class="error-text">Incorrect email</span>
-            </div>
-
-            <div class="form-group">
-              <div class="input-wrapper">
-                <input type="password" id="signupPassword" class="form-control" placeholder="Password">
-                <img src="EyeClosed.png" alt="Toggle Password" class="toggle-password-img" data-target="signupPassword">
-              </div>
-              <span class="error-text">Password is required</span>
-            </div>
-
-            <div class="terms-group">
-              <label class="checkbox-container">
-                <input type="checkbox" id="terms">
-                <span class="terms-label">I agree to the <a href="#">Terms</a> and <a href="#">Conditions</a></span>
-              </label>
-              <span class="error-text">You must accept the terms</span>
-            </div>
-
-            <button type="submit" class="btn-register">Register</button>
-
-            <div class="divider">
-              <span>or</span>
-            </div>
-
-            <div class="social-group">
-              <button type="button" class="btn-social btn-google">
-                <i class="fa-brands fa-google"></i> Sign up with Google
-              </button>
-              <button type="button" class="btn-social btn-apple">
-                <i class="fa-brands fa-apple"></i> Sign up with Apple
-              </button>
-            </div>
-
-            <div class="signup-footer" style="margin-top: 1.25rem; text-align: center;">
-              <span>Already have an account? </span>
-              <a href="#" id="switchToLogin" class="signup-link">Sign In</a>
-            </div>
-
-          </form>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
