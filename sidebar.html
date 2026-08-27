@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>havenbar-sidebar</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+   <aside class="dash-sidebar" id="dashSidebar">
+  <nav class="dash-nav">
+    <a href="dashboard-landlord.html" class="dash-nav-link" data-page="dashboard-landlord.html">Dashboard</a>
+    <a href="#" class="dash-nav-link" data-page="inbox.html">Inbox</a>
+
+    <button type="button" class="dash-nav-link dash-nav-soon" data-tooltip-label="Tenants &amp; Leases">
+      <span>Tenants &amp; Leases</span>
+      <span class="dash-badge">Coming Soon</span>
+    </button>
+
+    <button type="button" class="dash-nav-link dash-nav-soon" data-tooltip-label="ID Verification">
+      <span>ID Verification</span>
+      <span class="dash-badge">Coming Soon</span>
+    </button>
+
+    <a href="settings.html" class="dash-nav-link" data-page="settings.html">Settings</a>
+  </nav>
+  
+  <!-- Profile + Log Out, pinned to the bottom of the sidebar -->
+  <div class="dash-sidebar-footer">
+    <div class="dash-profile">
+      <img src="images/Avatar 4.svg" alt="" class="dash-profile-avatar">
+      <div class="dash-profile-info">
+        <span class="dash-profile-name" id="sidebarUserName">John</span>
+        <span class="dash-profile-role">Landlord</span>
+      </div>
+    </div>
+    <button class="dash-logout-btn" id="sidebarLogoutBtn" type="button">Log Out</button>
+  </div>
+</aside> 
+</body>
+</html>

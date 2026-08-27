@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenHub - Settings</title>
+  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body class="settings-body">
+
+  <header class="settings-topbar">
+    <h1>Settings</h1>
+    <button class="settings-close-btn" id="closeSettingsBtn" type="button" aria-label="Close settings">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="settings-layout">
+
+    <!-- ============ LEFT COLUMN: PROFILE + PERSONAL INFO ============ -->
+    <section class="settings-col">
+
+      <h2 class="settings-section-title">Profile Photo</h2>
+
+      <div class="photo-row">
+        <div class="avatar-wrapper">
+          <img src="images/Avatar 4.svg" alt="Your profile photo" id="avatarPreview">
+        </div>
+        <div class="photo-controls">
+          <button class="btn-change-photo" id="changePhotoBtn" type="button">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 12.5V13.5C2 13.7761 2.22386 14 2.5 14H13.5C13.7761 14 14 13.7761 14 13.5V12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M8 10V2M8 2L5 5M8 2L11 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Change Photo
+          </button>
+          <input type="file" id="photoInput" accept="image/png, image/jpeg" hidden>
+          <span class="photo-hint">JPG or PNG, max 5MB</span>
+          <span class="field-status" id="photoStatus" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <h2 class="settings-section-title">Personal Information <span class="settings-editable-tag">(Editable)</span></h2>
+
+      <form id="profileForm" novalidate>
+        <div class="field-row">
+          <div class="field-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" class="field-control">
+          </div>
+          <div class="field-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" class="field-control">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="emailAddress">Email Address</label>
+          <input type="email" id="emailAddress" class="field-control" readonly>
+          <span class="field-note">Email cannot be changed. Contact support if this is incorrect.</span>
+        </div>
+
+        <div class="field-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input type="tel" id="phoneNumber" class="field-control">
+        </div>
+
+        <span class="field-status" id="profileStatus" aria-live="polite"></span>
+
+        <div class="settings-actions-row">
+          <button type="submit" class="btn-save-changes" id="saveChangesBtn">Save changes</button>
+        </div>
+      </form>
+
+    </section>
+
+    <!-- ============ RIGHT COLUMN: PASSWORD ============ -->
+    <section class="settings-col settings-col-password">
+      <h2 class="settings-section-title">Password</h2>
+      <p class="settings-subtext">Change your account password</p>
+      <button class="btn-change-password" id="openPasswordModalBtn" type="button">Change Password</button>
+    </section>
+
+  </main>
+
+  <!-- ============ CHANGE PASSWORD MODAL ============ -->
+  <div class="modal-overlay" id="passwordModalOverlay" hidden>
+    <div class="password-modal" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle">
+      <button class="modal-close-btn" id="closePasswordModalBtn" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <h3 id="passwordModalTitle" class="visually-hidden">Change Password</h3>
+
+      <form id="passwordForm" novalidate>
+        <div class="field-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" class="field-control" placeholder="Enter current password">
+        </div>
+
+        <div class="field-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" class="field-control" placeholder="Enter new password">
+          <span class="field-note">Must be at least 8 characters, including a number and a special character.</span>
+        </div>
+
+        <div class="field-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" class="field-control" placeholder="Re-enter new password">
+        </div>
+
+        <span class="field-status" id="passwordStatus" aria-live="polite"></span>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-cancel" id="cancelPasswordBtn">Cancel</button>
+          <button type="submit" class="btn-update-password" id="updatePasswordBtn">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

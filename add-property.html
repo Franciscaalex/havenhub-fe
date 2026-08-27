@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenHub - List a New Property</title>
+  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="app.css">
+</head>
+<body class="addprop-body">
+
+  <!-- ============ TOAST NOTIFICATION ============ -->
+  <div class="toast" id="successToast" role="status" aria-live="polite" hidden>
+    <span class="toast-icon" aria-hidden="true">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M6 10l2.5 2.5L14 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <div class="toast-text">
+      <strong>Listing submitted for review</strong>
+      <span>We'll notify you once it's approved. This usually takes less than 24 hours.</span>
+    </div>
+    <button class="toast-close" id="toastCloseBtn" type="button" aria-label="Dismiss">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="addprop-topbar">
+    <button class="addprop-back-btn" id="backToDashboardBtn" type="button">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 15l-5-5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back to Dashboard
+    </button>
+
+    <div class="addprop-brand">
+      <span class="haven-logo">HAVEN</span><span class="hub-logo">HUB</span>
+    </div>
+
+    <button class="addprop-new-btn" id="newPropertyBtn" type="button">+ Add New Property</button>
+  </header>
+
+  <main class="addprop-page">
+    <h1>List a new property</h1>
+    <p class="addprop-subtitle">Fill in the details below, they'll always be reviewed before going live.</p>
+
+    <!-- ============ LIVE MAP ============ -->
+    <div class="map-picker-wrapper">
+      <div id="propertyMap" class="map-picker"></div>
+      <div class="map-center-pin" aria-hidden="true">
+        <svg viewBox="0 0 24 32" width="34" height="44">
+          <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z" fill="#E53E3E"/>
+          <circle cx="12" cy="12" r="5" fill="#ffffff"/>
+        </svg>
+      </div>
+      <span class="map-hint">Drag the map to position the pin on your property</span>
+    </div>
+
+    <!-- ============ FORM ============ -->
+    <form id="propertyForm" novalidate>
+
+      <div class="addprop-grid">
+        <div class="field-group">
+          <label for="listingTitle">Listing Title</label>
+          <input type="text" id="listingTitle" class="field-control" placeholder="3-Bedroom Duplex, Oakwood Street">
+        </div>
+
+        <div class="field-group">
+          <label for="addressLocation">Address Location</label>
+          <input type="text" id="addressLocation" class="field-control" placeholder="Oakwood Street">
+        </div>
+
+        <div class="field-group">
+          <label for="propertyType">Property Type</label>
+          <select id="propertyType" class="field-control">
+            <option value="duplex">Duplex</option>
+            <option value="bungalow">Bungalow</option>
+            <option value="apartment">Apartment</option>
+            <option value="terrace">Terrace</option>
+            <option value="detached">Detached House</option>
+            <option value="studio">Studio</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="addprop-grid">
+        <div class="field-group">
+          <label for="rentPrice">Rent Price (per year)</label>
+          <div class="input-prefix-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="rentPrice" class="field-control has-prefix" placeholder="e.g. 2,000" min="0">
+          </div>
+          <span class="field-note field-note-muted">Rent fee listing, clear info about the amount</span>
+        </div>
+
+        <div class="field-group">
+          <label for="bedrooms">Bedrooms</label>
+          <input type="number" id="bedrooms" class="field-control" min="0" placeholder="0">
+        </div>
+
+        <div class="field-group">
+          <label for="bathrooms">Bathrooms</label>
+          <input type="number" id="bathrooms" class="field-control" min="0" placeholder="0">
+        </div>
+
+        <div class="field-group">
+          <label for="floorNumber">Floor Number</label>
+          <input type="number" id="floorNumber" class="field-control" min="0" placeholder="0">
+        </div>
+
+        <div class="field-group">
+          <label for="squareFootage">Square Footage</label>
+          <input type="text" id="squareFootage" class="field-control" placeholder="300 sqft">
+        </div>
+      </div>
+
+      <!-- ============ AMENITIES ============ -->
+      <div class="field-group">
+        <label>Amenities</label>
+        <div class="amenity-row" id="amenityRow">
+          <button type="button" class="amenity-chip" data-value="parking">Parking</button>
+          <button type="button" class="amenity-chip" data-value="swimming_pool">Swimming Pool</button>
+          <button type="button" class="amenity-chip" data-value="gym">Gym</button>
+          <button type="button" class="amenity-chip" data-value="fully_furnished">Fully Furnished</button>
+          <button type="button" class="amenity-chip" data-value="pet_friendly">Pet Friendly</button>
+          <button type="button" class="amenity-chip" data-value="water_supply">Water Supply</button>
+          <button type="button" class="amenity-chip" data-value="security">Security</button>
+          <button type="button" class="amenity-chip" data-value="generator">Generator</button>
+        </div>
+      </div>
+
+      <!-- ============ MEDIA UPLOAD ============ -->
+      <div class="field-group">
+        <div class="media-header">
+          <label>Media</label>
+          <span class="media-count" id="mediaCount">0/10 uploaded</span>
+        </div>
+
+        <input type="file" id="mediaInput" accept="image/png, image/jpeg" multiple hidden>
+
+        <div class="media-grid" id="mediaGrid">
+          <button type="button" class="media-add-tile" id="mediaAddTile">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <span class="field-status" id="mediaStatus" aria-live="polite"></span>
+      </div>
+
+      <!-- ============ DESCRIPTION ============ -->
+      <div class="field-group">
+        <div class="description-header">
+          <label for="description">Description</label>
+          <button type="button" class="autogen-btn" id="autogenBtn">
+            <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 1l1.2 3.6L13 6l-3.8 1.4L8 11l-1.2-3.6L3 6l3.8-1.4L8 1z" fill="currentColor"/>
+            </svg>
+            Auto-generate
+          </button>
+        </div>
+        <textarea id="description" class="field-control" rows="5" placeholder="Describe the property — layout, neighborhood, standout features..."></textarea>
+      </div>
+
+      <span class="field-status" id="formStatus" aria-live="polite"></span>
+
+      <div class="addprop-actions-row">
+        <button type="button" class="btn-save-draft" id="saveDraftBtn">Save as draft</button>
+        <button type="submit" class="btn-submit-review" id="submitReviewBtn">Submit for review</button>
+      </div>
+
+    </form>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/add-property.js"></script>
+</body>
+</html>
