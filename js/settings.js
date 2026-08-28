@@ -258,10 +258,13 @@ function wirePasswordModal() {
     setStatus(statusEl, 'Updating…', '');
 
     try {
-      // ASSUMPTION: PUT /users/me/password — not yet confirmed.
-      await window.api.put('/users/me/password', { currentPassword, newPassword });
-      setStatus(statusEl, 'Password updated.', 'success');
-      setTimeout(closeModal, 1200);
+// Inside the passwordForm submit handler, replace the success block:
+await window.api.put('/users/me/password', { currentPassword, newPassword });
+setStatus(statusEl, 'Password updated. Redirecting to login…', 'success');
+setTimeout(() => {
+  window.HavenHubSession?.logoutUser?.();
+  window.location.href = 'login.html';
+}, 1500);
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
     } finally {

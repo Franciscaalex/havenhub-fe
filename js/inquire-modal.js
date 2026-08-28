@@ -1,5 +1,10 @@
 (function () {
+  "use strict";
+
   let modalEl = null;
+  // Grabs the ID context straight from the URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const propertyId = urlParams.get('propertyId') || urlParams.get('id');
 
   function buildModal() {
     const wrap = document.createElement("div");
@@ -26,11 +31,11 @@
         <form id="inquireForm">
           <label class="inquire-label" for="inquireMessage">Message</label>
           <textarea id="inquireMessage" rows="4" placeholder="Hi, I'm interested in this property..." required></textarea>
-          <p class="inquire-disclaimer">Your information is shared securely with the landlord.</p>
+          <p class="inquire-disclaimer" id="inquireStatus">Your information is shared securely with the landlord.</p>
 
           <div class="inquire-actions">
             <button type="button" class="clear-btn inquire-cancel">Cancel</button>
-            <button type="submit" class="apply-btn inquire-send">
+            <button type="submit" id="inquireSubmitBtn" class="apply-btn inquire-send">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Send message
             </button>
@@ -38,7 +43,7 @@
         </form>
 
         <div class="inquire-success" id="inquireSuccess" hidden>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
           <h3>Message sent</h3>
           <p>The landlord will get back to you shortly.</p>
         </div>
@@ -57,26 +62,43 @@
 
     closeBtn.addEventListener("click", close);
     cancelBtn.addEventListener("click", close);
-    wrap.addEventListener("click", (e) => {
-      if (e.target === wrap) close();
-    });
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && wrap.classList.contains("open")) close();
     });
 
-    form.addEventListener("submit", (e) => {
+    // Integrated and corrected API validation logic (Snippet 1)
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      // TODO: replace with a real POST to the messaging API once it exists.
-      form.hidden = true;
-      wrap.querySelector("#inquireSuccess").hidden = false;
-      setTimeout(() => {
-        close();
+      const message = document.getElementById('inquireMessage').value.trim();
+      const statusEl = document.getElementById('inquireStatus');
+      const submitBtn = document.getElementById('inquireSubmitBtn');
+      if (!message) return;
+
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        // FIX: Corrected base path URL namespace for HavenHub live backend environment
+        const thread = await window.api.post('/api/v1/messages/threads', { propertyId, message });
+        
+        // Show success layout changes dynamically
+        form.hidden = true;
+        wrap.querySelector("#inquireSuccess").hidden = false;
+
+        // Redirects directly to the messaging UI utilizing your response tracking key
         setTimeout(() => {
-          form.hidden = false;
-          wrap.querySelector("#inquireSuccess").hidden = true;
-          form.reset();
-        }, 300);
-      }, 1400);
+          close();
+          const threadId = thread?.data?.id || thread?.id;
+          window.location.href = `thread.html?id=${threadId}`;
+        }, 1200);
+
+      } catch (err) {
+        if (submitBtn) submitBtn.disabled = false;
+        if (statusEl) { 
+          statusEl.textContent = `Error: ${err.message}`; 
+          statusEl.style.color = "red";
+        }
+      }
     });
 
     return wrap;
@@ -86,15 +108,12 @@
     if (!modalEl) modalEl = buildModal();
 
     modalEl.querySelector("#inquirePropertyImg").src = property.img || "";
-    modalEl.querySelector("#inquirePropertyName").textContent =
-      property.title || property.address || "";
-    modalEl.querySelector("#inquirePropertyLocation").textContent =
-      property.address || "";
+    modalEl.querySelector("#inquirePropertyName").textContent = property.title || property.address || "";
+    modalEl.querySelector("#inquirePropertyLocation").textContent = property.address || "";
 
     const statusEl = modalEl.querySelector("#inquirePropertyStatus");
     statusEl.textContent = property.status || "Available";
-    statusEl.className =
-      "status-badge " + (property.status === "Rented" ? "rented" : "available");
+    statusEl.className = "status-badge " + (property.status === "Rented" ? "rented" : "available");
 
     modalEl.classList.add("open");
     document.body.style.overflow = "hidden";

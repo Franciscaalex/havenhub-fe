@@ -190,6 +190,75 @@ body.role-page {
   color: #ffffff;
 }
 
+.top-navbar-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  padding: 0.25rem;
+  display: flex;
+}
+.top-navbar-back-btn svg {
+   width: 18px; height: 18px;
+   }
+
+   /* Ensure the parent image wrapper sets containing layout metrics */
+.role-image-wrapper {
+  position: relative;
+}
+
+/* Initially hide your inline structural role checkmark elements */
+.role-card .role-checkmark {
+  display: none !important;
+}
+
+/* Make your existing SVG checkmark graphic instantly display when selected */
+.role-card.selected .role-checkmark {
+  display: flex !important;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  background: #1E3A8A; /* Your matching Navy Blue layout tone variable */
+  color: #FFFFFF;     /* White checkmark lines */
+  border-radius: 50%;
+  padding: 4px;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+/* Initially hide the default inline checkmarks on all cards */
+.role-card .role-checkmark {
+  display: none !important;
+}
+
+/* Instantly unhide and render the checkmark icon when a card gets clicked */
+.role-card.selected .role-checkmark {
+  display: flex !important;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  background: #1E3A8A; /* Gorgeous production Navy Blue tone */
+  color: #FFFFFF;     /* Clean white check lines */
+  border-radius: 50%;
+  padding: 4px;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* Ensure parents establish containing boundary lines for the absolute coordinates */
+.role-image-wrapper {
+  position: relative;
+  display: block;
+}
+
+
 /* ============================================================
    TEXT
    ============================================================ */
@@ -239,6 +308,63 @@ body.role-page {
 
 .btn-register-role:active {
   transform: scale(0.98);
+}
+
+/* app.css — add alongside the existing .dash-listing-badge rules */
+.dash-listing-badge.is-pending {
+  background: #D4A017; /* gold */
+}
+.dash-listing-badge.is-available {
+  background: var(--color-success); /* green */
+}
+
+/* ============================================================
+   FIXED: Role Cards Layout and Checkmark Styles
+   ============================================================ */
+
+/* Enforce containment boundaries so checkmark icons pin perfectly */
+.role-card {
+  position: relative !important;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* CRITICAL: Force child images to pass clicks through to the parent button */
+.role-card img,
+.role-card .role-image-wrapper,
+.role-card .role-title,
+.role-card .role-desc {
+  pointer-events: none !important;
+}
+
+/* Initially hide the built-in HTML checkmark elements */
+.role-card .role-checkmark {
+  display: none !important;
+}
+
+/* Instantly show and position the checkmark when a card is selected */
+.role-card.selected .role-checkmark {
+  display: flex !important;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: #1E3A8A !important; /* Beautiful Navy Blue */
+  color: #FFFFFF !important;       /* Crisp White Check lines */
+  border-radius: 50%;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Style adjustment to ensure the checkmark's SVG matches the container bounds */
+.role-card.selected .role-checkmark svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 /* ============================================================

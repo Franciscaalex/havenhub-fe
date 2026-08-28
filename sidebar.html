@@ -10,7 +10,11 @@
    <aside class="dash-sidebar" id="dashSidebar">
   <nav class="dash-nav">
     <a href="dashboard-landlord.html" class="dash-nav-link" data-page="dashboard-landlord.html">Dashboard</a>
-    <a href="#" class="dash-nav-link" data-page="inbox.html">Inbox</a>
+    <!-- sidebar.html: -->
+<a href="inbox.html" class="dash-nav-link" data-page="inbox.html">
+  <span>Inbox</span>
+  <span class="dash-badge dash-unread-badge" id="unreadBadge" hidden>0</span>
+</a>
 
     <button type="button" class="dash-nav-link dash-nav-soon" data-tooltip-label="Tenants &amp; Leases">
       <span>Tenants &amp; Leases</span>
@@ -37,5 +41,8 @@
     <button class="dash-logout-btn" id="sidebarLogoutBtn" type="button">Log Out</button>
   </div>
 </aside> 
+<script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 </html>

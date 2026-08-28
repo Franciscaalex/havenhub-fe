@@ -325,15 +325,12 @@ async function submitListing(isDraft) {
 
     if (isDraft) {
       setStatus(statusEl, 'Draft saved.', 'success');
-    } else {
-      showToast();
-      document.getElementById('propertyForm').reset();
-      state.amenities.clear();
-      document.querySelectorAll('.amenity-chip.is-selected').forEach(c => c.classList.remove('is-selected'));
-      state.mediaFiles.forEach(item => URL.revokeObjectURL(item.previewUrl));
-      state.mediaFiles = [];
-      renderMediaGrid();
-    }
+    }  else {
+  showToast();
+  setTimeout(() => {
+    window.location.href = 'dashboard-landlord.html';
+  }, 1500);
+} 
   } catch (err) {
     setStatus(statusEl, err.message, 'error');
   } finally {

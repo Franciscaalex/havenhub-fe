@@ -105,4 +105,31 @@ function initSidebarProfile() {
     window.HavenHubSession?.logoutUser?.();
     window.location.href = 'login.html';
   });
+
+  // Call the unread count loading protocol securely inside profile initialization
+  loadUnreadCount();
+}
+
+/* ---------- FIXED: API-Aligned Unread Notification Loader ---------- */
+async function loadUnreadCount() {
+  try {
+    // Queries your live backend message sub-resource endpoint route namespaces
+    const response = await window.api.get('/messages/unread-count');
+    
+    // Safety check parsing either flat integers or standard data wrappers
+    const dataPayload = response?.data || response;
+    const unreadCount = Number(dataPayload?.count ?? dataPayload?.unreadCount ?? response?.count ?? 0);
+    
+    const badge = document.getElementById('unreadBadge');
+    
+    if (badge && unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+      badge.hidden = false;
+      badge.style.display = 'inline-flex'; // Force display layer override formatting
+    } else if (badge) {
+      badge.hidden = true;
+    }
+  } catch (err) {
+    console.error('Could not load unread count:', err);
+  }
 }

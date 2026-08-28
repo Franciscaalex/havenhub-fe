@@ -24,6 +24,13 @@ async function loadNavbar() {
     const res = await fetch('navbar.html');
     if (!res.ok) throw new Error(`Failed to load navbar.html: ${res.status}`);
     placeholder.innerHTML = await res.text();
+document.getElementById('navbarBackBtn')?.addEventListener('click', () => {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = 'dashboard-landlord.html';
+  }
+});
   } catch (err) {
     console.error(err);
   }

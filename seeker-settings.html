@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenHub — Settings</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="stylesheet" href="nick.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+
+      <a href="index.html" class="logo" aria-label="HavenHub home">
+        <img src="logo-icon.png" alt="icon" class="logo-icon">
+        <span class="logo-text">HAVENHUB</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Primary">
+        <a href="index.html">Browse Properties</a>
+        <a href="saved.html">Saved</a>
+        <a href="#">Messages</a>
+      </nav>
+
+      <div class="header-actions">
+
+        <button class="icon-btn" aria-label="Notifications">
+          <img src="bell.png" alt="bell" width="20" height="20">
+        </button>
+
+        <a href="settings.html" class="icon-btn settings-btn" aria-label="Settings">
+          <img src="Settings.png" alt="settings" width="20" height="20">
+        </a>
+
+        <button class="icon-btn avatar-btn" id="profileBtn" 
+        aria-label="Change profile picture" style="padding:0;">
+          <img src="House.jpg" alt="Profile picture"
+            class="profile-avatar" id="profileAvatar">
+        </button>
+
+        <input type="file" id="profileImageInput" accept="image/*" hidden>
+
+        <button class="icon-btn hamburger-btn" id="menuToggle"
+          aria-label="Open menu" aria-expanded="false">
+          <img src="List.png" alt="hamburger" width="22" height="22">
+        </button>
+
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="index.html">Browse Properties</a>
+      <a href="saved.html">Saved</a>
+      <a href="#">Messages</a>
+      <a href="settings.html">Settings</a>
+    </div>
+  </header>
+
+  <main class="settings-container">
+
+    <div class="settings-grid">
+
+      <div class="settings-col-left">
+
+        <h2 class="settings-section-title">Profile Photo</h2>
+
+        <div class="settings-photo-row">
+
+          <img 
+          src="House.jpg" alt="Profile picture" class="settings-photo-large" id="settingsAvatar"
+          >
+
+          <div>
+            <button
+              class="change-photo-btn" id="changePhotoBtn" type="button"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Change Photo
+            </button>
+
+            <p class="photo-hint">JPG or PNG, max 5MB</p>
+          </div>
+
+        </div>
+
+        <h3 class="settings-subtitle">
+          Personal Information
+          <span class="muted">(Editable)</span>
+        </h3>
+
+        <form id="personalInfoForm">
+
+          <div class="settings-field-row">
+
+            <div class="settings-field">
+              <label class="settings-label" for="firstName">
+                First Name
+              </label>
+
+              <input
+                type="text"
+                class="settings-input"
+                id="firstName"
+                placeholder="First name"
+              >
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="lastName">
+                Last Name
+              </label>
+
+              <input
+                type="text"
+                class="settings-input"
+                id="lastName"
+                placeholder="Last name"
+              >
+            </div>
+
+          </div>
+
+          <div class="settings-field">
+
+            <label class="settings-label" for="emailAddress">
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              class="settings-input"
+              id="emailAddress"
+              disabled
+            >
+
+            <p class="field-note error">
+              Email cannot be changed. Contact support if this is incorrect.
+            </p>
+
+          </div>
+
+          <div class="settings-field">
+
+            <label class="settings-label" for="phoneNumber">
+              Phone Number
+            </label>
+
+            <input
+              type="tel"
+              class="settings-input"
+              id="phoneNumber"
+              placeholder="+234 123 45 6789"
+            >
+
+          </div>
+
+          <button type="submit" class="save-btn">
+            Save changes
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- Right Column: Password -->
+      <div class="settings-col-right">
+
+        <h2 class="settings-section-title">Password</h2>
+
+        <p
+          class="field-note"
+          style="margin-bottom:16px;color:var(--text-gray);"
+        >
+          Change your account password
+        </p>
+
+        <button
+          class="change-password-btn"
+          id="togglePasswordPanel"
+          type="button"
+        >
+          Change Password
+        </button>
+
+        <div class="password-panel" id="passwordPanel">
+
+          <button
+            class="password-panel-close"
+            id="closePasswordPanel"
+            aria-label="Close"
+            type="button"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <form id="passwordForm">
+
+            <div class="settings-field">
+              <label class="settings-label" for="currentPassword">
+                Current Password
+              </label>
+
+              <input
+                type="password"
+                class="settings-input"
+                id="currentPassword"
+                placeholder="Enter current password"
+              >
+            </div>
+
+            <div class="settings-field">
+
+              <label class="settings-label" for="newPassword">
+                New Password
+              </label>
+
+              <input
+                type="password"
+                class="settings-input"
+                id="newPassword"
+                placeholder="Enter new password"
+              >
+
+              <p class="field-note error">
+                Must be at least 8 characters, including a number and a special character.
+              </p>
+
+            </div>
+
+            <div class="settings-field">
+
+              <label class="settings-label" for="confirmPassword">
+                Confirm New Password
+              </label>
+
+              <input
+                type="password"
+                class="settings-input"
+                id="confirmPassword"
+                placeholder="Re-enter new password"
+              >
+
+            </div>
+
+            <p
+              class="field-note error"
+              id="passwordFormError"
+              style="display:none;"
+            ></p>
+
+            <div class="password-actions">
+
+              <button
+                type="button"
+                class="clear-btn"
+                id="cancelPasswordBtn"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                class="save-btn"
+              >
+                Update Password
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <button
+      class="logout-btn"
+      id="logoutBtn"
+      type="button"
+    >
+      Log Out
+    </button>
+
+  </main>
+
+  <script src="js/seeker-settings.js"></script>
+
+</body>
+</html>
