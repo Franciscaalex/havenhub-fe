@@ -625,6 +625,304 @@ body.role-page {
 }
 
 /* ============================================================
+   TOP NAVBAR (navbar.html, loaded by js/navbar.js)
+   A separate component from the sidebar — sits above everything,
+   full width, on every dashboard-style page.
+   ============================================================ */
+
+.top-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+
+.top-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.top-navbar-brand .haven-logo,
+.top-navbar-brand .hub-logo {
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  font-weight: 300;
+}
+
+.top-navbar-brand .haven-logo { color: var(--color-primary); }
+.top-navbar-brand .hub-logo { color: #C4704A; }
+
+.top-navbar-role {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--color-border);
+}
+
+/* The mobile hamburger button lives inside the navbar's HTML,
+   but is styled here since it's shared with settings-topbar too */
+.dash-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dash-menu-btn span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+/* Used inside .settings-topbar, which has a dark background —
+   the default hamburger color above is navy, meant for the light
+   .dash-topbar background, so it would be invisible there. */
+.settings-topbar .dash-menu-btn span {
+  background: var(--color-text-main);
+}
+
+/* ============================================================
+   SHELL LAYOUT (wraps sidebar + main content together)
+   ============================================================ */
+
+.dash-body {
+  background: var(--color-bg-page);
+  color: var(--color-heading);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0; /* lets children scroll independently instead of stretching the page */
+  padding: 1rem;
+  gap: 1rem;
+  background: var(--color-bg-page);
+}
+
+.dash-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+}
+
+.dash-overlay.is-visible {
+  display: block;
+}
+
+/* ============================================================
+   SIDEBAR
+   Styled as a floating, bordered card, not a flush full-height
+   panel — .dash-shell's padding + gap above is what creates the
+   inset look.
+   ============================================================ */
+
+.dash-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px rgba(46, 101, 210, 0.4), 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1; /* grows to push the footer to the bottom */
+}
+
+.dash-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  border-radius: 8px;
+  color: #C5CDDE;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dash-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-main);
+}
+
+.dash-nav-link.is-active {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.dash-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-text-main);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Tooltip shown near the "Coming Soon" nav items when clicked */
+.dash-tooltip {
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  background: #ffffff;
+  color: var(--color-heading);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.dash-tooltip-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.dash-tooltip-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ============================================================
+   SIDEBAR FOOTER — profile + Log Out, pinned to the bottom via
+   .dash-nav's flex: 1 above pushing this down.
+   ============================================================ */
+
+.dash-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dash-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.dash-profile-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dash-profile-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-profile-role {
+  font-size: 0.72rem;
+  color: #9CA9C4;
+}
+
+.dash-logout-btn {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dash-logout-btn:hover {
+  background: #244f9e;
+}
+
+@media (max-width: 1024px) {
+  .dash-sidebar {
+    width: 200px;
+  }
+}
+@media (max-width: 768px) {
+  .top-navbar {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .dash-shell {
+    padding: 0;
+    gap: 0;
+  }
+
+  .dash-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: 240px;
+    border-radius: 0;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .dash-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .dash-menu-btn {
+    display: flex;
+  }
+}
+/* ============================================================
    STAT CARDS
    ============================================================ */
 
