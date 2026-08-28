@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Havenhub — ChatThread</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+<body>
+
+<div class="thread-page">
+
+    <div id="sidebar-placeholder"></div>
+
+   
+    <main class="thread-main">
+
+       
+        <header class="thread-header">
+            <div class="logo-container">
+                <img src="assets/HavenHub-03 2.svg" alt="havenhub-logo">
+                <span class="header-text">Landlord</span>
+            </div>
+
+            <div class="thread-header-info">
+                <a href="chat.html" class="back-link"><img src="assets/ArrowLeft.svg" alt="arrow"></a>
+                <img id="threadAvatar" src="" alt="" class="thread-avatar">
+                <div class="thread-header-details">
+                    <h3 id="threadName"></h3>
+                    <p id="threadProperty"></p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <input type="text" placeholder="Search conversations..." class="search-input">
+            </div>
+        </header>
+
+        
+        <div class="messages-container" id="messagesContainer"></div>
+
+        
+        <form id="messageForm" class="message-input-bar">
+            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+            <button type="submit" class="btn-primary">Send</button>
+        </form>
+
+    </main>
+
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script src="script.js"></script>
+<script src="data.js"></script>
+<script src="thread.js"></script>
+</body>
+</html>
