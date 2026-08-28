@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenHub — My Saved Properties</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="hero">
+    <h1 id="savedHeading">My Saved Properties (0)</h1>
+    <p>
+      Keep track of the homes you are most interested in.
+      Your shortlist, all in one place.
+    </p>
+  </div>
+
+  <div class="saved-toolbar">
+
+    <div class="saved-tabs" id="savedTabs">
+
+      <button class="saved-tab active" data-status="all" type="button">
+        All (0)
+      </button>
+
+      <button class="saved-tab" data-status="Available" type="button">
+        Available (0)
+      </button>
+
+      <button class="saved-tab" data-status="Rented" type="button">
+        Rented (0)
+      </button>
+
+    </div>
+
+    <div class="saved-sort">
+      <label for="sortSelect" class="sort-label">
+        Sort by:
+      </label>
+
+      <select id="sortSelect" class="sort-select">
+        <option value="newest">Date Added (Newest)</option>
+        <option value="oldest">Date Added (Oldest)</option>
+        <option value="price-low">Price (Low to High)</option>
+        <option value="price-high">Price (High to Low)</option>
+      </select>
+    </div>
+
+  </div>
+
+  <main class="grid" id="propertyGrid"></main>
+
+  <script src="inquire-modal.js"></script>
+  <script src="saved.js"></script>
+
+</body>
+</html>
