@@ -3,115 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HavenHub — Find Your Next Home</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <title>HavenHub - Home</title>
+  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
-  <div class="hero">
-    <h1>Find your next home</h1>
-    <p>Browse verified listings and filter by location, price, and property type.</p>
-  </div>
 
-  <section class="search-section">
-    <div class="search-row">
-      <div class="search-input-wrap">
-        <img src="MagnifyingGlass.png" alt="Search glass" width="16" height="16">
-        <input type="text" id="search-input" placeholder="Search location">
-      </div>
+  <div id="header-placeholder"></div>
 
-      <button class="search-btn" id="searchBtn">
-        Search
-      </button>
+ 
 
-      <button class="filter-toggle-btn"id="filterToggleBtn"
-        aria-label="Open filters"aria-expanded="false">
-        <img src="Sliders.png" alt="sliders" width="16" height="16">
-      </button>
-    </div>
+  <div id="footer-placeholder"></div>
 
-    <div class="filters-row" id="filtersRow">
-
-      <div class="filters-header">
-        <span class="filters-title">Filters</span>
-
-        <button
-          class="filters-collapse-btn"
-          id="filtersCollapseBtn"
-          aria-label="Collapse filters"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="18 15 12 9 6 15"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="filter-field">
-        <label class="filter-label" for="filter-type">
-          Property Type
-        </label>
-
-        <select class="filter-select" id="filter-type">
-          <option value="">None</option>
-          <option value="House">House</option>
-          <option value="Condo">Condo</option>
-          <option value="Apartment">Apartment</option>
-          <option value="Villa">Villa</option>
-        </select>
-      </div>
-
-      <div class="filter-price-row">
-
-        <div class="filter-field">
-          <label class="filter-label" for="filter-min">
-            Min Price
-          </label>
-
-          <input type="number" class="filter-price-input"
-            id="filter-min" placeholder="Min price" min="0" step="1">
-        </div>
-
-        <div class="filter-field">
-          <label class="filter-label" for="filter-max">
-            Max Price
-          </label>
-
-          <input type="number" class="filter-price-input"
-            id="filter-max" placeholder="Max price"  min="0" step="1">
-        </div>
-
-      </div>
-
-      <div class="filter-field">
-        <label class="filter-label" for="filter-beds">
-          Bedrooms
-        </label>
-
-        <select class="filter-select" id="filter-beds">
-          <option value="">None</option>
-          <option value="1">1+</option>
-          <option value="2">2+</option>
-          <option value="3">3+</option>
-          <option value="4">4+</option>
-        </select>
-      </div>
-
-      <button class="clear-btn" id="clearBtn">
-        Clear Filters
-      </button>
-
-      <button class="apply-btn" id="applyBtn">
-        Apply Filters
-      </button>
-
-    </div>
-  </section>
-
-  <main class="grid" id="propertyGrid"></main>
-
-  <script src="script.js"></script>
-
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
