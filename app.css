@@ -1,0 +1,2381 @@
+/* ============================================================
+   app.css — combined base stylesheet for roles.html,
+   dashboard-landlord.html, and settings.html.
+
+   One shared :root variable set and one shared reset, then each
+   page's rules kept under its own clearly labeled section so
+   nothing has to be hunted for. Class names across the three
+   original files didn't collide, so nothing needed renaming —
+   verified with a diff before merging.
+   ============================================================ */
+
+:root {
+  --color-primary: #1b253f;
+  --color-primary-light: #232e4d;
+  --color-accent: #2e65d2;
+  --color-text-main: #ffffff;
+  --color-text-muted: #6b7280;
+  --color-error: #e53e3e;
+  --color-success: #17ea65;
+  --color-warning: #d97b3f;
+  --color-warning-light: #e8a87c;
+  --color-heading: #111827;
+  --color-border: #e5e7eb;
+  --color-bg-page: #f7f8fa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ################################################################
+   ############   ROLES SELECTION PAGE (roles.html)   #############
+   ################################################################ */
+
+/* ============================================================
+   PAGE / LAYOUT
+   ============================================================ */
+
+body.role-page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding: 1.5rem;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--color-primary);
+}
+
+.back-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.role-select-wrapper {
+  max-width: 460px;
+  margin: 2.5rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+/* ============================================================
+   ROLE GRID
+   The screenshot uses small, fixed-size thumbnails with a lot of
+   whitespace around them — not images stretched to fill the full
+   column width. Fixed column widths + generous gaps reproduce
+   that look; the mobile breakpoint below switches to a fluid
+   single column instead, since fixed pixel widths stop making
+   sense on a narrow phone screen.
+   ============================================================ */
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 110px);
+  column-gap: 90px;
+  row-gap: 2.5rem;
+  justify-content: center;
+}
+
+.role-card {
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  width: 110px;
+}
+
+/* ============================================================
+   ROLE CARD IMAGE
+   ============================================================ */
+
+.role-image-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  /* padding-top trick: reliably forces a 4:3 box in every browser,
+     including older ones that don't support the `aspect-ratio`
+     property. 75% = (3 / 4) * 100. */
+  padding-top: 75%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background-color: #e2e8f0; /* neutral placeholder if an image fails to load */
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.role-card img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.role-checkmark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  opacity: 0;
+  transform: scale(0.75);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+  z-index: 2;
+}
+
+.role-checkmark svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* Hover feedback on devices with a real pointer (skipped on touch,
+   since :hover can stick after a tap on phones) */
+@media (hover: hover) {
+  .role-card:hover .role-image-wrapper {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.role-card.selected .role-image-wrapper {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(46, 101, 210, 0.18);
+}
+
+.role-card.selected .role-checkmark {
+  opacity: 1;
+  transform: scale(1);
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+/* ============================================================
+   TEXT
+   ============================================================ */
+
+.role-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.role-desc {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+/* ============================================================
+   HINT + REGISTER BUTTON
+   ============================================================ */
+
+.role-hint {
+  min-height: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--color-error);
+  text-align: center;
+}
+
+.btn-register-role {
+  width: 100%;
+  max-width: 220px;
+  padding: 0.85rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn-register-role:hover {
+  background: #244f9e;
+}
+
+.btn-register-role:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤768px)
+   Slightly larger thumbnails and tighter gaps than desktop, since
+   there's less horizontal room to spread the two columns apart.
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .role-select-wrapper {
+    max-width: 400px;
+    gap: 2.25rem;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(2, 130px);
+    column-gap: 50px;
+    row-gap: 2rem;
+  }
+
+  .role-card {
+    width: 130px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤480px)
+   Fixed pixel thumbnails stop making sense here — switch to a
+   fluid 2-column grid that fills the available width instead.
+   ============================================================ */
+
+@media (max-width: 480px) {
+  body.role-page {
+    padding: 1.25rem;
+  }
+
+  .role-select-wrapper {
+    max-width: 100%;
+    margin-top: 1.5rem;
+    gap: 2rem;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 1.25rem;
+    row-gap: 1.75rem;
+    width: 100%;
+  }
+
+  .role-card {
+    width: 100%;
+  }
+
+  .role-title {
+    font-size: 0.8rem;
+  }
+
+  .role-desc {
+    font-size: 0.68rem;
+  }
+
+  .btn-register-role {
+    max-width: 100%;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — VERY SMALL PHONES (≤360px)
+   Single column: two-up gets cramped once the screen itself is
+   this narrow, especially with longer descriptions like
+   "Connect buyers with their perfect match".
+   ============================================================ */
+
+@media (max-width: 360px) {
+  .role-grid {
+    grid-template-columns: 1fr;
+    row-gap: 1.5rem;
+  }
+
+  /* No wrapper element exists around the title+description in the
+     HTML, so grid-template-areas (rather than flexbox) is what lets
+     the image span both text rows while title/desc stack beside it. */
+  .role-card {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.85rem;
+    row-gap: 0.15rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .role-image-wrapper {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 90px;
+    height: 68px;
+    padding-top: 0; /* overrides the percentage-based aspect-ratio trick — fixed height instead */
+  }
+
+  .role-title {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .role-desc {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+/* ################################################################
+   ##########   LANDLORD DASHBOARD (dashboard-landlord.html)   #####
+   ################################################################ */
+
+.dash-body {
+  background: var(--color-bg-page);
+  color: var(--color-heading);
+}
+
+/* ============================================================
+   SHELL LAYOUT
+   ============================================================ */
+
+.dash-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.dash-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+}
+
+.dash-overlay.is-visible {
+  display: block;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.dash-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  padding: 1.5rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  height: 85vh;
+  margin-top: 3rem;
+  border-radius: 0 2rem 2rem 0;
+}
+
+.dash-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.dash-brand-name {
+  font-size: 1.1rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  color: var(--color-text-main);
+}
+
+.dash-brand-role {
+  font-size: 0.75rem;
+  color: #9ca9c4;
+}
+
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.dash-nav a:hover {
+  color: #17ea65;
+}
+
+.dash-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: #c5cdde;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dash-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-main);
+}
+
+.dash-nav-link.is-active {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.dash-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-text-main);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Tooltip shown near the "Coming Soon" nav items when clicked */
+.dash-tooltip {
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  background: #ffffff;
+  color: var(--color-heading);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.dash-tooltip-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.dash-tooltip-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ============================================================
+   MAIN COLUMN
+   ============================================================ */
+
+.dash-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Topbar ---- */
+
+.dash-topbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.dash-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dash-menu-btn span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.dash-welcome {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-welcome h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.dash-welcome p {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.dash-search {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  width: 280px;
+  color: var(--color-text-muted);
+}
+
+.dash-search svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dash-search input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.85rem;
+  width: 100%;
+  color: var(--color-heading);
+}
+
+.dash-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-heading);
+  padding: 0.25rem;
+}
+
+.dash-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.dash-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ---- Content area ---- */
+
+.dash-content {
+  padding: 1.5rem 1.75rem 3rem;
+  flex: 1;
+}
+
+.dash-loading-text {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ============================================================
+   TOP NAVBAR (navbar.html, loaded by js/navbar.js)
+   A separate component from the sidebar — sits above everything,
+   full width, on every dashboard-style page.
+   ============================================================ */
+
+.top-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+
+.top-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.top-navbar-brand .haven-logo,
+.top-navbar-brand .hub-logo {
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  font-weight: 300;
+}
+
+.top-navbar-brand .haven-logo { color: var(--color-primary); }
+.top-navbar-brand .hub-logo { color: #C4704A; }
+
+.top-navbar-role {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--color-border);
+}
+
+/* The mobile hamburger button lives inside the navbar's HTML,
+   but is styled here since it's shared with settings-topbar too */
+.dash-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.dash-menu-btn span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+/* Used inside .settings-topbar, which has a dark background —
+   the default hamburger color above is navy, meant for the light
+   .dash-topbar background, so it would be invisible there. */
+.settings-topbar .dash-menu-btn span {
+  background: var(--color-text-main);
+}
+
+/* ============================================================
+   SHELL LAYOUT (wraps sidebar + main content together)
+   ============================================================ */
+
+.dash-body {
+  background: var(--color-bg-page);
+  color: var(--color-heading);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0; /* lets children scroll independently instead of stretching the page */
+  padding: 1rem;
+  gap: 1rem;
+  background: var(--color-bg-page);
+}
+
+.dash-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+}
+
+.dash-overlay.is-visible {
+  display: block;
+}
+
+/* ============================================================
+   SIDEBAR
+   Styled as a floating, bordered card, not a flush full-height
+   panel — .dash-shell's padding + gap above is what creates the
+   inset look.
+   ============================================================ */
+
+.dash-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px rgba(46, 101, 210, 0.4), 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.dash-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1; /* grows to push the footer to the bottom */
+}
+
+.dash-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.5rem;
+  border-radius: 8px;
+  color: #C5CDDE;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dash-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-main);
+}
+
+.dash-nav-link.is-active {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.dash-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  background: var(--color-accent);
+  color: var(--color-text-main);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Tooltip shown near the "Coming Soon" nav items when clicked */
+.dash-tooltip {
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  background: #ffffff;
+  color: var(--color-heading);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.dash-tooltip-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.dash-tooltip-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* ============================================================
+   SIDEBAR FOOTER — profile + Log Out, pinned to the bottom via
+   .dash-nav's flex: 1 above pushing this down.
+   ============================================================ */
+
+.dash-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dash-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.dash-profile-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dash-profile-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-profile-role {
+  font-size: 0.72rem;
+  color: #9CA9C4;
+}
+
+.dash-logout-btn {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dash-logout-btn:hover {
+  background: #244f9e;
+}
+
+@media (max-width: 1024px) {
+  .dash-sidebar {
+    width: 200px;
+  }
+}
+@media (max-width: 768px) {
+  .top-navbar {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .dash-shell {
+    padding: 0;
+    gap: 0;
+  }
+
+  .dash-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: 240px;
+    border-radius: 0;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .dash-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .dash-menu-btn {
+    display: flex;
+  }
+}
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+
+.dash-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-stat-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dash-stat-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.dash-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.dash-stat-sub {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.dash-stat-sub.is-positive {
+  color: var(--color-success);
+}
+.dash-stat-sub.is-neutral {
+  color: var(--color-text-muted);
+}
+.dash-stat-sub.is-warning {
+  color: var(--color-warning);
+}
+.dash-stat-sub.is-negative {
+  color: var(--color-error);
+}
+
+/* ============================================================
+   CHART + ACTIVITY PANELS
+   ============================================================ */
+
+.dash-panels-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-chart-panel,
+.dash-activity-panel {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.dash-chart-panel h3,
+.dash-activity-panel h3,
+.dash-listings-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.dash-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  height: 180px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.5rem;
+}
+
+.dash-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.dash-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+}
+
+.dash-bar {
+  width: 40%;
+  border-radius: 3px 3px 0 0;
+}
+
+.dash-bar.dash-bar-rents {
+  background: var(--color-warning-light);
+}
+
+.dash-bar.dash-bar-expenses {
+  background: var(--color-primary);
+}
+
+.dash-chart-month {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+}
+
+.dash-chart-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.dash-legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.dash-swatch-rents {
+  background: var(--color-warning-light);
+}
+.dash-swatch-expenses {
+  background: var(--color-primary);
+}
+
+.dash-activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.dash-activity-item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.dash-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.dash-activity-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.dash-activity-sub {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+}
+
+.dash-activity-time {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+/* ============================================================
+   BUTTONS — same pill shape and accent color as .btn-register-role
+   in roles.css, so both pages' primary buttons match visually.
+   ============================================================ */
+
+.dash-btn-primary {
+  background: var(--color-accent);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dash-btn-primary:hover {
+  background: #244f9e;
+}
+
+.dash-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.dash-btn-full {
+  width: 100%;
+}
+
+.profile-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+#fireCanvas {
+  position: absolute;
+  top: -20px; /* Shifts fire slightly upward behind the logo */
+  left: 0;
+  width: 150px;
+  height: 150px;
+  z-index: 1;
+  pointer-events: none; /* Stops canvas from blocking clicks */
+}
+.dash-avatar {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  z-index: 2; /* Keeps logo in front of the canvas particles */
+}
+
+.profile-badge-row {
+  display: flex;
+  align-items: center; /* Aligns text vertically center with the logo */
+  gap: 16px; /* Puts a clean 16px space between logo and text */
+} /* Stack the name and role cleanly on top of each other */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+} /* Style the main profile name */
+.profile-name {
+  font-family: sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff; /* Assuming a dark dashboard background */
+  letter-spacing: 0.5px;
+}
+/* Optional subtitle style for the user's role */
+.profile-role {
+  font-family: sans-serif;
+  font-size: 12px;
+  color: #a0aec0; /* Soft gray color for hierarchy */
+  margin-top: 2px;
+}
+
+/* ============================================================
+   ACTIVE LISTINGS
+   ============================================================ */
+
+.dash-listings-panel {
+  background: var(--color-primary);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.dash-listings-panel h3 {
+  color: var(--color-text-main);
+}
+
+.dash-listings-row {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.dash-listing-card {
+  flex: 0 0 200px;
+  background: var(--color-primary-light);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dash-listing-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+  background: #3a4568;
+}
+
+.dash-listing-body {
+  padding: 0.75rem 0.85rem 0.9rem;
+  color: var(--color-text-main);
+}
+
+.dash-listing-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-listing-sub {
+  font-size: 0.72rem;
+  color: #b7c0d6;
+  margin-bottom: 0.5rem;
+}
+
+.dash-listing-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-text-main);
+}
+
+.dash-listing-badge.is-vacant {
+  background: var(--color-warning);
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.dash-empty-panel {
+  background: #ffffff;
+  border: 1px dashed var(--color-border);
+  border-radius: 14px;
+  padding: 4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.dash-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.dash-empty-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.dash-empty-panel h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.dash-empty-panel p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  max-width: 360px;
+}
+
+.dash-empty-panel .dash-btn-primary {
+  margin-top: 0.75rem;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   Same breakpoint value used for roles.css's tablet adjustments.
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .dash-sidebar {
+    width: 200px;
+  }
+
+  .dash-search {
+    width: 200px;
+  }
+
+  .dash-panels-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤768px)
+   Same breakpoint value used for roles.css's tablet breakpoint —
+   the sidebar becomes an off-canvas drawer here instead.
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .dash-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: 240px;
+  }
+
+  .dash-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .dash-menu-btn {
+    display: flex;
+  }
+
+  .dash-search {
+    display: none;
+  }
+
+  .dash-topbar {
+    padding: 0.85rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .dash-welcome h1 {
+    font-size: 1rem;
+  }
+
+  .dash-welcome p {
+    font-size: 0.72rem;
+  }
+
+  .dash-content {
+    padding: 1.25rem 1.25rem 2.5rem;
+  }
+
+  .dash-stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .dash-stat-card {
+    padding: 0.9rem 1rem;
+  }
+
+  .dash-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .dash-empty-panel {
+    padding: 3rem 1.25rem;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — SMALL PHONES (≤480px)
+   Same breakpoint value used for roles.css's mobile breakpoint.
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .dash-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-listing-card {
+    flex-basis: 160px;
+  }
+
+  .dash-listing-img {
+    height: 90px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — VERY SMALL PHONES (≤360px)
+   Same breakpoint value used for roles.css's smallest breakpoint.
+   ============================================================ */
+
+@media (max-width: 360px) {
+  .dash-content {
+    padding: 1rem 1rem 2rem;
+  }
+
+  .dash-stat-value {
+    font-size: 1.1rem;
+  }
+
+  .dash-listing-card {
+    flex-basis: 140px;
+  }
+}
+
+/* ################################################################
+   ################   SETTINGS PAGE (settings.html)   ############
+   ################################################################ */
+
+.settings-body {
+  background: #ffffff;
+  color: var(--color-heading);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.settings-topbar {
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  padding: 1.1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-topbar h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.settings-close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-main);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.settings-close-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================================
+   LAYOUT — two columns on desktop
+   ============================================================ */
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.settings-col {
+  padding: 2rem 2.5rem;
+}
+
+.settings-col-password {
+  border-left: 1px solid var(--color-border);
+}
+
+.settings-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.settings-editable-tag {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.settings-subtext {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ============================================================
+   PROFILE PHOTO
+   ============================================================ */
+
+.photo-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.avatar-wrapper {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--color-primary);
+  flex-shrink: 0;
+}
+
+.avatar-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.btn-change-photo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-change-photo:hover {
+  background: #232e4d;
+}
+
+.btn-change-photo svg {
+  width: 15px;
+  height: 15px;
+}
+
+.photo-hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   FORM FIELDS (shared by profile form + password modal)
+   ============================================================ */
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field-group {
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+
+.field-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--color-heading);
+}
+
+.field-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: var(--color-heading);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.field-control:focus {
+  border-color: var(--color-accent);
+}
+
+.field-control[readonly] {
+  background: var(--color-bg-page);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.field-control.is-invalid {
+  border-color: var(--color-error);
+}
+
+.field-note {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-error);
+  font-style: italic;
+  margin-top: 0.3rem;
+}
+
+.field-status {
+  display: block;
+  min-height: 1.1rem;
+  font-size: 0.78rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.field-status.is-error {
+  color: var(--color-error);
+}
+.field-status.is-success {
+  color: #17ea65;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.settings-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btn-save-changes {
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save-changes:hover {
+  background: #232e4d;
+}
+
+.btn-save-changes:disabled,
+.btn-change-photo:disabled,
+.btn-update-password:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-change-password {
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  max-width: 220px;
+}
+
+.btn-change-password:hover {
+  background: #232e4d;
+}
+
+/* ============================================================
+   PASSWORD MODAL
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.password-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+}
+
+.modal-close-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.password-modal form {
+  margin-top: 1.5rem;
+}
+
+.modal-actions-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #ffffff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: var(--color-bg-page);
+}
+
+.btn-update-password {
+  flex: 1;
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-update-password:hover {
+  background: #232e4d;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .settings-col {
+    padding: 1.75rem 2rem;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤768px)
+   Two columns stack into one; the password section moves below
+   personal info and loses its divider line.
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-col-password {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .settings-topbar {
+    padding: 1rem 1.25rem;
+  }
+
+  .settings-col {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-row {
+    gap: 1rem;
+  }
+
+  .avatar-wrapper {
+    width: 72px;
+    height: 72px;
+  }
+
+  .settings-actions-row {
+    justify-content: stretch;
+  }
+
+  .btn-save-changes {
+    width: 100%;
+  }
+
+  .btn-change-password {
+    max-width: 100%;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — SMALL PHONES (≤480px)
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .photo-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .password-modal {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .modal-actions-row {
+    flex-direction: column-reverse;
+  }
+}
+/* ################################################################
+   ############   ADD PROPERTY PAGE (add-property.html)   #########
+   ################################################################ */
+
+.addprop-body {
+  background: var(--color-bg-page);
+  color: var(--color-heading);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+
+.toast {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  max-width: 340px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-success);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+.toast-icon {
+  color: var(--color-success);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toast-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.toast-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.78rem;
+}
+
+.toast-text strong {
+  font-size: 0.85rem;
+}
+
+.toast-text span {
+  color: var(--color-text-muted);
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  padding: 0.1rem;
+}
+
+.toast-close svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.addprop-topbar {
+  background: var(--color-primary);
+  color: var(--color-text-main);
+  padding: 1rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.addprop-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--color-text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.addprop-back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.addprop-brand .haven-logo,
+.addprop-brand .hub-logo {
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  font-weight: 300;
+}
+
+.addprop-brand .haven-logo { color: var(--color-text-main); }
+.addprop-brand .hub-logo { color: #C4704A; }
+
+.addprop-new-btn {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addprop-new-btn:hover {
+  background: #244f9e;
+}
+
+/* ============================================================
+   PAGE / CONTAINER
+   ============================================================ */
+
+.addprop-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.addprop-page h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.addprop-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   LIVE MAP
+   ============================================================ */
+
+.map-picker-wrapper {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.map-picker {
+  width: 100%;
+  height: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+/* Fixed center pin — the map moves underneath it, not the other
+   way around. transform positions the pin's TIP at dead-center
+   rather than the icon's top-left corner. */
+.map-center-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  z-index: 500; /* above Leaflet's own panes */
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.map-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.75);
+  color: #ffffff;
+  font-size: 0.72rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* ============================================================
+   FORM GRID
+   ============================================================ */
+
+.addprop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.addprop-grid:nth-of-type(2) {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.input-prefix-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 0.85rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.field-control.has-prefix {
+  padding-left: 1.75rem;
+}
+
+.field-note-muted {
+  color: var(--color-text-muted);
+  font-style: normal;
+}
+
+/* ============================================================
+   AMENITIES
+   ============================================================ */
+
+.amenity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.amenity-chip {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-heading);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.amenity-chip:hover {
+  border-color: var(--color-accent);
+}
+
+.amenity-chip.is-selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* ============================================================
+   MEDIA UPLOAD
+   ============================================================ */
+
+.media-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.media-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+}
+
+.media-add-tile,
+.media-photo-tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.media-add-tile {
+  background: #ffffff;
+  border: 1.5px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.media-add-tile:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.media-add-tile:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.media-add-tile svg {
+  width: 22px;
+  height: 22px;
+}
+
+.media-photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(17, 24, 39, 0.65);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-remove-btn svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.description-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.autogen-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.autogen-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+textarea.field-control {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ============================================================
+   ACTION BUTTONS
+   ============================================================ */
+
+.addprop-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.btn-save-draft {
+  background: #ffffff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save-draft:hover {
+  background: var(--color-bg-page);
+}
+
+.btn-submit-review {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit-review:hover {
+  background: #244f9e;
+}
+
+.btn-save-draft:disabled,
+.btn-submit-review:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (≤1024px)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .addprop-grid,
+  .addprop-grid:nth-of-type(2) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤768px)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .addprop-topbar {
+    padding: 0.85rem 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .addprop-back-btn {
+    order: 1;
+  }
+
+  .addprop-brand {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+
+  .addprop-new-btn {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .addprop-page {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .map-picker {
+    height: 200px;
+  }
+
+  .addprop-grid,
+  .addprop-grid:nth-of-type(2) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .addprop-actions-row {
+    flex-direction: column-reverse;
+  }
+
+  .btn-save-draft,
+  .btn-submit-review {
+    width: 100%;
+  }
+
+  .toast {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE — SMALL PHONES (≤480px)
+   ============================================================ */
+
+@media (max-width: 480px) {
+  .addprop-grid,
+  .addprop-grid:nth-of-type(2) {
+    grid-template-columns: 1fr;
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
