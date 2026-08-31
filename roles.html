@@ -4,70 +4,75 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HavenHub - Choose Your Role</title>
-  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg">
   <link rel="stylesheet" href="app.css">
 </head>
 <body class="role-page">
 
-  <button class="back-btn" id="backBtn" type="button" aria-label="Go back">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-
+  <div class="role-options">
+      <h2>WHICH ONE ARE YOU?</h2>
+      <p>Select the option that best describes what you're here to do. </p>
+    </div>
+    
   <main class="role-select-wrapper">
     <div class="role-grid" id="roleGrid">
-
       <button class="role-card" data-role="seeker" type="button" aria-pressed="false">
         <span class="role-image-wrapper">
-          <img src="images/Rectangle 21.png" alt="Property Seeker">
+          <img src="images/seeker.png" alt="Property Seeker">
           <span class="role-checkmark" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </span>
-        <span class="role-title">Property Seeker</span>
+        <span class="role-details">
+          <span class="role-title">Seeker</span>
         <span class="role-desc">Find your next home</span>
+        </span> 
       </button>
 
       <button class="role-card" data-role="landlord" type="button" aria-pressed="false">
         <span class="role-image-wrapper">
-          <img src="images/Frame 170.png" alt="Landlord">
+          <img src="images/Landlord.png" alt="Landlord">
           <span class="role-checkmark" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </span>
-        <span class="role-title">Landlord</span>
+        <span class="role-details">
+          <span class="role-title">Landlord</span>
         <span class="role-desc">List and manage your properties</span>
+        </span>
       </button>
 
       <button class="role-card" data-role="agent" type="button" aria-pressed="false">
         <span class="role-image-wrapper">
-          <img src="images/Rectangle 21 (1).png" alt="Agent">
+          <img src="images/Agent.png" alt="Agent">
           <span class="role-checkmark" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </span>
-        <span class="role-title">Agent</span>
+        <span class="role-details">
+          <span class="role-title">Agent</span>
         <span class="role-desc">Connect buyers with their perfect match</span>
+        </span>
       </button>
-
       <button class="role-card" data-role="manager" type="button" aria-pressed="false">
         <span class="role-image-wrapper">
-          <img src="images/Frame 179.png" alt="Property Manager">
+          <img src="images/Manger.png" alt="Property Manager">
           <span class="role-checkmark" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </span>
         </span>
-        <span class="role-title">Property Manager</span>
+        <span class="role-details">
+          <span class="role-title"> Manager</span>
         <span class="role-desc">Oversee property with ease</span>
+        </span>
       </button>
 
     </div>

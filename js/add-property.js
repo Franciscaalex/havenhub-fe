@@ -23,8 +23,8 @@
 
 const state = {
   amenities: new Set(),
-  mediaFiles: [], // { file, previewUrl }
-  mapCenter: { lat: 6.5244, lng: 3.3792 }, // Lagos, Nigeria — sensible default
+  mediaFiles: [], 
+  mapCenter: { lat: 6.5244, lng: 3.3792 }, 
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -249,7 +249,7 @@ function formatAmenityLabel(value) {
 
 function initTopbarButtons() {
   document.getElementById('backToDashboardBtn').addEventListener('click', () => {
-    window.location.href = 'dashboard-landlord.html';
+    window.location.href = 'landlord-dashboard.html';
   });
 
   document.getElementById('newPropertyBtn').addEventListener('click', () => {

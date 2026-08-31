@@ -1,112 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HavenHub - Landlord Dashboard</title>
-  <link rel="icon" type="image/png" href="images/favicon-32x32.png">
-  <link rel="stylesheet" href="app.css">
-</head>
-<body class="dash-body">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HavenHub - Landlord Dashboard</title>
+    <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg" />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body class="dash-body">
+    <!-- Mobile-only overlay behind the sliding sidebar -->
+    <div class="dash-overlay" id="dashOverlay"></div>
 
-  <!-- Mobile-only overlay behind the sliding sidebar -->
-  <div class="dash-overlay" id="dashOverlay"></div>
+    <!-- ============ NAVBAR ============ -->
+    <div id="navbar-placeholder"></div>
 
-  <div class="dash-shell">
+    <div class="dash-shell">
+      <!-- ============ SIDEBAR ============ -->
+      <div id="sidebar-placeholder"></div>
 
-    <!-- ============ SIDEBAR (loaded from sidebar.html by js/sidebar.js) ============ -->
-    <div id="sidebar-placeholder"></div>
-
-    <!-- ============ MAIN COLUMN ============ -->
-    <div class="dash-main">
-
-      <!-- ============ TOPBAR ============ -->
-      <header class="dash-topbar">
-        <button class="dash-menu-btn" id="dashMenuBtn" type="button" aria-label="Toggle sidebar">
-          <span></span><span></span><span></span>
-        </button>
-
-      </header>
-
-      <!-- ============ CONTENT: EMPTY STATE ============ -->
-      <div class="dash-content dash-empty" id="dashEmptyState" hidden>
-        <div class="dash-stats-row">
-          <div class="dash-stat-card">
-            <span class="dash-stat-label">Total Monthly Revenue</span>
-            <span class="dash-stat-value">$0</span>
+      <!-- ============ MAIN COLUMN ============ -->
+      <div class="dash-main">
+        <!-- ============ TOPBAR ============ -->
+        <header class="dash-topbar">
+          <div class="dash-welcome-group">
+            <h1 id="welcomeGreeting">Welcome back!</h1>
+            <p>Here's what's happening across your properties today.</p>
           </div>
-          <div class="dash-stat-card">
-            <span class="dash-stat-label">Occupancy Rate</span>
-            <span class="dash-stat-value">-</span>
-          </div>
-          <div class="dash-stat-card">
-            <span class="dash-stat-label">Pending Maintenance</span>
-            <span class="dash-stat-value">0</span>
-          </div>
-          <div class="dash-stat-card">
-            <span class="dash-stat-label">Overdue Rent</span>
-            <span class="dash-stat-value">$0</span>
-          </div>
-        </div>
-
-        <div class="dash-empty-panel">
-          <span class="dash-empty-icon" aria-hidden="true">
-            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="19" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M20 12v16M12 20h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <div class="dash-search-wrapper">
+            <svg
+              class="search-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-          </span>
-          <h2>You haven't listed any properties yet.</h2>
-          <p>Create your first listing to start reaching verified tenants on HavenHub.</p>
-          <button class="dash-btn-primary" id="addPropertyBtnEmpty" type="button">Add a New Property</button>
-        </div>
-      </div>
+            <input
+              type="text"
+              id="dashboardSearch"
+              placeholder="Search properties, tenants..."
+            />
+          </div>
+        </header>
 
-      <!-- ============ CONTENT: POPULATED STATE ============ -->
-      <div class="dash-content dash-populated" id="dashPopulatedState" hidden>
-        <div class="dash-stats-row" id="statsRow">
-          <!-- filled in by dashboard-landlord.js -->
+        <!-- ============ CONTENT: EMPTY STATE ============ -->
+        <div class="dash-content dash-empty" id="dashEmptyState" hidden>
+          <div class="dash-stats-row">
+            <div class="dash-stat-card">
+              <span class="dash-stat-label">Total Monthly Revenue</span>
+              <span class="dash-stat-value">$0</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-label">Occupancy Rate</span>
+              <span class="dash-stat-value">-</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-label">Pending Maintenance</span>
+              <span class="dash-stat-value">0</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-label">Overdue Rent</span>
+              <span class="dash-stat-value">$0</span>
+            </div>
+          </div>
+
+          <div class="dash-empty-panel">
+            <span class="dash-empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://w3.org">
+                <circle
+                  cx="20"
+                  cy="20"
+                  r="19"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M9.5 30.5L30.5 9.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <h2>You haven't listed any properties yet.</h2>
+            <p>
+              Create your first listing to start reaching verified tenants on
+              HavenHub.
+            </p>
+            <button
+              class="dash-btn-primary"
+              id="addPropertyBtnEmpty"
+              type="button"
+            >
+              Add a New Property
+            </button>
+          </div>
         </div>
 
-        <div class="dash-panels-row">
-          <section class="dash-chart-panel">
-            <h3>Rents collected vs Expenses (2026)</h3>
-            <div class="dash-chart" id="rentsChart"></div>
-            <div class="dash-chart-legend">
-              <span><i class="dash-legend-swatch dash-swatch-rents"></i> Rents collected</span>
-              <span><i class="dash-legend-swatch dash-swatch-expenses"></i> Expenses</span>
+        <!-- ============ CONTENT: POPULATED STATE ============ -->
+        <div class="dash-content dash-populated" id="dashPopulatedState" hidden>
+          <div class="dash-stats-row" id="statsRow">
+            <!-- Dynamically generated metrics cards go here -->
+          </div>
+
+          <div class="dash-panels-row">
+            <section class="dash-chart-panel">
+              <h3>Rents collected vs Expenses (2026)</h3>
+              <div class="dash-chart" id="rentsChart">
+                <!-- Dynamically generated bars go here -->
+              </div>
+              <div class="dash-chart-legend">
+                <span
+                  ><i class="dash-legend-swatch dash-swatch-rents"></i> Rents
+                  collected</span
+                >
+                <span
+                  ><i class="dash-legend-swatch dash-swatch-expenses"></i>
+                  Expenses</span
+                >
+              </div>
+            </section>
+
+            <section class="dash-activity-panel">
+              <h3>Recent Activity</h3>
+              <ul class="dash-activity-list" id="activityList">
+                <!-- Dynamically generated activity log entries go here -->
+              </ul>
+              <button
+                class="dash-btn-primary dash-btn-full"
+                id="addPropertyBtnPopulated"
+                type="button"
+              >
+                Add a New Property
+              </button>
+            </section>
+          </div>
+
+          <section class="dash-listings-panel">
+            <div class="dash-listings-header">
+              <h3>Active Property Listings</h3>
+            </div>
+            <div class="dash-listings-row" id="listingsRow">
+              <!-- Dynamically generated property grid items go here -->
             </div>
           </section>
-
-          <section class="dash-activity-panel">
-            <h3>Recent Activity</h3>
-            <ul class="dash-activity-list" id="activityList">
-              <!-- filled in by dashboard-landlord.js -->
-            </ul>
-            <button class="dash-btn-primary dash-btn-full" id="addPropertyBtnPopulated" type="button">Add a New Property</button>
-          </section>
         </div>
-<!-- Add these inside your main content area if they are missing -->
-<div id="loadingIndicator">Loading your dashboard data...</div>
-<div id="errorBox" hidden>An error occurred.</div>
-
-        <section class="dash-listings-panel">
-          <div class="dash-listings-header">
-            <h3>Active Property Listings</h3>
-          </div>
-          <div class="dash-listings-row" id="listingsRow">
-            <!-- filled in by dashboard-landlord.js -->
-          </div>
-        </section>
       </div>
-
     </div>
-  </div>
 
-  <script src="js/api.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/sidebar.js"></script>
-  <script src="js/dashboard-landlord.js"></script>
-  <script src="js/navbar.js"></script>
-</body>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/dashboard-landlord.js"></script>
+  </body>
 </html>

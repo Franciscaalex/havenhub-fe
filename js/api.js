@@ -59,10 +59,16 @@ async function apiRequest(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${token}`; // <-- the interceptor
   }
 
+  // FIXED: Placed securely inside the apiRequest function scope to fix the ReferenceError
+  let cleanEndpoint = endpoint;
+  if (cleanEndpoint && cleanEndpoint.startsWith('/api/v1')) {
+    cleanEndpoint = cleanEndpoint.replace('/api/v1', '');
+  }
+
   const isMock = CONFIG.USE_MOCK_DATA;
   const url = isMock
-    ? `${CONFIG.MOCK_BASE_PATH}${endpoint}`
-    : `${CONFIG.BASE_URL}${endpoint}`;
+    ? `${CONFIG.MOCK_BASE_PATH}${cleanEndpoint}`
+    : `${CONFIG.BASE_URL}${cleanEndpoint}`;
 
   const fetchOptions = { ...options, headers };
 

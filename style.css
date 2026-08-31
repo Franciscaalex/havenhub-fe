@@ -1,6 +1,8 @@
 :root {
-  --color-primary: #1B253F;
-  --color-accent: #2E65D2;
+  --color-primary: #003453;
+  --color-accent: #006494;
+  --color-primary-text: #041823;
+  --color-secondary-text: #636363;
   --color-text-main: #FFFFFF;
   --color-text-muted: #D0D5DD;
   --color-error: #E53E3E;
@@ -185,7 +187,7 @@ img.profile-icon {
 }
 
 .hub-footer {
-  color: #C4704A;
+  color: var(--color-accent);
 }
 
 .footer-links {
@@ -393,7 +395,7 @@ body.auth-page {
 }
 
 .btn-submit:hover {
-  background: var(--color-accent);
+  background: var(--color-primary);
   border-color: transparent;
 }
 
@@ -405,9 +407,12 @@ body.auth-page {
 }
 
 .signup-link {
-  color: var(--color-text-main);
+  color: var(--color-accent);
   font-weight: 700;
   text-decoration: underline;
+}
+.sign-terms{
+  color: var(--color-accent);
 }
 
 /* SIGNUP VIEW */
@@ -435,7 +440,7 @@ body.auth-page {
 
 .signup-image-panel {
   flex: 1;
-  background: url('images/house.jpg') center/cover no-repeat;
+  background: url('images/Frame\ 69.png') center/cover no-repeat;
   min-height: 520px;
   position: relative;
 }
@@ -494,7 +499,7 @@ body.auth-page {
 }
 
 .terms-label a {
-  color: #E53E3E;
+  color: var(--color-accent);
   text-decoration: none;
 }
 
@@ -511,7 +516,7 @@ body.auth-page {
 }
 
 .btn-register:hover {
-  background-color: #2b3a60;
+  background-color: #36bbff;
 }
 
 .divider {
@@ -554,16 +559,16 @@ body.auth-page {
 }
 
 .btn-apple {
-  background: #1b253f;
-  border: 1px solid #1b253f;
-  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
 }
 
 #signupForm .signup-footer span {
   color: #6b7280;
 }
 
-#signupForm .signup-footer .signup-link {
+#signupForm .signup-footer {
   color: #1b253f;
 }
 
@@ -595,10 +600,6 @@ body.auth-page {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-
-/* ################################################################
-   ############   ROLES SELECTION PAGE (roles.html)   #############
-   ################################################################ */
 
 /* ============================================================
    PAGE / LAYOUT

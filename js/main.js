@@ -1,5 +1,12 @@
 /* main.js */
 
+document.addEventListener('DOMContentLoaded', () => {
+  checkRouteGuard(); 
+  
+  loadPartial('header.html', 'header-placeholder');
+  loadPartial('footer.html', 'footer-placeholder');
+});
+
 async function loadPartial(url, placeholderId) {
   const el = document.getElementById(placeholderId);
   if (!el) return;
@@ -138,3 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.HavenHubSession = { loginUser, logoutUser, isUserLoggedIn, getCurrentUsername };
+
+function checkRouteGuard() {
+  const securePages = [
+    'landlord-dashboard.html',
+    'seeker-dashboard.html',
+    'add-property.html'
+  ];
+  
+  const currentPath = window.location.pathname.split('/').pop();
+  
+  if (securePages.includes(currentPath) && !isUserLoggedIn()) {
+    window.location.replace('login.html');
+  }
+}
