@@ -8,12 +8,12 @@
     <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg">
 </head>
 <body>
-   <!-- sidebar.html -->
+<!-- sidebar.html -->
 <aside class="dash-sidebar" id="dashSidebar">
   
-  <!-- BRAND HEADER: Perfectly aligns HavenHub typography and logo symbol at the top -->
+  <!-- BRAND HEADER: Aligns HavenHub typography and logo symbol at the top -->
   <div class="dash-sidebar-header">
-    <img src="images/Logo Icon-Dark 1.svg" alt="" class="sidebar-logo-icon">
+    <img src="images/Logo Icon-Dark 1.svg" alt="HavenHub Logo" class="sidebar-logo-icon">
     <span class="sidebar-brand-name">HAVENHUB</span>
   </div>
 
@@ -21,8 +21,8 @@
   <nav class="dash-nav">
     <div class="dash-nav-items">
       
-      <!-- ACTIVE PAGE: Structured to host the white-pill active accent state overlay background -->
-      <a href="landlord-dashboard.html" class="dash-nav-link " data-page="landlord-dashboard.html">
+      <!-- Link state classes will be automatically injected by your javascript engine -->
+      <a href="landlord-dashboard.html" class="dash-nav-link" data-page="landlord-dashboard.html">
         <span class="nav-icon-wrapper">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -80,22 +80,21 @@
     </div>
   </nav>
   
-  <!-- PROFILE FOOTER SECTOR: Aligned perfectly to support standard user profile metadata loads -->
+  <!-- PROFILE FOOTER SECTOR -->
   <div class="dash-sidebar-footer">
     <div class="dash-profile">
-      <!-- Fallback image setup matching the circular avatar placement perfectly -->
-      <img src="images/Avatar 4.svg" alt="" class="dash-profile-avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://w3.org\' viewBox=\'0 0 24 24\' fill=\'%2364748b\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M5 20v-1a7 7 0 0 1 14 0v1\'/></svg>'">
+      <img src="images/Avatar 4.svg" alt="Profile" class="dash-profile-avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://w3.org\' viewBox=\'0 0 24 24\' fill=\'%2364748b\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M5 20v-1a7 7 0 0 1 14 0v1\'/></svg>'">
       <div class="dash-profile-info">
-        <span class="dash-profile-name" id="sidebarUserName">john</span>
+        <span class="dash-profile-name" id="sidebarUserName">John</span>
         <span class="dash-profile-role">Landlord</span>
       </div>
     </div>
     
-    <!-- Capsule outline design layout button tracking element -->
     <button class="dash-logout-btn" id="sidebarLogoutBtn" type="button">Log Out</button>
   </div>
+</aside>
 
-  <!-- Add this trigger block to your main dashboard page headers for mobile layouts -->
+<!-- FIXED: Moved outside the sidebar container box so it remains visible on tablets and small mobile phone devices -->
 <button type="button" class="dash-sidebar-toggle" id="sidebarMobileToggle" aria-label="Toggle Navigation Menu">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
     <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -104,10 +103,8 @@
   </svg>
 </button>
 
-<!-- Optional dim overlay that fades in when sidebar is open on mobile screens -->
 <div class="dash-sidebar-overlay" id="sidebarOverlay"></div>
 
-</aside>
 <script src="js/api.js"></script>
     <script src="js/main.js"></script>
     <script src="js/sidebar.js"></script>

@@ -3,7 +3,8 @@
    Handles responsive drawer triggers and authenticates profile parameters
    ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+// FIXED: Wrapped the initialization sequence safely inside the partialsLoaded event listener
+window.addEventListener('partialsLoaded', () => {
   const sidebar = document.getElementById('dashSidebar');
   const toggleBtn = document.getElementById('sidebarMobileToggle');
   const overlay = document.getElementById('sidebarOverlay');
@@ -11,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const sidebarUserName = document.getElementById('sidebarUserName');
   const sidebarUserRole = document.querySelector('.dash-profile-role');
-  const sidebarAvatar = document.querySelector('.dash-profile-avatar'); // Target image reference node
+  const sidebarAvatar = document.querySelector('.dash-profile-avatar'); 
+
+  console.log("Sidebar partial elements verified. Initializing active event hooks...");
 
   /* ---------- 1. RESPONSIVE MOBILE DRAWER INTERACTION ---------- */
   function openMobileSidebar() {
@@ -49,45 +52,107 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  /* ---------- 2. DYNAMIC PROFILE INFO & AVATAR REHYDRATION ---------- */
-  
-  // Rehydrate Profile Username Label
-  if (sidebarUserName) {
-    const cachedName = localStorage.getItem('username');
-    if (cachedName) {
-      sidebarUserName.textContent = cachedName;
-    } else if (window.HavenHubSession && typeof window.HavenHubSession.getCurrentUsername === 'function') {
-      sidebarUserName.textContent = window.HavenHubSession.getCurrentUsername();
+  /* ---------- 2. DYNAMIC REAL-TIME PROFILE REHYDRATION (API-DRIVEN) ---------- */
+  async function fetchAndRehydrateProfile() {
+    try {
+      if (!window.api) {
+        throw new Error("api.js framework core reference is missing.");
+      }
+
+      // Step A: Load immediate values from cache first to guarantee a fast, flash-free layout paint
+      applyLocalCacheProfileData();
+
+      // Step B: Query your actual NestJS backend database server for the absolute latest profile state
+      // Traverses common user routes (/users/me or /users/profile) safely
+      let serverUserObject;
+      try {
+        const response = await window.api.get('/users/profile');
+        serverUserObject = response?.data || response;
+      } catch (apiErr) {
+        console.warn("Retrying profile lookup on alternative target endpoint path...");
+        const responseFallback = await window.api.get('/users/me');
+        serverUserObject = responseFallback?.data || responseFallback;
+      }
+
+      if (!serverUserObject) return;
+
+      console.log("Sidebar real-time profile data synchronized:", serverUserObject);
+
+      // Step C: Extract property attributes cleanly from the database record payload
+      const firstName = serverUserObject.firstName || '';
+      const lastName = serverUserObject.lastName || '';
+      const serverName = firstName && lastName ? `${firstName} ${lastName}` : (serverUserObject.name || serverUserObject.username);
+      const serverRole = serverUserObject.role || '';
+      const serverAvatarUrl = serverUserObject.avatar || serverUserObject.profilePicture || serverUserObject.imageUrl || '';
+
+      // Step D: Inject live database string values into the sidebar UI text tags dynamically
+      if (sidebarUserName && serverName) {
+        sidebarUserName.textContent = serverName;
+        localStorage.setItem('username', serverName); // Keep cache warm for other view layers
+      }
+
+      if (sidebarUserRole && serverRole) {
+        formatAndDisplayUserRoleLabel(serverRole);
+        localStorage.setItem('selectedRole', serverRole.toUpperCase());
+      }
+
+      if (sidebarAvatar && serverAvatarUrl && serverAvatarUrl.trim() !== "") {
+        sidebarAvatar.src = serverAvatarUrl;
+        localStorage.setItem('userAvatarUrl', serverAvatarUrl);
+      }
+
+    } catch (err) {
+      console.warn("Live API profile load bypassed, relying safely on local memory trace buffers:", err.message);
+      // Fallback permanently to local cache parameters if connection drops or endpoint requires custom params
+      applyLocalCacheProfileData();
     }
   }
 
-  // Rehydrate Profile Settings Avatar Image
-  if (sidebarAvatar) {
-    // Looks for a customized uploaded profile image string from profile settings panel state saves
-    const customAvatarUrl = localStorage.getItem('userAvatarUrl') || localStorage.getItem('profilePicture');
+  function applyLocalCacheProfileData() {
+    // Rehydrate Profile Username Label from history traces
+    if (sidebarUserName) {
+      const cachedName = localStorage.getItem('username');
+      if (cachedName) {
+        sidebarUserName.textContent = cachedName;
+      } else if (window.HavenHubSession && typeof window.HavenHubSession.getCurrentUsername === 'function') {
+        sidebarUserName.textContent = window.HavenHubSession.getCurrentUsername();
+      }
+    }
+
+    // Rehydrate Profile Settings Avatar Image from history traces
+    if (sidebarAvatar) {
+      const customAvatarUrl = localStorage.getItem('userAvatarUrl') || localStorage.getItem('profilePicture');
+      if (customAvatarUrl && customAvatarUrl.trim() !== "") {
+        sidebarAvatar.src = customAvatarUrl;
+      } else {
+        sidebarAvatar.src = "images/Avatar 4.svg"; 
+      }
+    }
+
+    // Rehydrate Formatted Role Badge Type Text from history traces
+    if (sidebarUserRole) {
+      const cachedRole = localStorage.getItem('selectedRole');
+      if (cachedRole) {
+        formatAndDisplayUserRoleLabel(cachedRole);
+      }
+    }
+  }
+
+  function formatAndDisplayUserRoleLabel(rawRoleString) {
+    if (!sidebarUserRole) return;
+    // Formats uppercase backend constants cleanly into readable names: 
+    // "PROPERTY_SEEKER" -> "Property Seeker", "LANDLORD" -> "Landlord"
+    const formattedRole = rawRoleString
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
     
-    if (customAvatarUrl && customAvatarUrl.trim() !== "") {
-      sidebarAvatar.src = customAvatarUrl;
-    } else {
-      // Standard brand image fallback assets if user hasn't initialized an upload template profile yet
-      sidebarAvatar.src = "images/Avatar 4.svg"; 
-    }
+    sidebarUserRole.textContent = formattedRole;
   }
 
-  // Rehydrate Formatted Role Badge Type Text
-  if (sidebarUserRole) {
-    const cachedRole = localStorage.getItem('selectedRole');
-    if (cachedRole) {
-      // Formats "PROPERTY_SEEKER" -> "Property Seeker", "REAL_ESTATE_AGENT" -> "Real Estate Agent"
-      const formattedRole = cachedRole
-        .toLowerCase()
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-      
-      sidebarUserRole.textContent = formattedRole;
-    }
-  }
+  // Execute the profile synchronization loop immediately upon layout mount completion
+  fetchAndRehydrateProfile();
 
 
   /* ---------- 3. SECURE LOGOUT MANAGEMENT ---------- */
@@ -109,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    // Smooth replace navigation redirect
+    // Smooth replace navigation redirect to clean stack history tracking panels
     window.location.replace('login.html');
   });
 });

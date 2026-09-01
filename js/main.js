@@ -1,10 +1,19 @@
 /* main.js */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Check routing limits early
   checkRouteGuard(); 
   
+  // 2. FIXED: Trigger loading layout fragments including your modular sidebar.html
+  loadPartial('sidebar.html', 'sidebar-placeholder');
   loadPartial('header.html', 'header-placeholder');
   loadPartial('footer.html', 'footer-placeholder');
+
+  // 3. Hydrate standard baseline metadata metrics
+  highlightActiveNavLink();
+  updateHeaderAuthState();
+  setFooterYear();
+  renderProperties();
 });
 
 async function loadPartial(url, placeholderId) {
@@ -18,6 +27,11 @@ async function loadPartial(url, placeholderId) {
     if (placeholderId === 'header-placeholder') {
       updateHeaderAuthState();
       highlightActiveNavLink();
+    }
+
+    // FIXED: Broadcast a window event to alert sidebar.js when its HTML structures are fully loaded
+    if (placeholderId === 'sidebar-placeholder') {
+      window.dispatchEvent(new Event('partialsLoaded'));
     }
   } catch (err) {
     console.error(err);
@@ -56,7 +70,7 @@ function getCurrentUsername() {
 
 function highlightActiveNavLink() {
   const current = window.location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-links a').forEach(link => {
+  document.querySelectorAll('.nav-links a, .dash-nav-link').forEach(link => {
     if (link.getAttribute('href') === current) {
       link.classList.add('active-link');
     }
@@ -133,16 +147,6 @@ async function renderProperties() {
     container.innerHTML = `<p class="error-text" style="display:block;">Could not load listings: ${err.message}</p>`;
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadPartial('header.html', 'header-placeholder');
-  loadPartial('footer.html', 'footer-placeholder');
-
-  highlightActiveNavLink();
-  updateHeaderAuthState();
-  setFooterYear();
-  renderProperties();
-});
 
 window.HavenHubSession = { loginUser, logoutUser, isUserLoggedIn, getCurrentUsername };
 

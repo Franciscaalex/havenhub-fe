@@ -1,28 +1,67 @@
+<!-- inbox.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Havenhub-Message</title>
-    <link rel="stylesheet" href="global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenHub - Messages & Enquiries</title>
+  <link rel="stylesheet" href="global.css">
 </head>
-<body>
+<body class="dash-body">
+
+  <div class="dash-shell">
     
-    <div id="header-placeholder"></div>
+    <!-- Modular Sidebar Target Container Box (Loaded separately) -->
+    <div id="sidebar-placeholder"></div>
 
+    <!-- MAIN COLUMN PANELS STREAM -->
+    <div class="dash-main">
 
+      <!-- TOP BAR CONTROL PLATFORM HEADER -->
+      <header class="nav-bar-header">
+        <h1 class="header-tittle">Messages & Enquiries</h1>
+        <div class="header-actions">
+          <div class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="chatSearchInput" placeholder="Search conversations..." class="search-input">
+          </div>
+        </div>
+      </header>
 
+      <!-- DYNAMIC CONTENT VIEW SYSTEM ALTERNATOR -->
+      <div class="messages-page-layout">
+        
+        <!-- PANEL VIEW A: CHAT MASTER THREAD LISTS DECK -->
+        <div class="messages-page" id="conversationsListViewPanel">
+          <h3 class="conversations-heading">Conversations</h3>
 
+          <div class="conversation-tabs">
+            <button type="button" id="tabAll" class="tab-btn active">All <span id="countAll">(0)</span></button>
+            <button type="button" id="tabUnread" class="tab-btn">Unread <span id="countUnread">(0)</span></button>
+            <button type="button" id="tabArchive" class="tab-btn">Archive <span id="countArchive">(0)</span></button>
+          </div>
 
-    <div id="footer-placeholder"></div>
+          <!-- Real-Time Target Row Feed Anchor -->
+          <div class="conversations-list" id="conversationsList">
+            <div class="chat-skeleton-loader">Syncing secure connection channels...</div>
+          </div>
+        </div>
 
+        <!-- PANEL VIEW B: ACTIVE LIVE CHAT STREAM WINDOW (Hidden by default until a card selection happens) -->
+        <div class="chat-window-view" id="chatWindowView" hidden>
+          <!-- Injected dynamically by your js/inbox.js module files -->
+        </div>
 
+      </div>
+    </div>
+  </div>
+  <div id="footer-placeholder"></div>
 
-    
-    <script src="js/api.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/inbox.js"></script>
-
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script> 
+  <script src="js/inbox.js"></script>
+  <script src="js/sidebar.js"></script>
 </body>
 </html>
