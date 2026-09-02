@@ -33,6 +33,132 @@
     sans-serif;
 }
 
+/* ============================================================
+   HIGH-FIDELITY HAVENHUB HEADER ROW LAYOUT
+   ============================================================ */
+
+.page-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #002349; /* Strict Deep Navy Background Core */
+  padding: 14px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Logo Sizing Control */
+.header-logo .logo-icon {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+/* Central Row Link Mechanics */
+.nav-links ul {
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 32px;
+}
+
+.nav-links a {
+  color: #94A3B8; /* Muted Slate resting gray color tone */
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+/* Hover Accent color context tracking */
+.nav-links a:hover,
+.nav-links a.active-link {
+  color: #74FFA8; /* Clean sky blue focus highlighting from the design screen */
+}
+
+/* Utility Action Alignment Block */
+.profile-actions-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-icon-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+.utility-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Admin Alert Orange Dot Tracker */
+.notification-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: #F97316; /* Clean administrative warning dot */
+  border-radius: 50%;
+  border: 1.5px solid #002349;
+}
+
+.nav-icon-link {
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s;
+}
+.nav-icon-link:hover, .nav-icon-btn:hover {
+  opacity: 0.8;
+}
+
+/* Round Profile Upload Avatar Avatar Mask */
+.avatar-trigger-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  border-radius: 50%;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background-color: #F1F5F9; /* Clean placeholder color backdrop rules */
+}
+
+/* Mobile Layout Fallback Interceptors */
+.hamburger-btn {
+  display: none; /* Keep hidden on wide screen display panels */
+}
+
+@media (max-width: 768px) {
+  .page-header { padding: 12px 20px; }
+  .nav-links { display: none; } /* Hidden unless expanded via hamburger actions */
+  .hamburger-btn { display: flex; flex-direction: column; gap: 4px; background: none; border: none; cursor: pointer; }
+  .hamburger-line { width: 20px; height: 2px; background-color: white; }
+}
+
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -363,41 +489,7 @@ margin-top: -2rem;
   }
 }
 
-/* ################################################################
-   ##########   LANDLORD DASHBOARD (dashboard-landlord.html)   #####
-   ################################################################ */
-
-.dash-body {
-  background: var(--color-bg-page);
-  color: var(--color-heading);
-}
-
-/* ============================================================
-   SHELL LAYOUT
-   ============================================================ */
-
-.dash-shell {
-  display: flex;
-  min-height: 100vh;
-}
-
-.dash-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 40;
-}
-
-.dash-overlay.is-visible {
-  display: block;
-}
-
 /* SIDEBAR */
-
-/* ============================================================
-   HavenHub - Sidebar Navigation Interface Module
-   ============================================================ */
 
 /* 1. Primary Container Layout */
 .dash-sidebar {
@@ -1064,249 +1156,318 @@ body, html {
 }
 
 /* ============================================================
-   ACTIVE LISTINGS
+   HAVENHUB LANDLORD DASHBOARD STYLES
    ============================================================ */
 
-.dash-listings-panel {
-  background: var(--color-primary);
-  border-radius: 12px;
-  padding: 1.25rem;
-}
-
-.dash-listings-panel h3 {
-  color: var(--color-text-main);
-}
-
-.dash-listings-row {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-  scrollbar-width: thin;
-}
-
-.dash-listing-card {
-  flex: 0 0 200px;
-  background: var(--color-primary-light);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.dash-listing-img {
+/* ---------- METRIC CARDS ROW ---------- */
+.dash-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
   width: 100%;
-  height: 110px;
-  object-fit: cover;
-  display: block;
-  background: #3a4568;
 }
 
-.dash-listing-body {
-  padding: 0.75rem 0.85rem 0.9rem;
-  color: var(--color-text-main);
+.dash-stat-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.dash-listing-title {
-  font-size: 0.85rem;
+.stat-card-title {
+  font-size: 14px;
+  color: #64748B;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.stat-card-value {
+  font-size: 28px;
   font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #0F172A;
+  margin: 0 0 6px 0;
 }
 
-.dash-listing-sub {
-  font-size: 0.72rem;
-  color: #b7c0d6;
-  margin-bottom: 0.5rem;
+.stat-card-subtitle {
+  font-size: 12px;
+  margin: 0;
 }
 
-.dash-listing-badge {
-  display: inline-block;
-  font-size: 0.68rem;
+/* Helper Text Alert Utilities */
+.text-muted { color: #94A3B8; }
+.text-danger { color: #EF4444; font-weight: 500; }
+.text-warning { color: #F59E0B; font-weight: 500; }
+
+
+/* ---------- LIVE PANELS SECTION (CHART & TIMELINE) ---------- */
+.dash-panels-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+/* Chart Architecture Container */
+.dash-chart-panel {
+  flex: 2;
+  min-width: 320px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.chart-header h3, .activity-header-row h3 {
+  font-size: 18px;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--color-accent);
-  color: var(--color-text-main);
+  color: #0F172A;
+  margin: 0 0 4px 0;
 }
 
-.dash-listing-badge.is-vacant {
-  background: var(--color-warning);
+.chart-header p {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
 }
 
-/* ============================================================
-   EMPTY STATE
-   ============================================================ */
+.chart-legend {
+  margin-left: 12px;
+  font-weight: 500;
+}
 
-.dash-empty-panel {
-  background: #ffffff;
-  border: 1px dashed var(--color-border);
-  border-radius: 14px;
-  padding: 4rem 1.5rem;
+.dot-rev {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #0E7490;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.chart-bars-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 200px;
+  margin-top: 24px;
+  gap: 8px;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 8px;
+}
+
+.chart-bar-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 0.75rem;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
 }
 
-.dash-empty-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border);
+.chart-bar-fill {
+  width: 100%;
+  max-width: 20px;
+  background-color: #0E7490; /* Brand Accent Teal */
+  border-radius: 4px 4px 0 0;
+  min-height: 2px; /* Small line indicator even if value is 0% */
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-bar-label {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 8px;
+}
+
+/* Recent Activity Box Container */
+.dash-activity-panel {
+  flex: 1;
+  min-width: 280px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
+  flex-direction: column;
+}
+
+.activity-header-row {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  color: var(--color-accent);
-  margin-bottom: 0.5rem;
+  margin-bottom: 20px;
 }
 
-.dash-empty-icon svg {
-  width: 26px;
-  height: 26px;
+.add-property-btn-top {
+  background-color: #002349;
+  color: #FFFFFF;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.dash-empty-panel h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-heading);
+.add-property-btn-top:hover {
+  background-color: #001630;
 }
 
-.dash-empty-panel p {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  max-width: 360px;
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.dash-empty-panel .dash-btn-primary {
-  margin-top: 0.75rem;
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  border-left: 2px solid #CBD5E1;
+  padding-left: 12px;
+  line-height: 1.4;
 }
 
-/* ============================================================
-   RESPONSIVE — TABLET (≤1024px)
-   Same breakpoint value used for roles.css's tablet adjustments.
-   ============================================================ */
+.activity-item strong {
+  color: #334155;
+}
 
-@media (max-width: 1024px) {
-  .dash-sidebar {
-    width: 200px;
-  }
+.activity-time {
+  font-size: 11px;
+  color: #94A3B8;
+  white-space: nowrap;
+  margin-left: 8px;
+}
 
-  .dash-search {
-    width: 200px;
-  }
+.no-activity-text {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 20px;
+}
 
+
+/* ---------- PROPERTY GRID CARDS & BADGES ---------- */
+.dash-listings-panel h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0 0 16px 0;
+}
+
+.dash-listings-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* Force strict 2-column layout */
+  gap: 24px;
+  width: 100%;
+}
+
+.property-figma-card {
+  display: flex;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+}
+
+.property-figma-img {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: #F8FAFC;
+}
+
+.property-figma-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.property-figma-meta h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E293B;
+  margin: 0 0 4px 0;
+}
+
+.property-figma-meta p {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0;
+}
+
+/* REAL-TIME BADGE UTILITIES */
+.badge-figma {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.badge-figma-available {
+  background-color: #DCFCE7;
+  color: #16A34A;
+}
+
+.badge-figma-pending {
+  background-color: #FEF3C7;
+  color: #D97706;
+}
+
+.badge-figma-rented {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+
+/* ---------- FLUID MOTION ANIMATION SYSTEM ---------- */
+.carousel-active-fluid {
+  display: flex !important;
+  grid-template-columns: none !important;
+  flex-wrap: nowrap !important;
+  overflow-x: hidden !important;
+  gap: 20px;
+}
+
+.carousel-active-fluid .property-figma-card {
+  flex: 0 0 calc(50% - 10px); /* Keeps card widths responsive to 2 per viewing area viewports */
+  min-width: 280px;
+}
+
+
+/* ---------- RESPONSIVE LAYOUT MATRIX INTERCEPTORS ---------- */
+@media (max-width: 900px) {
   .dash-panels-row {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
-
-  .dash-stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* ============================================================
-   RESPONSIVE — MOBILE (≤768px)
-   Same breakpoint value used for roles.css's tablet breakpoint —
-   the sidebar becomes an off-canvas drawer here instead.
-   ============================================================ */
-
-@media (max-width: 768px) {
-  .dash-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 50;
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    width: 240px;
-  }
-
-  .dash-sidebar.is-open {
-    transform: translateX(0);
-  }
-
-  .dash-menu-btn {
-    display: flex;
-  }
-
-  .dash-search {
-    display: none;
-  }
-
-  .dash-topbar {
-    padding: 0.85rem 1.25rem;
-    gap: 1rem;
-  }
-
-  .dash-welcome h1 {
-    font-size: 1rem;
-  }
-
-  .dash-welcome p {
-    font-size: 0.72rem;
-  }
-
-  .dash-content {
-    padding: 1.25rem 1.25rem 2.5rem;
-  }
-
-  .dash-stats-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-
-  .dash-stat-card {
-    padding: 0.9rem 1rem;
-  }
-
-  .dash-stat-value {
-    font-size: 1.25rem;
-  }
-
-  .dash-empty-panel {
-    padding: 3rem 1.25rem;
+  .dash-chart-panel, .dash-activity-panel {
+    flex: none;
+    width: 100%;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — SMALL PHONES (≤480px)
-   Same breakpoint value used for roles.css's mobile breakpoint.
-   ============================================================ */
-
-@media (max-width: 480px) {
-  .dash-stats-row {
-    grid-template-columns: 1fr;
+@media (max-width: 640px) {
+  .dash-listings-row {
+    grid-template-columns: 1fr; /* Drop cleanly down to single stacks on tiny mobile screens */
   }
-
-  .dash-listing-card {
-    flex-basis: 160px;
-  }
-
-  .dash-listing-img {
-    height: 90px;
+  .carousel-active-fluid .property-figma-card {
+    flex: 0 0 100%;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — VERY SMALL PHONES (≤360px)
-   Same breakpoint value used for roles.css's smallest breakpoint.
-   ============================================================ */
-
-@media (max-width: 360px) {
-  .dash-content {
-    padding: 1rem 1rem 2rem;
-  }
-
-  .dash-stat-value {
-    font-size: 1.1rem;
-  }
-
-  .dash-listing-card {
-    flex-basis: 140px;
-  }
-}
 
 /* ################################################################
    ################   SETTINGS PAGE (settings.html)   ############

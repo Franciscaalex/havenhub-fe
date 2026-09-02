@@ -27,7 +27,7 @@
 /* HEADER / NAV / FOOTER */
 
 .page-header {
-  background: var(--color-accent);
+  background: var(--color-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -250,7 +250,7 @@ body.auth-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1.3rem;
 }
 
 .login-card-container {
@@ -408,7 +408,7 @@ body.auth-page {
 
 .signup-link {
   color: var(--color-accent);
-  font-weight: 700;
+  font-weight: 500;
   text-decoration: underline;
 }
 .sign-terms{

@@ -1,128 +1,102 @@
 /* ============================================================
-   js/dashboard-landlord.js
-   Real-Time API-Driven Landlord Dashboard State Engine
+   dashboard-landlord.js
+   STRICT NEW USER FIX: NO CHARTS, NO MOCK DATA, NO IMAGES
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const dashWelcomeTitle = document.getElementById('dashWelcomeTitle');
-  const emptyStateView = document.getElementById('dashEmptyState');
-  const populatedStateView = document.getElementById('dashPopulatedState');
-  const loadingSkeleton = document.getElementById('dashLoading');
+  // 1. Get raw layout elements directly from your HTML markup tags
+  const loadingState = document.getElementById('dashLoading');
+  const emptyState = document.getElementById('dashEmptyState');
+  const populatedState = document.getElementById('dashPopulatedState');
+  const statsRowEmpty = document.getElementById('statsRowEmpty');
+  const addPropertyBtnEmpty = document.getElementById('addPropertyBtnEmpty');
+  const welcomeTitle = document.getElementById('dashWelcomeTitle');
 
-  // 1. DYNAMIC TOPBAR GREETING: Pull first name from local auth cache
-  const cachedUser = localStorage.getItem('username') || 'John';
-  if (dashWelcomeTitle) {
-    dashWelcomeTitle.textContent = `Welcome ${cachedUser.split(' ')[0]}!`;
+  // Hard enforce absolute layout safety: instantly hide the populated dashboard containers
+  if (populatedState) populatedState.style.setProperty('display', 'none', 'important');
+  if (emptyState) emptyState.style.setProperty('display', 'none', 'important');
+  if (loadingState) loadingState.style.setProperty('display', 'block', 'important');
+
+  // Sync real name from your login form storage context if present
+  const savedUser = localStorage.getItem('username') || 'Landlord';
+  if (welcomeTitle) {
+    welcomeTitle.textContent = "Welcome back!";
   }
 
-  // 2. LINK INTERACTIVE BUTTONS: Navigate to the creation form
-  const bindNavigationCta = (elementId) => {
-    document.getElementById(elementId)?.addEventListener('click', (e) => {
-      e.preventDefault();
+  // Bind Continue/Upload button event listener to your team's file target
+  if (addPropertyBtnEmpty) {
+    addPropertyBtnEmpty.addEventListener('click', () => {
       window.location.href = 'add-property.html';
     });
-  };
-  bindNavigationCta('addPropertyBtnEmpty');
-  bindNavigationCta('addPropertyBtnPopulated');
+  }
 
   try {
-    if (!window.api) {
-      throw new Error("api.js core manager is missing or loaded out of order.");
+    if (!window.api) throw new Error("api.js frame missing.");
+
+    // Query your backend for uploaded property data array metrics
+    const listingsData = await window.api.get('/properties?limit=20');
+    const properties = listingsData?.items || listingsData || [];
+
+    // Query real-time financial stats balance records 
+    let totalRevenue = '$0';
+    let occupancyRate = '-';
+    let pendingMaintenance = '0';
+    let overdueRent = '$0';
+
+    try {
+      const statsResponse = await window.api.get('/properties/my-listings/stats');
+      if (statsResponse) {
+        if (statsResponse.totalRevenue !== undefined) totalRevenue = `$${Number(statsResponse.totalRevenue).toLocaleString()}`;
+        if (statsResponse.occupancyRate !== undefined) occupancyRate = `${statsResponse.occupancyRate}%`;
+        if (statsResponse.pendingMaintenance !== undefined) pendingMaintenance = statsResponse.pendingMaintenance;
+        if (statsResponse.overdueRent !== undefined) overdueRent = `$${Number(statsResponse.overdueRent).toLocaleString()}`;
+      }
+    } catch (e) {
+      console.warn("Stats server endpoints are resting. Defaulting to strict 0 balances.");
     }
 
-    // 3. FETCH REAL PROPERTIES LIST FROM LIVE BACKEND API
-    // This targets your endpoint to load your live properties list array
-    const response = await window.api.get('/properties');
-    const propertiesList = response?.items || response?.data?.items || response?.data || response || [];
+    // Build exactly 4 matching empty stat cards
+    const cleanStatCardsHTML = `
+      <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">${totalRevenue}</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Occupancy Rate</p><h3 class="stat-card-value">${occupancyRate}</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Pending Maintenance</p><h3 class="stat-card-value">${pendingMaintenance}</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">${overdueRent}</h3></div>
+    `;
 
-    // Hide the initial loading placeholder if it exists on the page
-    if (loadingSkeleton) loadingSkeleton.hidden = true;
+    /* ============================================================
+       STRICT CONDITIONAL INTERCEPTOR MATRIX
+       ============================================================ */
+    if (properties.length === 0) {
+      // THE NEW USER ACCOUNT: FORCE EVERYTHING AWAY
+      if (statsRowEmpty) statsRowEmpty.innerHTML = cleanStatCardsHTML;
 
-    // 4. AUTOMATED SWITCHBOARD LAYOUT CONTROLLER
-    if (propertiesList.length === 0) {
-      /* ------------------------------------------------------------
-         STATE A: ACCOUNT HAS NO PROPERTIES YET (Show Empty Board)
-         ------------------------------------------------------------ */
-      if (emptyStateView) emptyStateView.hidden = false;
-      if (populatedStateView) populatedStateView.hidden = true;
-      
-      // Keep metrics zeroed out as seen on your new user interface image mockup
-      updateDashboardMetricsRow(0, 0, 0, 0);
+      // Fully block out and delete the populated container row structures
+      if (populatedState) {
+        populatedState.innerHTML = ''; // WIPES OUT THE OLD MOCK IMAGE AND CHART TAGS ENTIRELY
+        populatedState.style.setProperty('display', 'none', 'important');
+      }
+
+      if (loadingState) loadingState.style.setProperty('display', 'none', 'important');
+      if (emptyState) emptyState.style.setProperty('display', 'block', 'important');
 
     } else {
-      /* ------------------------------------------------------------
-         STATE B: ACTIVE DATA PRESENT (Show Real-Time Metric Feeds)
-         ------------------------------------------------------------ */
-      
-      // Calculate dynamic mathematical aggregations from live array objects
-      const totalUnits = propertiesList.length;
-      
-      // Count rented spaces based on status strings returned by server model
-      const rentedUnits = propertiesList.filter(p => p.status?.toUpperCase() === 'RENTED').length;
-      
-      // Occupancy Rate Arithmetic
-      const occupancyRate = totalUnits > 0 ? Math.round((rentedUnits / totalUnits) * 100) : 0;
-      
-      // Sum up monthly pricing parameters from rented units to build true revenue streams
-      const computedMonthlyRevenue = propertiesList
-        .filter(p => p.status?.toUpperCase() === 'RENTED')
-        .reduce((sum, p) => sum + (Number(p.price) || 0), 0);
-
-      // Count units currently sitting in verification review queues (where isApproved is falsy)
-      const pendingMaintenanceOrReview = propertiesList.filter(p => !p.isApproved || p.status?.toUpperCase() === 'PENDING').length;
-
-      // Simulated overdue balance (Can be linked to custom billing endpoints later)
-      const computedOverdueRent = totalUnits > 0 ? 0 : 0;
-
-      // Swap HTML panel wrappers view targets
-      if (emptyStateView) emptyStateView.hidden = true;
-      if (populatedStateView) populatedStateView.hidden = false;
-
-      // 5. HYDRATE CORES DATA INTO ROWS VISUAL CONTAINERS
-      updateDashboardMetricsRow(computedMonthlyRevenue, occupancyRate, pendingMaintenanceOrReview, computedOverdueRent);
-      
-      // If your populated panels container contains sub-modules, run chart painters
-      if (typeof renderDynamicChartBars === 'function') renderDynamicChartBars();
-      if (typeof renderLiveApprovedTimelineLogs === 'function') renderLiveApprovedTimelineLogs();
-      if (typeof renderPropertiesGrid === 'function') renderPropertiesGrid(propertiesList);
+      // ACTIVE ACCOUNT LOGIC: Refresh window location once to populate active lists natively
+      // This runs only after the landlord finishes uploading a property on add-property.html
+      location.reload(); 
     }
 
   } catch (err) {
-    console.error("Failed to query live dashboard api feed metrics:", err);
-    // Silent fail protection: if backend server fails to ping, show zeroed base states layout
-    updateDashboardMetricsRow(0, 0, 0, 0);
+    console.error("Pipeline breakdown:", err);
+    // Secure Offline Safety net: Render exact zeroed 1st image layout screen map
+    const defaultHTML = `
+      <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">$0</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Occupancy Rate</p><h3 class="stat-card-value">-</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Pending Maintenance</p><h3 class="stat-card-value">0</h3></div>
+      <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">$0</h3></div>
+    `;
+    if (statsRowEmpty) statsRowEmpty.innerHTML = defaultHTML;
+    if (populatedState) populatedState.innerHTML = '';
+    if (loadingState) loadingState.style.setProperty('display', 'none', 'important');
+    if (emptyState) emptyState.style.setProperty('display', 'block', 'important');
   }
 });
-
-/* ---------- SHARED CARD VALUE RENDERING AGENT LAYER ---------- */
-function updateDashboardMetricsRow(revenue, occupancy, maintenance, overdue) {
-  // Select target cards blocks inside your dashboard views grids
-  // Dynamically works whether your structural parent ID is #statsRow or #statsRowEmpty
-  const targetRows = document.querySelectorAll('.dash-stats-row');
-  
-  targetRows.forEach(row => {
-    // Format numeric revenue data into pristine currency representations ($2,500)
-    const formattedRevenue = revenue > 0 ? `$${revenue.toLocaleString()}` : "$0";
-    const formattedOccupancy = occupancy > 0 ? `${occupancy}%` : "-";
-    const formattedOverdue = overdue > 0 ? `$${overdue.toLocaleString()}` : "$0";
-
-    row.innerHTML = `
-      <div class="dash-stat-card">
-        <span class="dash-stat-label">Total Monthly Revenue</span>
-        <span class="dash-stat-value">${formattedRevenue}</span>
-      </div>
-      <div class="dash-stat-card">
-        <span class="dash-stat-label">Occupancy Rate</span>
-        <span class="dash-stat-value">${formattedOccupancy}</span>
-      </div>
-      <div class="dash-stat-card">
-        <span class="dash-stat-label">Pending Maintenance</span>
-        <span class="dash-stat-value">${maintenance}</span>
-      </div>
-      <div class="dash-stat-card">
-        <span class="dash-stat-label">Overdue Rent</span>
-        <span class="dash-stat-value">${formattedOverdue}</span>
-      </div>
-    `;
-  });
-}

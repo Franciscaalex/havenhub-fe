@@ -94,9 +94,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      /* ------------------------------------------------------------
+         RETRIEVE STASHED DATA FROM THE SIGNUP FORM STEP
+         ------------------------------------------------------------ */
+      const savedData = sessionStorage.getItem('pendingUser');
+      if (!savedData) {
+        console.error("Signup staging token missing in sessionStorage context.");
+        if (roleHint) {
+          roleHint.textContent = 'Session expired. Please restart registration.';
+          roleHint.style.color = '#E53E3E';
+        }
+        setTimeout(() => { window.location.href = 'signup.html'; }, 2000);
+        return;
+      }
+
+      const userData = JSON.parse(savedData);
+
+      // Combine user info with the active role constant for the payload matrix
+      const finalPayload = {
+        ...userData,
+        role: activeRole
+      };
+
       try {
         if (roleHint) {
-          roleHint.textContent = 'Saving your profile role selection...';
+          roleHint.textContent = 'Creating your account profile...';
           roleHint.style.color = '#002349';
         }
         registerBtn.disabled = true;
@@ -105,29 +127,32 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error("api.js module is missing or script order is mixed up.");
         }
 
-        const payload = { role: activeRole };
-
         /* ------------------------------------------------------------
-           🛠️ DYNAMIC BACKEND TARGET ENDPOINT TEST MATRIX
-           Attempts to update the backend. If the route returns a 404,
-           it switches to local fallback routing so your app stays functional.
+           SUBMIT COMPLETE REGISTRATION DATA PACK TO BACKEND
            ------------------------------------------------------------ */
-        try {
-          await window.api.put('/users/profile', payload);
-        } catch (apiErr) {
-          if (apiErr.message.includes('404')) {
-            console.warn("⚠️ PUT /users/profile returned 404. Attempting alternative route...");
-            try {
-              await window.api.put('/users', payload);
-            } catch (fallbackErr) {
-              console.warn("⚠️ Backend endpoint missing. Activating client-side routing fallback mode...");
-            }
-          } else {
-            throw apiErr;
-          }
-        }
+        const result = await window.api.post('/users/register', finalPayload);
 
-        if (roleHint) roleHint.textContent = 'Role synchronized! Loading dashboard…';
+        // Extract metadata and session properties from response models
+        const token = result.token || result.data?.token;
+        const expiresIn = result.expiresIn || result.data?.expiresIn || 3600;
+
+        // Establish app system contexts exactly like your login routine
+        window.api.setToken(token, expiresIn);
+        
+        const displayName = `${userData.firstName} ${userData.lastName}`;
+        window.HavenHubSession.loginUser(displayName);
+
+        localStorage.setItem('username', displayName);
+        localStorage.setItem('isLoggedIn', 'true');
+
+        // Clear temporary signup form staging cache
+        sessionStorage.removeItem('pendingUser');
+
+        if (roleHint) {
+          roleHint.textContent = 'Account verified! Loading dashboard…';
+          roleHint.style.color = '#34D399';
+        }
+        
         console.log(`Executing dashboard routing path for role: [${activeRole}]`);
 
         // 🚀 BULLETPROOF DASHBOARD REDIRECT ROUTING FOR YOUR HTML FILES
@@ -145,9 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
       } catch (err) {
-        console.error("API Role Selection Sync Failed:", err);
+        console.error("API Complete Registration Request Failed:", err);
         if (roleHint) {
-          roleHint.textContent = err.message || "Failed to update profile. Please try again.";
+          roleHint.textContent = err.message || "Registration failed. Please try again.";
           roleHint.style.color = '#E53E3E';
         }
         registerBtn.disabled = false;

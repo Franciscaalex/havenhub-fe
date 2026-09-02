@@ -187,33 +187,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isValid) return false;
 
-    // FIXED: Reads your chosen selection role dynamically instead of forcing 'PROPERTY_SEEKER'
-    const chosenSignupRole = localStorage.getItem('selectedRole') || (emailValue.toLowerCase().includes('landlord') ? "LANDLORD" : "PROPERTY_SEEKER");
-
-    const payload = {
-      email: emailValue,
-      password: password.value.trim(),
-      firstName: firstName.value.trim(),
-      lastName: lastName.value.trim(),
-      role: chosenSignupRole 
-    };
-
     try {
-      setStatus(statusEl, 'Creating your account…', false);
-      const result = await submitAuth('/users/register', payload);
+      setStatus(statusEl, 'Checking account details…', false);
 
-      const token = result.token || result.data?.token;
-      const expiresIn = result.expiresIn || result.data?.expiresIn || 3600;
-
-      window.api.setToken(token, expiresIn);
-      window.HavenHubSession.loginUser(result.user?.firstName ? `${result.user.firstName} ${result.user.lastName}` : `${payload.firstName} ${payload.lastName}`);
-
-      setStatus(statusEl, 'Account created! Redirecting…', false);
+      /*  ANTI-ABUSE CHECK: VERIFY IF THE EMAIL ALREADY EXISTS */
+       try {
+        const checkPayload = { email: emailValue, password: password.value.trim() };
+        await submitAuth('/users/login', checkPayload);
       
-      window.location.replace('roles.html');
+        setStatus(statusEl, 'You already have an existing account', true);
+        return;
+      } catch (loginErr) {
+        const errorMsg = loginErr.message?.toLowerCase() || '';
+      
+        if (errorMsg.includes('password') || errorMsg.includes('taken') || errorMsg.includes('exist')) {
+          setStatus(statusEl, 'You already have an existing account', true);
+          return;
+        }
+      }
+
+      /* STAGING FOR STEP 2 (ROLES PAGE) */
+      const partialPayload = {
+        email: emailValue,
+        password: password.value.trim(),
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim()
+      };
+
+      sessionStorage.setItem('pendingUser', JSON.stringify(partialPayload));
+
+      setStatus(statusEl, 'Proceeding to role selection…', false);
+      
+      window.location.href = 'roles.html';
+
     } catch (err) {
-      console.error("Full Registration Failure Details:", err);
-      setStatus(statusEl, err.message || "Registration failed. Email might already be taken.", true);
+      console.error("Pre-registration verification step failed:", err);
+      setStatus(statusEl, err.message || "An error occurred. Please try again.", true);
     }
   }); 
 

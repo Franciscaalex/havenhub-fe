@@ -1,15 +1,26 @@
 /* main.js */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // 1. Check routing limits early
   checkRouteGuard(); 
   
-  // 2. FIXED: Trigger loading layout fragments including your modular sidebar.html
-  loadPartial('sidebar.html', 'sidebar-placeholder');
-  loadPartial('header.html', 'header-placeholder');
-  loadPartial('footer.html', 'footer-placeholder');
+  // 2. FIXED: Verify placeholders exist on the current page before attempting to fetch fragments
+  const loadingPromises = [];
 
-  // 3. Hydrate standard baseline metadata metrics
+  if (document.getElementById('sidebar-placeholder')) {
+    loadingPromises.push(loadPartial('sidebar.html', 'sidebar-placeholder'));
+  }
+  if (document.getElementById('header-placeholder')) {
+    loadingPromises.push(loadPartial('header.html', 'header-placeholder'));
+  }
+  if (document.getElementById('footer-placeholder')) {
+    loadingPromises.push(loadPartial('footer.html', 'footer-placeholder'));
+  }
+
+  // Wait until all layout template files are completely loaded into the placeholders
+  await Promise.all(loadingPromises);
+
+  // 3. FIXED: Hydrate standard baseline metadata metrics ONLY after layouts are safe in the DOM
   highlightActiveNavLink();
   updateHeaderAuthState();
   setFooterYear();
@@ -22,6 +33,8 @@ async function loadPartial(url, placeholderId) {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+    
+    // SAFE INNERHTML: Keeps your pre-styled horizontal container div nodes intact
     el.innerHTML = await res.text();
     
     if (placeholderId === 'header-placeholder') {
@@ -29,7 +42,7 @@ async function loadPartial(url, placeholderId) {
       highlightActiveNavLink();
     }
 
-    // FIXED: Broadcast a window event to alert sidebar.js when its HTML structures are fully loaded
+    // Broadcast a window event to alert sidebar.js when its HTML structures are fully loaded
     if (placeholderId === 'sidebar-placeholder') {
       window.dispatchEvent(new Event('partialsLoaded'));
     }
@@ -55,7 +68,6 @@ function logoutUser() {
 }
 
 function isUserLoggedIn() {
-  // Sync directly with your verified api.js authorization check gate
   if (window.api && typeof window.api.isAuthenticated === 'function') {
     return window.api.isAuthenticated();
   }

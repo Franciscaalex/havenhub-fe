@@ -1,31 +1,63 @@
-<header class="page-header">
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Havenhub-header </title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg">
+</head>
+<body>
+ <header class="page-header">
+  <!-- LOGO SECTION (STATIC) -->
   <div class="header-logo">
-    <div class="logo-placeholder">
-      <img src="images/Light.svg" alt="Havenhub Logo" class="logo-icon">
-    </div>
-    <a href="index.html" style="text-decoration:none;">
-      <span class="haven-logo">HAVEN</span><span class="hub-logo">HUB</span>
-    </a>
+    <img src="images/Secondary Logo-Light 1.png" alt="HavenHub Logo" class="logo-icon">
   </div>
 
+  <!-- INTERACTIVE NAVIGATION LINKS -->
   <nav class="nav-links" id="navLinks">
     <ul>
-      <li><a href="index.html">Browse Properties</a></li>
-      <li><a href="Saved.html">Saved</a></li>
-      <li><a href="message.html">Messages</a></li>
+      <li><a href="seeker-dashboard.html">Browse Properties</a></li>
+      <li><a href="saved.html">Saved</a></li>
+      <li><a href="thread.html">Messages</a></li>
     </ul>
   </nav>
 
-  <div class="profile-icon">
-    <a href=""><img src="images/Bell.svg" alt="Profile bell" class="profile-bell"></a>
-    <a href="login.html"><img src="images/Avatar 4.svg" alt="Profile Icon" class="profile-icon"></a>
+  <!-- INTERACTIVE UTILITIES & AUTH STATUS UTILITIES -->
+  <div class="profile-actions-row">
+    <!-- Notifications Bell Trigger Component -->
+    <button class="nav-icon-btn" id="navNotificationBtn" type="button" aria-label="View Administrator Updates">
+      <img src="images/Bell.svg" alt="Notification Bell" class="utility-icon">
+      <span class="notification-dot" id="navNotificationDot" style="display: none;"></span>
+    </button>
+
+    <!-- Settings Navigation Anchor -->
+    <a href="seekers-settings.html" class="nav-icon-link" aria-label="Account Settings">
+      <!-- FIXED: Added the missing gears utility icon seen in your design screen -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-svg-icon">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </a>
+
+    <!-- Profile Image Upload Form Interceptor Wrapper -->
+    <div class="header-avatar-wrap">
+      <button class="avatar-trigger-btn" id="headerAvatarBtn" type="button" aria-label="Upload Profile Portrait Picture">
+        <img id="headerAvatarImg" src="images/Avatar 4.svg" alt="User Profile Avatar" class="header-avatar">
+      </button>
+      <input type="file" id="headerAvatarInput" accept="image/*" style="display: none;">
+    </div>
   </div>
 
-   <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Toggle navigation menu" aria-controls="navLinks" aria-expanded="false">
+  <!-- RESPONSIVE MOBILE ACCESSIBILITY HAMBURGER TOGGLE -->
+  <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Toggle navigation menu" aria-controls="navLinks" aria-expanded="false">
     <div class="hamburger-line"></div>
     <div class="hamburger-line"></div>
     <div class="hamburger-line"></div>
   </button>
-  
 </header>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+<script src="js/header.js"></script>
+</body>
+</html>
