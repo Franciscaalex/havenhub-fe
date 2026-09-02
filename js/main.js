@@ -162,16 +162,40 @@ async function renderProperties() {
 
 window.HavenHubSession = { loginUser, logoutUser, isUserLoggedIn, getCurrentUsername };
 
+/* ============================================================
+   ROLE-AWARE ROUTE GUARD
+   ============================================================ */
 function checkRouteGuard() {
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  
+  // 1. Establish strict boolean session states
+  const isLoggedIn = isUserLoggedIn();
+  const activeRole = localStorage.getItem('selectedRole') || ''; 
+
   const securePages = [
     'landlord-dashboard.html',
     'seeker-dashboard.html',
     'add-property.html'
   ];
   
-  const currentPath = window.location.pathname.split('/').pop();
-  
-  if (securePages.includes(currentPath) && !isUserLoggedIn()) {
+  // 2. Intercept unauthenticated access to secure profile layers
+  if (securePages.includes(currentPath) && !isLoggedIn) {
+    console.warn("Intercepted unauthenticated access. Redirecting to login frame.");
     window.location.replace('login.html');
+    return;
+  }
+
+  // 3. CROSS-ROLE ROUTE PROTECTION (Prevents Seekers from opening Landlord panels and vice versa)
+  if (isLoggedIn && activeRole) {
+    const normalizedRole = activeRole.toUpperCase().trim();
+    
+    if (currentPath === 'landlord-dashboard.html' && normalizedRole !== 'LANDLORD') {
+      console.warn("Cross-role anomaly caught. Forcing Seeker dashboard view.");
+      window.location.replace('seeker-dashboard.html');
+    } 
+    else if (currentPath === 'seeker-dashboard.html' && normalizedRole === 'LANDLORD') {
+      console.warn("Cross-role anomaly caught. Forcing Landlord dashboard view.");
+      window.location.replace('landlord-dashboard.html');
+    }
   }
 }
