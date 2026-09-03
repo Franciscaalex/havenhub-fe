@@ -5,7 +5,7 @@ html, body {
   background-color: #f8fafc; /* Clean, premium light slate dashboard backdrop */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #1e293b;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   height: 100vh;
   overflow: hidden; /* Prevents double scrolling bars across the window */
   box-sizing: border-box;
@@ -17,23 +17,39 @@ html, body {
 }
 
 /* ---------- 2. PARENT DASHBOARD GRID SHELL SYSTEM ---------- */
-.dash-shell {
-  display: flex;
+
+.inbox-body{
+   margin: 0;
+  padding: 0;
+  height: 100vh;
   width: 100vw;
-  height: 100vw;
+  box-sizing: border-box;
+  /* overflow: hidden; */
+  /* margin-bottom: -10rem; */
+  background: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.inbox-shell {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 280px 1fr;
+  width: 100%;                        
+  height: 100vh;                      
   overflow: hidden;
-  position: relative;
+  align-items: stretch;
 }
 
 /* Dynamic main workspace column panel */
-.dash-main {
+.inbox-main {
   flex-grow: 1;
+  grid-column: 2/3;
+    grid-row: 1/2;
   height: 100%;
   display: flex;
   flex-direction: column;
-  /* padding: 32px 40px; */
   box-sizing: border-box;
-  overflow: hidden; /* Delegates scrolling down exclusively to sub-page panels */
+  overflow-y: auto;
 }
 
 /* ---------- 3. FIXED NAVIGATION TOP BAR ARCHITECTURE ---------- */
@@ -43,13 +59,14 @@ html, body {
   align-items: center;
   width: 100%;
   background: #ffffff;
-  height: 5rem;
-  margin-top: -40px;
-  flex-shrink: 0; /* Prevents header compression when message fields stretch */
+  height: 3.5rem;
+  padding: 1.5rem ;
+  /* margin-top: -40px; */
+  flex-shrink: 0; 
 }
 
 .header-tittle {
-  font-size: 26px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #002349; /* Premium deep navy branding tone */
   margin: 0;
@@ -97,7 +114,7 @@ html, body {
   border: 1px solid #edf2f7;
   flex-grow: 1; /* Automatically expands to populate remaining vertical space cleanly */
   width: 100%;
-  max-height: calc(100vh - 160px); /* Locks bounding parameters safely to fit visible viewports */
+  /* max-height: calc(100vh - 160px); Locks bounding parameters safely to fit visible viewports */
   display: flex;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.015);
@@ -110,12 +127,12 @@ html, body {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
 }
 
 .conversations-heading {
-  margin: 0 0 16px 0;
-  font-size: 22px;
+  /* margin: 0 0 16px 0; */
+  font-size: 2.2rem;
   font-weight: 700;
   color: #0f172a;
 }
@@ -126,7 +143,7 @@ html, body {
   margin-bottom: 20px;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 12px;
-  position: relative;
+  /* position: relative; */
   z-index: 5;
 }
 
@@ -143,7 +160,7 @@ html, body {
 }
 
 .tab-btn:hover {
-  background-color: #003354;
+  background-color: #003354 !important;
   color: #ffffff;
   border-color: #003354;
 }

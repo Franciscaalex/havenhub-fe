@@ -2,18 +2,10 @@
    settings.js
 
    Wires every button on the Settings page to the API:
-   - Loads the current profile on page load (GET)
+   - Loads current profile on page load (GET) & syncs sidebar
    - Save changes → PUT (updates first/last name + phone)
    - Change Photo → file picker → upload (POST, multipart)
    - Change Password → opens modal → Update Password → PUT
-   - Cancel / X buttons close the modal or leave the page
-
-   IMPORTANT — endpoint paths marked ASSUMPTION below are not yet
-   confirmed against the live Swagger docs (only GET /properties
-   and the general API shape have been verified so far in this
-   project). Update the path/response-field names in each function
-   once confirmed; the request-sending logic itself won't need to
-   change.
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,15 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
   wirePasswordModal();
 });
 
-/* ---------- Load current profile into the form ---------- */
+/* ---------- Load current profile into the form & sidebar ---------- */
 
 async function loadProfile() {
   const statusEl = document.getElementById('profileStatus');
   try {
-    // ASSUMPTION: GET /users/me — not yet confirmed. Expected shape:
-    // { firstName, lastName, email, phone, avatarUrl }
     const user = await window.api.get('/users/me');
 
+    // Populate Settings Form
     document.getElementById('firstName').value = user.firstName ?? '';
     document.getElementById('lastName').value = user.lastName ?? '';
     document.getElementById('emailAddress').value = user.email ?? '';
@@ -41,9 +32,19 @@ async function loadProfile() {
     if (user.avatarUrl) {
       document.getElementById('avatarPreview').src = user.avatarUrl;
     }
+
+    // Sync Sidebar Display
+    const sidebarName = document.getElementById('sidebarUserName');
+    if (sidebarName && user.firstName) {
+      sidebarName.textContent = user.firstName;
+    }
+
+    const sidebarAvatar = document.querySelector('.dash-profile-avatar');
+    if (sidebarAvatar && user.avatarUrl) {
+      sidebarAvatar.src = user.avatarUrl;
+    }
+
   } catch (err) {
-    // Not fatal — the form just stays blank/prefilled from whatever
-    // was already in the HTML, and the person can still fill it in.
     console.error('Could not load profile:', err);
     setStatus(statusEl, 'Could not load your saved profile. You can still edit and save below.', 'error');
   }
@@ -84,11 +85,13 @@ function wireProfileForm() {
     setStatus(statusEl, 'Saving…', '');
 
     try {
-      // ASSUMPTION: PUT /users/me — not yet confirmed. Email is
-      // intentionally excluded from the payload since it's read-only
-      // in this form.
       await window.api.put('/users/me', { firstName, lastName, phone });
       setStatus(statusEl, 'Changes saved.', 'success');
+
+      // Keep sidebar name synced when saved
+      const sidebarName = document.getElementById('sidebarUserName');
+      if (sidebarName) sidebarName.textContent = firstName;
+
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
     } finally {
@@ -123,7 +126,7 @@ function wirePhotoUpload() {
       return;
     }
 
-    // Show the new photo immediately, before the upload finishes
+    // Show local preview immediately
     const localPreviewUrl = URL.createObjectURL(file);
     const previousSrc = preview.src;
     preview.src = localPreviewUrl;
@@ -135,34 +138,27 @@ function wirePhotoUpload() {
       await uploadPhoto(file);
       setStatus(statusEl, 'Photo updated.', 'success');
     } catch (err) {
-      preview.src = previousSrc; // roll back the optimistic preview
+      preview.src = previousSrc; // Roll back preview if upload fails
       setStatus(statusEl, err.message, 'error');
     } finally {
       changeBtn.disabled = false;
-      fileInput.value = ''; // allows re-selecting the same file later
+      fileInput.value = '';
     }
   });
 }
 
 async function uploadPhoto(file) {
-  // File uploads need multipart/form-data, which the shared
-  // api.post()/api.put() helpers in api.js can't send (they always
-  // JSON.stringify the body). This talks to fetch() directly instead,
-  // reusing the same CONFIG and token that api.js already set up
-  // (CONFIG is a plain global const, so it's visible here too since
-  // both files load as classic, non-module scripts).
   const formData = new FormData();
   formData.append('photo', file);
 
   const token = localStorage.getItem(CONFIG.TOKEN_KEY);
-  const url = CONFIG.USE_MOCK_DATA
-    ? `${CONFIG.MOCK_BASE_PATH}/users/me/photo`
-    : `${CONFIG.BASE_URL}/users/me/photo`; // ASSUMPTION — not yet confirmed
+  const baseUrl = CONFIG.USE_MOCK_DATA ? CONFIG.MOCK_BASE_PATH : CONFIG.BASE_URL;
+  const url = `${baseUrl}/users/me/photo`;
 
   const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  // No Content-Type header here on purpose — the browser sets the
-  // correct multipart boundary automatically for FormData bodies.
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const response = await fetch(url, {
     method: 'POST',
@@ -174,12 +170,22 @@ async function uploadPhoto(file) {
     let message = `Upload failed with status ${response.status}`;
     try {
       const body = await response.json();
-      message = body.message || message;
+      message = body.message || body.error || message;
     } catch (_) { /* response wasn't JSON */ }
     throw new Error(message);
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // Update profile and sidebar image elements directly
+  const newAvatarUrl = data.avatarUrl || data.url;
+  if (newAvatarUrl) {
+    document.getElementById('avatarPreview').src = newAvatarUrl;
+    const sidebarAvatar = document.querySelector('.dash-profile-avatar');
+    if (sidebarAvatar) sidebarAvatar.src = newAvatarUrl;
+  }
+
+  return data;
 }
 
 /* ---------- Change Password modal ---------- */
@@ -209,12 +215,10 @@ function wirePasswordModal() {
   closeBtn?.addEventListener('click', closeModal);
   cancelBtn?.addEventListener('click', closeModal);
 
-  // Clicking the dark backdrop (not the card itself) also closes it
   overlay?.addEventListener('click', (e) => {
     if (e.target === overlay) closeModal();
   });
 
-  // Esc key closes it too
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !overlay.hidden) closeModal();
   });
@@ -228,8 +232,6 @@ function wirePasswordModal() {
 
     clearInvalid('currentPassword', 'newPassword', 'confirmPassword');
 
-    // Matches the hint text: at least 8 characters, a number, and a
-    // special character.
     const strongPasswordRegex = /^(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_\-+=~`]).{8,}$/;
 
     let isValid = true;
@@ -258,13 +260,12 @@ function wirePasswordModal() {
     setStatus(statusEl, 'Updating…', '');
 
     try {
-// Inside the passwordForm submit handler, replace the success block:
-await window.api.put('/users/me/password', { currentPassword, newPassword });
-setStatus(statusEl, 'Password updated. Redirecting to login…', 'success');
-setTimeout(() => {
-  window.HavenHubSession?.logoutUser?.();
-  window.location.href = 'login.html';
-}, 1500);
+      await window.api.put('/users/me/password', { currentPassword, newPassword });
+      setStatus(statusEl, 'Password updated. Redirecting to login…', 'success');
+      setTimeout(() => {
+        window.HavenHubSession?.logoutUser?.();
+        window.location.href = 'login.html';
+      }, 1500);
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
     } finally {

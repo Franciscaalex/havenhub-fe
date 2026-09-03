@@ -411,6 +411,11 @@ body.auth-page {
   font-weight: 500;
   text-decoration: underline;
 }
+.signin-link{
+ color: var(--color-text-main);
+  font-weight: 500;
+  text-decoration: underline; 
+}
 .sign-terms{
   color: var(--color-accent);
 }

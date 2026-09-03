@@ -51,6 +51,21 @@ window.addEventListener('partialsLoaded', () => {
     }
   });
 
+/* ---------- 1b. ACTIVE NAV LINK PERSISTENCE ---------- */
+  function highlightActiveNavLink() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const navLinks = document.querySelectorAll('.dash-nav-link[data-page]');
+
+    navLinks.forEach(link => {
+      if (link.dataset.page === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  highlightActiveNavLink();
 
   /* ---------- 2. DYNAMIC REAL-TIME PROFILE REHYDRATION (API-DRIVEN) ---------- */
   async function fetchAndRehydrateProfile() {
