@@ -1,12 +1,6 @@
 /* ============================================================
    app.css — combined base stylesheet for roles.html,
    dashboard-landlord.html, and settings.html.
-
-   One shared :root variable set and one shared reset, then each
-   page's rules kept under its own clearly labeled section so
-   nothing has to be hunted for. Class names across the three
-   original files didn't collide, so nothing needed renaming —
-   verified with a diff before merging.
    ============================================================ */
 
 :root {
@@ -33,29 +27,23 @@
     sans-serif;
 }
 
-/* ============================================================
-   HIGH-FIDELITY HAVENHUB HEADER ROW LAYOUT
-   ============================================================ */
-
 .page-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: #002349; /* Strict Deep Navy Background Core */
+  background-color: #002349;
   padding: 14px 40px;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Logo Sizing Control */
 .header-logo .logo-icon {
   height: 28px;
   width: auto;
   display: block;
 }
 
-/* Central Row Link Mechanics */
 .nav-links ul {
   display: flex;
   flex-direction: row;
@@ -66,20 +54,18 @@
 }
 
 .nav-links a {
-  color: #94A3B8; /* Muted Slate resting gray color tone */
+  color: #94A3B8;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.15s ease;
 }
 
-/* Hover Accent color context tracking */
 .nav-links a:hover,
 .nav-links a.active-link {
-  color: #74FFA8; /* Clean sky blue focus highlighting from the design screen */
+  color: #74FFA8;
 }
 
-/* Utility Action Alignment Block */
 .profile-actions-row {
   display: flex;
   flex-direction: row;
@@ -105,14 +91,13 @@
   object-fit: contain;
 }
 
-/* Admin Alert Orange Dot Tracker */
 .notification-dot {
   position: absolute;
   top: 2px;
   right: 2px;
   width: 8px;
   height: 8px;
-  background-color: #F97316; /* Clean administrative warning dot */
+  background-color: #F97316;
   border-radius: 50%;
   border: 1.5px solid #002349;
 }
@@ -127,7 +112,6 @@
   opacity: 0.8;
 }
 
-/* Round Profile Upload Avatar Avatar Mask */
 .avatar-trigger-btn {
   background: transparent;
   border: none;
@@ -143,21 +127,19 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  background-color: #F1F5F9; /* Clean placeholder color backdrop rules */
+  background-color: #F1F5F9;
 }
 
-/* Mobile Layout Fallback Interceptors */
 .hamburger-btn {
-  display: none; /* Keep hidden on wide screen display panels */
+  display: none;
 }
 
 @media (max-width: 768px) {
   .page-header { padding: 12px 20px; }
-  .nav-links { display: none; } /* Hidden unless expanded via hamburger actions */
+  .nav-links { display: none; }
   .hamburger-btn { display: flex; flex-direction: column; gap: 4px; background: none; border: none; cursor: pointer; }
   .hamburger-line { width: 20px; height: 2px; background-color: white; }
 }
-
 
 .visually-hidden {
   position: absolute;
@@ -168,17 +150,11 @@
   white-space: nowrap;
 }
 
-/* ROLES SELECTION PAGE (roles.html)   */
-
-/* ============================================================
-   HavenHub - Roles Selection Layout Styles
-   ============================================================ */
-
 .role-page {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #fcfdfe; 
+  background-color: #fcfdfe;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -192,7 +168,7 @@
   justify-content: center;
   color: var(--color-primary);
 }
-/* Header Text (Ensure these elements exist in your wrapper if you want to display them) */
+
 .role-select-wrapper {
   width: 85%;
   max-width: 660px;
@@ -202,7 +178,6 @@
   align-items: center;
 }
 
-/* Back navigation button layout placement */
 .back-btn {
   position: absolute;
   top: 30px;
@@ -215,17 +190,15 @@
   height: 24px;
 }
 
-/* Core Grid Matrix Configuration */
 .role-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;                
+  gap: 20px;
   width: 85%;
-  max-width: 580px;   
+  max-width: 580px;
   margin: 0 auto 30px auto;
 }
 
-/* Button Card Base Component Container */
 .role-card {
   background: white;
   border: 1px solid #e2e8f0;
@@ -233,7 +206,7 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  padding: 0;               
+  padding: 0;
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -246,14 +219,13 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
 }
 
-/* Top gray image layout container */
 .role-image-wrapper {
-  background-color: #cbd5e1; 
-  height: 115px;            
+  background-color: #cbd5e1;
+  height: 115px;
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: flex-end;    
+  align-items: flex-end;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -265,7 +237,6 @@
   object-fit: contain;
 }
 
-/* Custom absolute checkmark alignment rules */
 .role-checkmark {
   position: absolute;
   top: 12px;
@@ -288,9 +259,8 @@
   height: 12px;
 }
 
-/* Solid Blue text details banner blocks at the bottom of the card */
 .role-card .role-details {
-  background-color: #0b6fa5; /* Dynamic platform ocean blue layout match */
+  background-color: #0b6fa5;
   color: white;
   padding: 16px;
   display: flex;
@@ -300,13 +270,11 @@
   box-sizing: border-box;
 }
 
-/* Distinct matching color variations observed on grid blocks */
 .role-card[data-role="seeker"] .role-details { background-color: #0b6fa5;}
 .role-card[data-role="landlord"] .role-details { background-color: #0b6fa5; }
 .role-card[data-role="agent"] .role-details { background-color: #0b6fa5; }
 .role-card[data-role="manager"] .role-details { background-color: #0b6fa5; }
 
-/* Structural normalization override for the seeker structure variation */
 .role-card .role-title {
   font-size: 1rem;
   font-weight: 500;
@@ -321,7 +289,6 @@
   display: block;
 }
 
-/* Selected active states matching image overlay metrics */
 .role-card[aria-pressed="true"] {
   outline: 3px solid #002349;
 }
@@ -331,14 +298,12 @@
   transform: scale(1);
 }
 
-/* Text prompt indicator text color alignment */
 .role-hint {
   font-size: 14px;
   margin: 0 0 16px 0;
   min-height: 20px;
 }
 
-/* Capsule rounded layout register CTA block configuration */
 .btn-register-role {
   background-color: #002349;
   color: white;
@@ -346,7 +311,7 @@
   padding: 14px 65px;
   font-size: 15px;
   font-weight: 600;
-  border-radius: 30px; /* Perfect pill capsule radius geometry */
+  border-radius: 30px;
   cursor: pointer;
   width: 100;
   transition: opacity 0.2s ease, background-color 0.2s ease;
@@ -360,13 +325,6 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-
-/* ============================================================
-   RESPONSIVE — TABLET (≤768px)
-   Slightly larger thumbnails and tighter gaps than desktop, since
-   there's less horizontal room to spread the two columns apart.
-   ============================================================ */
 
 @media (max-width: 768px) {
   .role-select-wrapper {
@@ -383,7 +341,7 @@
   .role-card {
     width: 130px;
   }
-  
+
   .btn-register-role{
 margin-top: -2rem;
   }
@@ -399,11 +357,6 @@ margin-top: -2rem;
 margin-top: -2rem;
   }
 }
-/* ============================================================
-   RESPONSIVE — MOBILE (≤480px)
-   Fixed pixel thumbnails stop making sense here — switch to a
-   fluid 2-column grid that fills the available width instead.
-   ============================================================ */
 
 @media (max-width: 480px) {
   body.role-page {
@@ -440,22 +393,12 @@ margin-top: -2rem;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — VERY SMALL PHONES (≤360px)
-   Single column: two-up gets cramped once the screen itself is
-   this narrow, especially with longer descriptions like
-   "Connect buyers with their perfect match".
-   ============================================================ */
-
 @media (max-width: 360px) {
   .role-grid {
     grid-template-columns: 1fr;
     row-gap: 1.5rem;
   }
 
-  /* No wrapper element exists around the title+description in the
-     HTML, so grid-template-areas (rather than flexbox) is what lets
-     the image span both text rows while title/desc stack beside it. */
   .role-card {
     display: grid;
     grid-template-columns: 90px 1fr;
@@ -471,7 +414,7 @@ margin-top: -2rem;
     grid-row: 1 / 3;
     width: 90px;
     height: 68px;
-    padding-top: 0; /* overrides the percentage-based aspect-ratio trick — fixed height instead */
+    padding-top: 0;
   }
 
   .role-title {
@@ -491,13 +434,11 @@ margin-top: -2rem;
 
 /* SIDEBAR */
 
-/* 1. Primary Container Layout */
 .dash-sidebar {
-  width: 22%;
-  height: 92%;
+  width: 290px;
+  height: 100%;
   background-color: #003354;
-  border-top-right-radius: 24px; 
-  border-bottom-right-radius: 24px;
+  border-top-right-radius: 24px;
   grid-column: 1/2;
   grid-row: 1/3;
   padding: 20px;
@@ -509,7 +450,6 @@ margin-top: -2rem;
   overflow: auto;
 }
 
-/* 2. Top Brand Header Layout Alignment */
 .dash-sidebar-header {
   display: flex;
   align-items: center;
@@ -522,7 +462,7 @@ margin-top: -2rem;
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: brightness(0) invert(1); /* Forces brand assets into pristine white */
+  filter: brightness(0) invert(1);
 }
 
 .sidebar-brand-name {
@@ -534,7 +474,16 @@ margin-top: -2rem;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
-/* 3. Navigation Links List Layout */
+#sidebar-placeholder {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 290px;
+  height: 100vh;
+  z-index: 100;
+  border-top-right-radius: 24px;
+}
+
 .dash-nav {
   display: flex;
   flex-direction: column;
@@ -547,7 +496,6 @@ margin-top: -2rem;
   gap: 12px;
 }
 
-/* 4. Link Base Style Structural Overrides */
 .dash-nav-link {
   display: flex;
   align-items: center;
@@ -555,8 +503,8 @@ margin-top: -2rem;
   background: none;
   border: none;
   padding: 12px 16px;
-  border-radius: 12px; 
-  color: #ffffff; 
+  border-radius: 12px;
+  color: #ffffff;
   font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
@@ -581,7 +529,6 @@ margin-top: -2rem;
   color: var(--color-heading);
 }
 
-/* 5. SVG Vector Icon Layout Wrappers */
 .nav-icon-wrapper {
   display: flex;
   justify-content: center;
@@ -600,7 +547,6 @@ margin-top: -2rem;
   flex-grow: 1;
 }
 
-/* 7. Unique Status Micro Badges */
 .dash-badge {
   font-size: 9px;
   font-weight: 500;
@@ -609,30 +555,26 @@ margin-top: -2rem;
   white-space: nowrap;
 }
 
-/* Coming Soon: Variant 1 (Muted Outlined/Semi-Transparent Capsule Layout Match) */
 .badge-dark {
   background-color: rgba(0, 0, 0, 0.25);
   color: #e2e8f0;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Coming Soon: Variant 2 (Neon/Vibrant Sky Blue Solid Backdrop Accent Layout Match) */
 .badge-blue {
-  background-color: #24a0ed; /* Vivid cyan sky blue background color parameter */
+  background-color: #24a0ed;
   color: #ffffff;
 }
 
-/* 8. Pin Sidebar Footer Elements Flush with Lower Margins */
 .dash-sidebar-footer {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle divider separator line rules */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 20px;
 }
 
-/* User Context Layout Components */
 .dash-profile {
   display: flex;
   align-items: center;
@@ -643,7 +585,7 @@ margin-top: -2rem;
 .dash-profile-avatar {
   width: 38px;
   height: 38px;
-  border-radius: 50%; /* Perfect circular crop */
+  border-radius: 50%;
   object-fit: cover;
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -661,19 +603,18 @@ margin-top: -2rem;
 
 .dash-profile-role {
   font-size: 12px;
-  color: #94a3b8; /* Muted descriptor copy text tone rule configuration */
+  color: #94a3b8;
 }
 
-/* 9. Rounded Outlined Logout Interaction Target Element */
 .dash-logout-btn {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.4); /* Light translucent white thin framework line */
+  border: 1px solid rgba(255, 255, 255, 0.4);
   color: #ffffff;
   padding: 12px 0;
   width: 100%;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 25px; /* Pill shaped capsule buttons layout wrapper */
+  border-radius: 25px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
@@ -684,11 +625,6 @@ margin-top: -2rem;
   border-color: #ffffff;
 }
 
-/* ============================================================
-   HavenHub - Responsive Sidebar Layout Media Breakpoints
-   ============================================================ */
-
-/* Mobile Trigger Button (Hidden on Desktop, Visible on small viewports) */
 .dash-sidebar-toggle {
   display: none;
   background: #ffffff;
@@ -699,12 +635,11 @@ margin-top: -2rem;
   color: #003354;
   position: fixed;
   top: 16px;
-  left: 16px;
+  right: 4rem;
   z-index: 999;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Dim backdrop wrapper layer */
 .dash-sidebar-overlay {
   display: none;
   position: fixed;
@@ -718,13 +653,18 @@ margin-top: -2rem;
   transition: opacity 0.25s ease;
 }
 
+.dash-sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
 @media (max-width: 1023px) {
   .dash-sidebar-toggle {
-    display: flex; 
+    display: flex;
   }
 
   .dash-sidebar {
-    transform: translateX(-100%); 
+    transform: translateX(-100%);
     z-index: 998;
     box-shadow: none;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -738,28 +678,18 @@ margin-top: -2rem;
     box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
   }
 
-  .dash-sidebar.sidebar-open + .dash-sidebar-overlay {
-    display: block;
-    opacity: 1;
+  body {
+    margin-left: 0;
   }
+
   main, .dashboard-content-wrapper {
-    margin-left: 0 ;
-    padding-top: 80px ; 
+    margin-left: 0;
+    padding-top: 80px;
   }
 }
 
- 
-/* ============================================================
-   HavenHub - Unified Footer Presentation Framework Alignments
-   ============================================================ */
-
-/* Footer Container Box Grid */
 .footer-container {
-  /* grid-column: 2/3; */
-  /* grid-row: 2/3; */
-  /* height: 0.5rem; */
   padding: 1rem 1.5rem ;
-  /* border-top: 1px solid #eaeaea; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -769,7 +699,6 @@ margin-top: -2rem;
   flex-shrink: 0;
 }
 
-/* Metadata Text and Custom Branded Logo Vector Alignments */
 .footer-content {
   display: flex;
   align-items: center;
@@ -821,10 +750,9 @@ margin-top: -2rem;
   margin: 0;
 }
 
-/* Hyperlinks Segment Configurations */
 .footer-links {
   font-size: 13px;
-  color: #cbd5e1; /* Color parameters for inline separators */
+  color: #cbd5e1;
 }
 
 .footer-links a {
@@ -839,68 +767,116 @@ margin-top: -2rem;
   color: #002349;
 }
 
-/* ---------- Multi-device Mobile Viewport Optimization Breakpoints ---------- */
 @media (max-width: 768px) {
   .footer-container {
-    flex-direction: column-reverse; 
+    flex-direction: column-reverse;
     gap: 16px;
     text-align: center;
     padding: 20px 0;
   }
-  
+
   .footer-content {
     flex-direction: column;
     gap: 6px;
   }
-  
+
   .footer-logo {
     margin: 4px 0;
   }
 }
 
-/* ============================================================
-   HAVENHUB LANDLORD DASHBOARD STYLES
-   ============================================================ */
-
-   .dash-body {
+ /* Landlord Dashboard */
+.dash-body {
   margin: 0;
   padding: 0;
   height: 100vh;
   width: 100vw;
-  /* overflow: hidden; */
-  /* margin-bottom: -10rem; */
-  background: #f8f9fa;
+  background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.dash-shell {
+/* .dash-shell {
   display: grid;
   grid-template-rows: 1fr auto;
   height: 91.5vh;
   width: 98vw;
+  align-items: stretch;
 }
-   .dash-main {
-    grid-column: 2/3;
-    grid-row: 1/2;
-  /* padding: 40px; */
+.dash-main {
+  grid-column: 2/3;
+  grid-row: 1/2;
   box-sizing: border-box;
-  /* background-color: #f8fafc; */
-  /* display: flex; */
-  /* flex: 1; */
   overflow-y: auto;
+} */
+
+.dash-main {
+  grid-column: 2;
+  box-sizing: border-box;
+  padding: 2rem;
+  overflow-y: auto;
+  height: 100vh;
+  background-color: #ffffff;
 }
 
-/* Topbar Components Flex System Alignments */
+/* Clear floating margins from topbar containers */
 .dash-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.2rem;
-  border: 1px solid #f1f5f9;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
   width: 100%;
-  background: #ffffff;
+  margin-bottom: 2rem;
+}
+.dash-shell {
+  display: grid;
+  /* Left column matches your sidebar width, right column takes the remaining screen */
+  grid-template-columns: 260px 1fr; 
+  min-height: 100vh;
+  width: 100vw;
+  align-items: stretch;
 }
 
+/* State-Driven Dashboard Grid Layouts (States 2, 3 & 4) */
+.dash-panels-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+/* State 4 — Full layout with graph visible */
+.dash-panels-row.full-dashboard-grid .dash-chart-panel {
+  display: block;
+  flex: 2;
+  min-width: 320px;
+}
+.dash-panels-row.full-dashboard-grid .dash-activity-panel {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* States 2 & 3 — Narrow layout configuration when financial activity is missing */
+.dash-panels-row.narrow-activity-only-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px; /* Properties take up the remaining left space */
+  gap: 24px;
+}
+.dash-panels-row.narrow-activity-only-grid .dash-chart-panel {
+  display: none !important;
+}
+
+/* Empty Panel Centering Context */
+.dash-empty-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  text-align: center;
+  width: 100%;
+}
 .dash-menu-btn {
   display: none;
   flex-direction: column;
@@ -968,204 +944,6 @@ margin-top: -2rem;
   object-fit: cover;
 }
 
-/* Grid Framework Card Layouts */
-.dash-stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
-  width: 100%;
-}
-
-.dash-stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  border: 1px solid #edf2f7;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-sizing: border-box;
-}
-
-.dash-stat-label {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.dash-stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-/* Panels and Internal Containers Alignment */
-.dash-panels-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-  margin-bottom: 35px;
-  width: 100%;
-}
-
-.dash-chart-panel, .dash-activity-panel, .dash-listings-panel {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01);
-  border: 1px solid #edf2f7;
-  box-sizing: border-box;
-}
-
-.dash-chart {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  height: 200px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f1f5f9;
-}
-
-.chart-bar-group {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 100%;
-  position: relative;
-}
-
-.chart-bar {
-  width: 14px;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-}
-.bar-rent { background-color: #0b6fa5; }
-.bar-expense { background-color: #002349; }
-
-.dash-chart-legend {
-  display: flex;
-  gap: 16px;
-  margin-top: 12px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.dash-legend-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin-right: 4px;
-}
-.dash-swatch-rents { background-color: #0b6fa5; }
-.dash-swatch-expenses { background-color: #002349; }
-
-.dash-activity-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.activity-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
-.activity-marker { font-weight: 600; }
-.activity-time { color: #94a3b8; font-size: 11px; }
-
-/* Listings Grid */
-.dash-listings-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.listing-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 14px;
-  background: white;
-  display: flex;
-  gap: 16px;
-}
-
-.listing-thumb {
-  width: 110px;
-  height: 85px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.listing-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-}
-
-.listing-details h4 { margin: 0; font-size: 15px; color: #002349; }
-.listing-meta { font-size: 12px; color: #64748b; }
-
-.listing-badge {
-  align-self: flex-start;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 14px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-}
-.badge-pending { background-color: #df9b28; color: white; }
-.badge-available { background-color: #d1fae5; color: #065f46; }
-.badge-rented { background-color: #ffe4e6; color: #9f1239; }
-
-.dash-btn-primary {
-  background-color: #003354;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 20px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.dash-btn-full { width: 100%; text-align: center; margin-top: auto; }
-
-.dash-empty-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem ;
-  margin-right: 2rem;
-  text-align: center;
-}
-
-.dash-empty-icon { color: #003354; width: 44px; height: 44px; margin-bottom: 12px; }
-
-/* Responsive Adjustments */
-@media (max-width: 1023px) {
-  .dash-menu-btn { display: flex; }
-  .dash-main { padding: 20px; }
-  .dash-stats-row { grid-template-columns: repeat(2, 1fr); }
-  .dash-panels-row { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px) {
-  .dash-topbar { flex-direction: column; align-items: flex-start; gap: 14px; }
-  .dash-search { width: 100%; }
-  .dash-stats-row { grid-template-columns: 1fr; }
-  .dash-listings-row { grid-template-columns: 1fr; }
-}
-/* ---------- METRIC CARDS ROW ---------- */
 .dash-stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1185,6 +963,15 @@ margin-top: -2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
+/* State-Driven Stat Cards Styling */
+.financial-idle-health {
+  border-color: #E2E8F0;
+}
+.financial-active-health {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
 .stat-card-title {
   font-size: 14px;
   color: #64748B;
@@ -1202,15 +989,16 @@ margin-top: -2rem;
 .stat-card-subtitle {
   font-size: 12px;
   margin: 0;
+  color: #64748B;
 }
 
-/* Helper Text Alert Utilities */
+/* Contextual Value Colors */
+.text-green-healthy { color: #16A34A !important; }
+.text-red-overdue { color: #DC2626 !important; }
 .text-muted { color: #94A3B8; }
 .text-danger { color: #EF4444; font-weight: 500; }
 .text-warning { color: #F59E0B; font-weight: 500; }
 
-
-/* ---------- LIVE PANELS SECTION (CHART & TIMELINE) ---------- */
 .dash-panels-row {
   display: flex;
   flex-wrap: wrap;
@@ -1219,10 +1007,33 @@ margin-top: -2rem;
   width: 100%;
 }
 
-/* Chart Architecture Container */
-.dash-chart-panel {
+/* ============================================================
+   REAL-TIME CONDITIONAL STATE MODIFIERS (STATES 2/3 vs STATE 4)
+   ============================================================ */
+/* State 4 — Full Financial Activities layout config */
+.dash-panels-row.full-dashboard-grid .dash-chart-panel {
+  display: block;
   flex: 2;
   min-width: 320px;
+}
+.dash-panels-row.full-dashboard-grid .dash-activity-panel {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* States 2 & 3 — No financial activity, narrow right activity container */
+.dash-panels-row.narrow-activity-only-grid {
+  justify-content: flex-end;
+}
+.dash-panels-row.narrow-activity-only-grid .dash-chart-panel {
+  display: none !important;
+}
+.dash-panels-row.narrow-activity-only-grid .dash-activity-panel {
+  flex: 0 0 340px; /* Forces exact architectural constraint on the right side */
+  width: 340px;
+}
+
+.dash-chart-panel {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 16px;
@@ -1279,9 +1090,9 @@ margin-top: -2rem;
 .chart-bar-fill {
   width: 100%;
   max-width: 20px;
-  background-color: #0E7490; /* Brand Accent Teal */
+  background-color: #0E7490;
   border-radius: 4px 4px 0 0;
-  min-height: 2px; /* Small line indicator even if value is 0% */
+  min-height: 2px;
   transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1291,10 +1102,7 @@ margin-top: -2rem;
   margin-top: 8px;
 }
 
-/* Recent Activity Box Container */
 .dash-activity-panel {
-  flex: 1;
-  min-width: 280px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 16px;
@@ -1358,8 +1166,6 @@ margin-top: -2rem;
   margin-top: 20px;
 }
 
-
-/* ---------- PROPERTY GRID CARDS & BADGES ---------- */
 .dash-listings-panel h3 {
   font-size: 18px;
   font-weight: 600;
@@ -1369,7 +1175,7 @@ margin-top: -2rem;
 
 .dash-listings-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* Force strict 2-column layout */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
 }
@@ -1413,7 +1219,6 @@ margin-top: -2rem;
   margin: 0;
 }
 
-/* REAL-TIME BADGE UTILITIES */
 .badge-figma {
   padding: 6px 14px;
   font-size: 12px;
@@ -1438,8 +1243,6 @@ margin-top: -2rem;
   color: #DC2626;
 }
 
-
-/* ---------- FLUID MOTION ANIMATION SYSTEM ---------- */
 .carousel-active-fluid {
   display: flex !important;
   grid-template-columns: none !important;
@@ -1449,25 +1252,49 @@ margin-top: -2rem;
 }
 
 .carousel-active-fluid .property-figma-card {
-  flex: 0 0 calc(50% - 10px); /* Keeps card widths responsive to 2 per viewing area viewports */
+  flex: 0 0 calc(50% - 10px);
   min-width: 280px;
 }
 
+.badge-rented { background-color: #ffe4e6; color: #9f1239; }
 
-/* ---------- RESPONSIVE LAYOUT MATRIX INTERCEPTORS ---------- */
+.dash-btn-primary {
+  background-color: #003354;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dash-btn-full { width: 100%; text-align: center; margin-top: auto; }
+
+.dash-empty-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem ;
+  margin-right: 2rem;
+  text-align: center;
+}
+
+.dash-empty-icon { color: #003354; width: 44px; height: 44px; margin-bottom: 12px; }
+
 @media (max-width: 900px) {
-  .dash-panels-row {
-    flex-direction: column;
-  }
-  .dash-chart-panel, .dash-activity-panel {
-    flex: none;
-    width: 100%;
+  .dash-panels-row.full-dashboard-grid .dash-chart-panel,
+  .dash-panels-row.full-dashboard-grid .dash-activity-panel,
+  .dash-panels-row.narrow-activity-only-grid .dash-activity-panel {
+    flex: none !important;
+    width: 100% !important;
   }
 }
 
 @media (max-width: 640px) {
   .dash-listings-row {
-    grid-template-columns: 1fr; /* Drop cleanly down to single stacks on tiny mobile screens */
+    grid-template-columns: 1fr;
   }
   .carousel-active-fluid .property-figma-card {
     flex: 0 0 100%;
@@ -1488,28 +1315,30 @@ margin-top: -2rem;
   width: 100%;
   max-width: 100%;
   height: 100vh;
+  height: 100dvh;
   box-sizing: border-box;
+  display: flex;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
+.settings-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
 
 .settings-topbar {
   background: var(--color-text-main);
   color: var(--color-primary);
   padding: 0.9rem 0.9rem;
   display: flex;
-  align-items: center; /* FIX: "left" is not a valid align-items value */
+  align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  max-width: 750px;      /* NEW — match .settings-layout */
-  margin: 0 auto; 
-  /* FIX: removed "margin-left: -3rem" — negative margin hack was
-     causing horizontal overflow/misalignment. If you were using it
-     to counteract a parent's padding, fix that at the parent level
-     instead, e.g. give the parent "padding-left: 0" or adjust
-     .settings-layout's max-width/margin. */
+  max-width: 750px;
+  margin: 0 auto;
 }
 
 .settings-topbar h1 {
@@ -1531,10 +1360,6 @@ margin-top: -2rem;
   height: 24px;
 }
 
-/* ============================================================
-   LAYOUT — two columns on desktop
-   ============================================================ */
-
 .settings-layout {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -1550,11 +1375,6 @@ margin-top: -2rem;
 
 .settings-col-password {
   border-left: 1px solid var(--color-border);
-  /* FIX: removed "margin-left: 5rem" — this was stacking on top of
-     the grid's own column sizing and pushing the column far outside
-     where the 1.4fr / 1fr split intends it to sit. If you want extra
-     breathing room next to the divider, use padding-left on this
-     rule instead, e.g. padding-left: 1.5rem; */
 }
 
 .settings-section-title {
@@ -1575,10 +1395,6 @@ margin-top: -2rem;
   margin-bottom: 0.5rem;
 }
 
-/* ============================================================
-   PROFILE PHOTO
-   ============================================================ */
-
 .photo-row {
   display: flex;
   align-items: center;
@@ -1591,7 +1407,7 @@ margin-top: -2rem;
   height: 84px;
   border-radius: 50%;
   overflow: hidden;
-  border: 10px solid var(--color-primary); /* FIX: was hardcoded #003354 */
+  border: 10px solid var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -1613,7 +1429,7 @@ margin-top: -2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--color-primary); /* FIX: was hardcoded #003354 */
+  background: var(--color-primary);
   color: var(--color-text-main);
   border: none;
   border-radius: 8px;
@@ -1624,7 +1440,7 @@ margin-top: -2rem;
 }
 
 .btn-change-photo:hover {
-  background: var(--color-primary-hover, #232e4d); /* FIX: was hardcoded; falls back to old value if the variable doesn't exist yet */
+  background: var(--color-primary-hover, #232e4d);
 }
 
 .btn-change-photo svg {
@@ -1636,10 +1452,6 @@ margin-top: -2rem;
   font-size: 0.72rem;
   color: var(--color-text-muted);
 }
-
-/* ============================================================
-   FORM FIELDS (shared by profile form + password modal)
-   ============================================================ */
 
 .field-row {
   display: grid;
@@ -1705,20 +1517,16 @@ margin-top: -2rem;
   color: var(--color-error);
 }
 .field-status.is-success {
-  color: var(--color-success, #17ea65); /* FIX: was hardcoded; falls back if --color-success isn't defined yet */
+  color: var(--color-success, #17ea65);
 }
-
-/* ============================================================
-   BUTTONS
-   ============================================================ */
 
 .settings-actions-row {
   display: flex;
-  justify-content: flex-start; /* "left" also isn't valid for justify-content; using the correct keyword */
+  justify-content: flex-start;
 }
 
 .btn-save-changes {
-  background: var(--color-primary); /* FIX: was hardcoded #003354 */
+  background: var(--color-primary);
   color: var(--color-text-main);
   border: none;
   border-radius: 8px;
@@ -1740,7 +1548,7 @@ margin-top: -2rem;
 }
 
 .btn-change-password {
-  background: var(--color-primary); /* FIX: was hardcoded #003354 */
+  background: var(--color-primary);
   color: var(--color-text-main);
   border: none;
   border-radius: 8px;
@@ -1755,10 +1563,6 @@ margin-top: -2rem;
 .btn-change-password:hover {
   background: var(--color-primary-hover, #232e4d);
 }
-
-/* ============================================================
-   PASSWORD MODAL
-   ============================================================ */
 
 .modal-overlay {
   position: fixed;
@@ -1830,7 +1634,7 @@ margin-top: -2rem;
 
 .btn-update-password {
   flex: 1;
-  background: var(--color-primary); /* FIX: was hardcoded #003354 */
+  background: var(--color-primary);
   color: var(--color-text-main);
   border: none;
   border-radius: 8px;
@@ -1844,21 +1648,11 @@ margin-top: -2rem;
   background: var(--color-primary-hover, #232e4d);
 }
 
-/* ============================================================
-   RESPONSIVE — TABLET (≤1024px)
-   ============================================================ */
-
 @media (max-width: 1024px) {
   .settings-col {
     padding: 1.75rem 2rem;
   }
 }
-
-/* ============================================================
-   RESPONSIVE — MOBILE (≤768px)
-   Two columns stack into one; the password section moves below
-   personal info and loses its divider line.
-   ============================================================ */
 
 @media (max-width: 768px) {
   .settings-layout {
@@ -1904,10 +1698,6 @@ margin-top: -2rem;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — SMALL PHONES (≤480px)
-   ============================================================ */
-
 @media (max-width: 480px) {
   .photo-row {
     flex-direction: column;
@@ -1922,6 +1712,7 @@ margin-top: -2rem;
     flex-direction: column-reverse;
   }
 }
+
 /* ################################################################
    ############   ADD PROPERTY PAGE (add-property.html)   #########
    ################################################################ */
@@ -1930,18 +1721,19 @@ margin-top: -2rem;
   background: var(--color-bg-page);
   color: var(--color-heading);
   height: 100vh;
-  width: 100%;
+  height: 100dvh;
+  width: 100%; 
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
-
-/* ============================================================
-   TOAST NOTIFICATION
-   ============================================================ */
 
 .toast {
   position: fixed;
   top: 1.25rem;
   right: 1.25rem;
-  width: 100vw;
+  width: calc(100% - 2.5rem);
+  max-width: 380px;
   background: #ffffff;
   border: 1px solid var(--color-border);
   border-left: 4px solid var(--color-success);
@@ -2000,18 +1792,16 @@ margin-top: -2rem;
   display: block;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
-
 .addprop-topbar {
   background: #003354;
   color: var(--color-text-main);
   padding: 1rem 1.75rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   gap: 1rem;
+
+
 }
 
 .addprop-back-btn {
@@ -2056,12 +1846,8 @@ margin-top: -2rem;
   background: #244f9e;
 }
 
-/* ============================================================
-   PAGE / CONTAINER
-   ============================================================ */
-
 .addprop-page {
-  width: 75%;
+  width: 70%;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
 }
@@ -2078,10 +1864,6 @@ margin-top: -2rem;
   margin-bottom: 1.5rem;
 }
 
-/* ============================================================
-   LIVE MAP
-   ============================================================ */
-
 .map-picker-wrapper {
   position: relative;
   margin-bottom: 1.75rem;
@@ -2095,16 +1877,13 @@ margin-top: -2rem;
   border: 1px solid var(--color-border);
 }
 
-/* Fixed center pin — the map moves underneath it, not the other
-   way around. transform positions the pin's TIP at dead-center
-   rather than the icon's top-left corner. */
 .map-center-pin {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -100%);
   pointer-events: none;
-  z-index: 500; /* above Leaflet's own panes */
+  z-index: 500;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
@@ -2120,10 +1899,6 @@ margin-top: -2rem;
   border-radius: 999px;
   pointer-events: none;
 }
-
-/* ============================================================
-   FORM GRID
-   ============================================================ */
 
 .addprop-grid {
   display: grid;
@@ -2159,10 +1934,6 @@ margin-top: -2rem;
   font-style: normal;
 }
 
-/* ============================================================
-   AMENITIES
-   ============================================================ */
-
 .amenity-row {
   display: flex;
   flex-wrap: wrap;
@@ -2191,10 +1962,6 @@ margin-top: -2rem;
   border-color: var(--color-primary);
   color: #ffffff;
 }
-
-/* ============================================================
-   MEDIA UPLOAD
-   ============================================================ */
 
 .media-header {
   display: flex;
@@ -2275,10 +2042,6 @@ margin-top: -2rem;
   height: 10px;
 }
 
-/* ============================================================
-   DESCRIPTION
-   ============================================================ */
-
 .description-header {
   display: flex;
   align-items: center;
@@ -2290,10 +2053,12 @@ margin-top: -2rem;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  font-size: 0.78rem;
+  padding: 0.5rem 1.3rem;
+  background: #ffffff;
+  border: 1px solid transparent;
+border-radius: 2rem;
+  color: #006494;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -2308,10 +2073,6 @@ textarea.field-control {
   font-family: inherit;
 }
 
-/* ============================================================
-   ACTION BUTTONS
-   ============================================================ */
-
 .addprop-actions-row {
   display: flex;
   justify-content: flex-end;
@@ -2321,32 +2082,32 @@ textarea.field-control {
 
 .btn-save-draft {
   background: #ffffff;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 8px;
+  color: var(--color-heading);
+  border: 1px solid #36BBFF;
+  border-radius: 2rem;
   padding: 0.75rem 1.5rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-save-draft:hover {
-  background: var(--color-bg-page);
+  background: #36BBFF;
 }
 
 .btn-submit-review {
-  background: var(--color-accent);
+  background: #003453;
   color: #ffffff;
-  border: none;
-  border-radius: 8px;
+  border: 1px #ffffff;
+  border-radius: 2rem;
   padding: 0.75rem 1.5rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-submit-review:hover {
-  background: #244f9e;
+  background: #006494;
 }
 
 .btn-save-draft:disabled,
@@ -2354,10 +2115,6 @@ textarea.field-control {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
-/* ============================================================
-   RESPONSIVE — TABLET (≤1024px)
-   ============================================================ */
 
 @media (max-width: 1024px) {
   .addprop-grid,
@@ -2369,10 +2126,6 @@ textarea.field-control {
     grid-template-columns: repeat(5, 1fr);
   }
 }
-
-/* ============================================================
-   RESPONSIVE — MOBILE (≤768px)
-   ============================================================ */
 
 @media (max-width: 768px) {
   .addprop-topbar {
@@ -2424,13 +2177,10 @@ textarea.field-control {
   .toast {
     left: 1rem;
     right: 1rem;
+    width: auto; 
     max-width: none;
   }
 }
-
-/* ============================================================
-   RESPONSIVE — SMALL PHONES (≤480px)
-   ============================================================ */
 
 @media (max-width: 480px) {
   .addprop-grid,

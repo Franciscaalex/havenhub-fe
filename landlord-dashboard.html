@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HavenHub - Landlord Dashboard</title>
     <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg" />
+    <link rel="preload" href="sidebar.html" as="fetch" crossorigin>
     <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="global.css">
   </head>
   <body class="dash-body">
     <!-- Mobile-only overlay behind the sliding sidebar -->
@@ -56,7 +58,7 @@
             </div>
 
             <img
-              class="dash-avatar"
+              class="dash-avatar user-avatar-sync"
               src=""
               alt="Your profile"
             />
@@ -137,7 +139,6 @@
         </div>
       </div>
     </div>
-<div id="footer-placeholder"></div>
 
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>

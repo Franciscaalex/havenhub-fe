@@ -3,16 +3,15 @@
    Handles responsive drawer triggers and authenticates profile parameters
    ============================================================ */
 
-// FIXED: Wrapped the initialization sequence safely inside the partialsLoaded event listener
 window.addEventListener('partialsLoaded', () => {
   const sidebar = document.getElementById('dashSidebar');
   const toggleBtn = document.getElementById('sidebarMobileToggle');
   const overlay = document.getElementById('sidebarOverlay');
   const logoutBtn = document.getElementById('sidebarLogoutBtn');
-  
+
   const sidebarUserName = document.getElementById('sidebarUserName');
   const sidebarUserRole = document.querySelector('.dash-profile-role');
-  const sidebarAvatar = document.querySelector('.dash-profile-avatar'); 
+  const sidebarAvatar = document.querySelector('.dash-profile-avatar');
 
   console.log("Sidebar partial elements verified. Initializing active event hooks...");
 
@@ -33,25 +32,22 @@ window.addEventListener('partialsLoaded', () => {
     }
   }
 
-  // Open sidebar on hamburger click
   toggleBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = sidebar?.classList.contains('sidebar-open');
-    if (isOpen) closeMobileSidebar(); 
+    if (isOpen) closeMobileSidebar();
     else openMobileSidebar();
   });
 
-  // Close when tapping outside onto the dimmed overlay screen
   overlay?.addEventListener('click', closeMobileSidebar);
 
-  // Close automatically if window gets resized back to large layout viewports
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 1024) {
       closeMobileSidebar();
     }
   });
 
-/* ---------- 1b. ACTIVE NAV LINK PERSISTENCE ---------- */
+  /* ---------- 1b. ACTIVE NAV LINK PERSISTENCE ---------- */
   function highlightActiveNavLink() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('.dash-nav-link[data-page]');
@@ -78,32 +74,30 @@ window.addEventListener('partialsLoaded', () => {
       applyLocalCacheProfileData();
 
       // Step B: Query your actual NestJS backend database server for the absolute latest profile state
-      // Traverses common user routes (/users/me or /users/profile) safely
-      let serverUserObject;
-      try {
-        const response = await window.api.get('/users/profile');
-        serverUserObject = response?.data || response;
-      } catch (apiErr) {
-        console.warn("Retrying profile lookup on alternative target endpoint path...");
-        const responseFallback = await window.api.get('/users/me');
-        serverUserObject = responseFallback?.data || responseFallback;
-      }
+      // FIX: was hitting /users/profile first, which doesn't exist on this
+      // backend (always 404s) and only worked via the /users/me fallback.
+      // Calling /users/me directly avoids the guaranteed failed request.
+      const response = await window.api.get('/users/me');
+      const serverUserObject = response?.data || response;
 
       if (!serverUserObject) return;
 
       console.log("Sidebar real-time profile data synchronized:", serverUserObject);
 
-      // Step C: Extract property attributes cleanly from the database record payload
       const firstName = serverUserObject.firstName || '';
       const lastName = serverUserObject.lastName || '';
       const serverName = firstName && lastName ? `${firstName} ${lastName}` : (serverUserObject.name || serverUserObject.username);
       const serverRole = serverUserObject.role || '';
-      const serverAvatarUrl = serverUserObject.avatar || serverUserObject.profilePicture || serverUserObject.imageUrl || '';
 
-      // Step D: Inject live database string values into the sidebar UI text tags dynamically
+      // FIX: "avatarUrl" was missing from this fallback chain. That's the
+      // field name actually used by /users/me, the photo-upload response,
+      // and settings.js — without it, this always fell through to the
+      // cached/default image even when the server had a real photo.
+      const serverAvatarUrl = serverUserObject.avatarUrl || serverUserObject.avatar || serverUserObject.profilePicture || serverUserObject.imageUrl || '';
+
       if (sidebarUserName && serverName) {
         sidebarUserName.textContent = serverName;
-        localStorage.setItem('username', serverName); // Keep cache warm for other view layers
+        localStorage.setItem('username', serverName);
       }
 
       if (sidebarUserRole && serverRole) {
@@ -118,13 +112,11 @@ window.addEventListener('partialsLoaded', () => {
 
     } catch (err) {
       console.warn("Live API profile load bypassed, relying safely on local memory trace buffers:", err.message);
-      // Fallback permanently to local cache parameters if connection drops or endpoint requires custom params
       applyLocalCacheProfileData();
     }
   }
 
   function applyLocalCacheProfileData() {
-    // Rehydrate Profile Username Label from history traces
     if (sidebarUserName) {
       const cachedName = localStorage.getItem('username');
       if (cachedName) {
@@ -134,17 +126,15 @@ window.addEventListener('partialsLoaded', () => {
       }
     }
 
-    // Rehydrate Profile Settings Avatar Image from history traces
     if (sidebarAvatar) {
       const customAvatarUrl = localStorage.getItem('userAvatarUrl') || localStorage.getItem('profilePicture');
       if (customAvatarUrl && customAvatarUrl.trim() !== "") {
         sidebarAvatar.src = customAvatarUrl;
       } else {
-        sidebarAvatar.src = "images/Avatar 4.svg"; 
+        sidebarAvatar.src = "images/Avatar 4.svg";
       }
     }
 
-    // Rehydrate Formatted Role Badge Type Text from history traces
     if (sidebarUserRole) {
       const cachedRole = localStorage.getItem('selectedRole');
       if (cachedRole) {
@@ -155,27 +145,22 @@ window.addEventListener('partialsLoaded', () => {
 
   function formatAndDisplayUserRoleLabel(rawRoleString) {
     if (!sidebarUserRole) return;
-    // Formats uppercase backend constants cleanly into readable names: 
-    // "PROPERTY_SEEKER" -> "Property Seeker", "LANDLORD" -> "Landlord"
     const formattedRole = rawRoleString
       .toLowerCase()
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-    
+
     sidebarUserRole.textContent = formattedRole;
   }
 
-  // Execute the profile synchronization loop immediately upon layout mount completion
   fetchAndRehydrateProfile();
-
 
   /* ---------- 3. SECURE LOGOUT MANAGEMENT ---------- */
   logoutBtn?.addEventListener('click', (e) => {
     e.preventDefault();
     console.log("Terminating dashboard session parameters...");
-    
-    // Clear auth credentials via global hook framework
+
     if (window.HavenHubSession && typeof window.HavenHubSession.logoutUser === 'function') {
       window.HavenHubSession.logoutUser();
     } else {
@@ -188,8 +173,7 @@ window.addEventListener('partialsLoaded', () => {
         window.api.clearSession();
       }
     }
-    
-    // Smooth replace navigation redirect to clean stack history tracking panels
+
     window.location.replace('login.html');
   });
 });

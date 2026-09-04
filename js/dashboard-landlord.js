@@ -1,10 +1,9 @@
 /* ============================================================
    dashboard-landlord.js
-   STRICT REAL-TIME SEPARATION MODE — NO BLINKING REFRESHE LOOPS
+   STRICT REAL-TIME SEPARATION MODE — NO BLINKING REFRESH LOOPS
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Get raw layout elements directly from your HTML markup tags
   const loadingState = document.getElementById('dashLoading');
   const emptyState = document.getElementById('dashEmptyState');
   const populatedState = document.getElementById('dashPopulatedState');
@@ -16,16 +15,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const panelsRow = document.getElementById('panelsRow');
   const listingsRow = document.getElementById('listingsRow');
 
-  // Hard enforce absolute layout safety: instantly hide the populated dashboard containers
+  // Strict initial display synchronization to eliminate visual popping
   if (populatedState) populatedState.style.setProperty('display', 'none', 'important');
   if (emptyState) emptyState.style.setProperty('display', 'none', 'important');
   if (loadingState) loadingState.style.setProperty('display', 'block', 'important');
 
-  if (welcomeTitle) {
-    welcomeTitle.textContent = "Welcome back!";
-  }
-
-  // Bind Continue/Upload button event listener to your team's file target
   if (addPropertyBtnEmpty) {
     addPropertyBtnEmpty.addEventListener('click', () => {
       window.location.href = 'add-property.html';
@@ -35,58 +29,71 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     if (!window.api) throw new Error("api.js frame missing.");
 
-    // Query your backend for uploaded property data array metrics
     const listingsData = await window.api.get('/properties?limit=20');
     const properties = listingsData?.items || listingsData || [];
 
-    // Query real-time financial stats balance records 
     let totalRevenue = '$0';
     let occupancyRate = '-';
     let pendingMaintenance = '0';
     let overdueRent = '$0';
+    let statsResponse = null;
+    let hasFinancialActivity = false;
 
     try {
-      const statsResponse = await window.api.get('/properties/my-listings/stats');
+      statsResponse = await window.api.get('/properties/my-listings/stats');
       if (statsResponse) {
         if (statsResponse.totalRevenue !== undefined) totalRevenue = `$${Number(statsResponse.totalRevenue).toLocaleString()}`;
         if (statsResponse.occupancyRate !== undefined) occupancyRate = `${statsResponse.occupancyRate}%`;
         if (statsResponse.pendingMaintenance !== undefined) pendingMaintenance = statsResponse.pendingMaintenance;
         if (statsResponse.overdueRent !== undefined) overdueRent = `$${Number(statsResponse.overdueRent).toLocaleString()}`;
+        
+        if (Number(statsResponse.totalRevenue) > 0 || Number(statsResponse.overdueRent) > 0) {
+          hasFinancialActivity = true;
+        }
       }
     } catch (e) {
-      console.warn("Stats server endpoints are resting. Defaulting to strict 0 balances.");
+      console.warn("Stats servers offline. Falling back to default baseline values.");
     }
 
-    // Build exactly 4 matching empty stat cards
+    const healthClass = hasFinancialActivity ? 'financial-active-health' : 'financial-idle-health';
     const cleanStatCardsHTML = `
-      <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">${totalRevenue}</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Occupancy Rate</p><h3 class="stat-card-value">${occupancyRate}</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Pending Maintenance</p><h3 class="stat-card-value">${pendingMaintenance}</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">${overdueRent}</h3></div>
+      <div class="dash-stat-card ${healthClass}">
+        <p class="stat-card-title">Total Monthly Revenue</p>
+        <h3 class="stat-card-value text-green-healthy">${totalRevenue}</h3>
+        ${hasFinancialActivity ? '<span class="stat-card-subtitle">Current Tracked Earnings</span>' : ''}
+      </div>
+      <div class="dash-stat-card ${healthClass}">
+        <p class="stat-card-title">Occupancy Rate</p>
+        <h3 class="stat-card-value">${occupancyRate}</h3>
+        ${hasFinancialActivity ? '<span class="stat-card-subtitle">Active Leases</span>' : ''}
+      </div>
+      <div class="dash-stat-card ${healthClass}">
+        <p class="stat-card-title">Pending Maintenance</p>
+        <h3 class="stat-card-value">${pendingMaintenance}</h3>
+        ${hasFinancialActivity ? '<span class="stat-card-subtitle">Open Tickets</span>' : ''}
+      </div>
+      <div class="dash-stat-card ${healthClass}">
+        <p class="stat-card-title">Overdue Rent</p>
+        <h3 class="stat-card-value text-red-overdue">${overdueRent}</h3>
+        ${hasFinancialActivity ? '<span class="stat-card-subtitle">Action Required</span>' : ''}
+      </div>
     `;
 
-    /* ============================================================
-       STRICT CONDITIONAL INTERCEPTOR MATRIX
-       ============================================================ */
     if (properties.length === 0) {
-      // THE NEW USER ACCOUNT: FORCE EVERYTHING AWAY
+      // STATE 1: Empty state panel matches the target dashboard reference mockup exactly
       if (statsRowEmpty) statsRowEmpty.innerHTML = cleanStatCardsHTML;
-
       if (panelsRow) panelsRow.innerHTML = '';
       if (listingsRow) listingsRow.innerHTML = '';
-      if (populatedState) {
-        populatedState.innerHTML = ''; // Wipes mock elements instantly
-        populatedState.style.setProperty('display', 'none', 'important');
-      }
-
+      
       if (loadingState) loadingState.style.setProperty('display', 'none', 'important');
+      if (populatedState) populatedState.style.setProperty('display', 'none', 'important');
       if (emptyState) emptyState.style.setProperty('display', 'block', 'important');
 
     } else {
-      // FIXED: Populate elements natively without hitting a refresh reload loop!
+      // STATES 2, 3, & 4: Properties exist
       if (statsRowPopulated) statsRowPopulated.innerHTML = cleanStatCardsHTML;
 
-      renderLiveOverviewPanels(statsResponse?.chartData || [], statsResponse?.recentActivities || []);
+      renderLiveOverviewPanels(statsResponse?.chartData || [], statsResponse?.recentActivities || [], hasFinancialActivity);
       renderLivePropertyGrid(properties);
 
       if (loadingState) loadingState.style.setProperty('display', 'none', 'important');
@@ -99,29 +106,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   } catch (err) {
-    console.error("Pipeline breakdown:", err);
-    const defaultHTML = `
-      <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">$0</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Occupancy Rate</p><h3 class="stat-card-value">-</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Pending Maintenance</p><h3 class="stat-card-value">0</h3></div>
-      <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">$0</h3></div>
-    `;
-    if (statsRowEmpty) statsRowEmpty.innerHTML = defaultHTML;
-    if (panelsRow) panelsRow.innerHTML = '';
-    if (listingsRow) listingsRow.innerHTML = '';
-    if (loadingState) loadingState.style.setProperty('display', 'none', 'important');
-    if (emptyState) emptyState.style.setProperty('display', 'block', 'important');
+    console.error("Pipeline Breakdown Error Details:", err);
   }
 
-  /* ============================================================
-     RENDER LOGIC HELPER SUB-FUNCTIONS
-     ============================================================ */
-  function renderLiveOverviewPanels(chartData, activities) {
+  function renderLiveOverviewPanels(chartData, activities, showChart) {
     if (!panelsRow) return;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const fullYearChartDataset = months.map((_, index) => chartData[index] || 0);
 
-    panelsRow.innerHTML = `
+    const chartPanelHTML = showChart ? `
       <div class="dash-chart-panel">
         <div class="chart-header">
           <h3>Revenue & Expense Overview</h3>
@@ -136,6 +129,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           `).join('')}
         </div>
       </div>
+    ` : '';
+
+    const layoutModifierClass = showChart ? 'full-dashboard-grid' : 'narrow-activity-only-grid';
+    panelsRow.className = `dash-panels-row ${layoutModifierClass}`;
+    
+    panelsRow.innerHTML = `
+      ${chartPanelHTML}
       <div class="dash-activity-panel">
         <div class="activity-header-row">
           <h3>Recent Activity</h3>
@@ -161,10 +161,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       let badgeText = 'Pending';
       let badgeClass = 'badge-figma-pending';
 
-      if (statusRaw === 'APPROVED' || statusRaw === 'AVAILABLE') { badgeText = 'Available'; badgeClass = 'badge-figma-available'; }
-      else if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-rented'; }
+      if (statusRaw === 'APPROVED' || statusRaw === 'AVAILABLE') { 
+        badgeText = 'Available'; 
+        badgeClass = 'badge-figma-available'; 
+      } else if (statusRaw === 'RENTED') { 
+        badgeText = 'Rented'; 
+        badgeClass = 'badge-figma-rented'; 
+      }
 
-      const liveImg = item.imageUrl || (item.images && item.images) || 'images/property-placeholder.png';
+      const liveImg = item.imageUrl
+        || (Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : null)
+        || 'images/property-placeholder.png';
+
       return `
         <div class="property-figma-card">
           <img class="property-figma-img" src="${liveImg}" alt="Real estate photo">
@@ -186,6 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const duplicateContent = listingsRow.innerHTML;
     listingsRow.innerHTML = duplicateContent + duplicateContent;
     let currentOffset = 0;
+    
     function cycle() {
       currentOffset += 0.8;
       if (currentOffset >= listingsRow.scrollWidth / 2) currentOffset = 0;

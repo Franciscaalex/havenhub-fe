@@ -1,25 +1,4 @@
-/* ============================================================
-   add-property.js
-
-   - Live map: real Leaflet map + OpenStreetMap tiles (no API key
-     needed). The red pin stays fixed in the center of the screen;
-     the MAP moves underneath it (the standard "drop a pin" pattern
-     used by most ride-share/delivery apps) and the address field
-     is filled in automatically via reverse-geocoding through the
-     free Nominatim API whenever the map stops moving.
-   - Functional multi-image upload with real previews, a 10-image
-     cap, and per-image removal.
-   - Every button wired to something real: amenity toggles, the
-     description auto-generator (a simple client-side template —
-     NOT a real AI call, see note below), Save as Draft / Submit
-     for Review against the API, and Back/Add New navigation.
-
-   ASSUMPTION (unconfirmed against Swagger docs): POST /properties
-   for submitting a listing, and POST /properties/drafts for
-   drafts. GET /properties is confirmed working elsewhere in this
-   project; these POST paths follow normal REST convention from
-   that but haven't been verified directly.
-   ============================================================ */
+/* add-property.js */
 
 const state = {
   amenities: new Set(),
@@ -28,6 +7,8 @@ const state = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (!guardLandlordAccess()) return;
+
   initMap();
   initAmenities();
   initMediaUpload();
@@ -36,6 +17,48 @@ document.addEventListener('DOMContentLoaded', () => {
   initFormSubmission();
   initToast();
 });
+
+/* ============================================================
+   ROLE GUARD
+   ============================================================ */
+
+function guardLandlordAccess() {
+  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+
+  if (!token) {
+    // No session at all — send to login, not just the seeker dashboard.
+    window.location.href = 'login.html';
+    return false;
+  }
+
+  const role = getUserRole(token);
+
+  if (role !== 'LANDLORD') {
+    // Consistent with landlord-dashboard.html: wrong role gets bounced
+    // back to their own dashboard rather than shown the form.
+    window.location.href = 'seeker-dashboard.html';
+    return false;
+  }
+
+  return true;
+}
+
+function getUserRole(token) {
+  // 1) Try a cached user object first (cheaper, no decoding needed).
+  try {
+    const cachedUser = JSON.parse(localStorage.getItem(CONFIG.USER_KEY) || 'null');
+    if (cachedUser && cachedUser.role) return String(cachedUser.role).toUpperCase();
+  } catch (_) { /* not JSON, fall through */ }
+
+  // 2) Fall back to decoding the role claim out of the JWT payload.
+  try {
+    const payloadSegment = token.split('.')[1];
+    const decoded = JSON.parse(atob(payloadSegment.replace(/-/g, '+').replace(/_/g, '/')));
+    if (decoded.role) return String(decoded.role).toUpperCase();
+  } catch (_) { /* not a valid/decodable JWT */ }
+
+  return null;
+}
 
 /* ============================================================
    LIVE MAP
@@ -56,10 +79,7 @@ function initMap() {
     maxZoom: 19,
   }).addTo(map);
 
-  // The pin itself is a fixed CSS overlay (see the HTML/CSS) sitting
-  // dead-center of the map container — we never move it. Instead we
-  // read the map's center coordinates whenever the user finishes
-  // panning, which is what a "drop pin" UI actually needs.
+  
   map.on('moveend', () => {
     const center = map.getCenter();
     state.mapCenter = { lat: center.lat, lng: center.lng };
@@ -91,8 +111,6 @@ async function reverseGeocode(lat, lng) {
         document.getElementById('addressLocation').value = data.display_name;
       }
     } catch (err) {
-      // Silent failure is fine here — reverse geocoding is a nicety,
-      // not a required field. The user can still type an address manually.
       console.error('Reverse geocoding failed:', err);
     }
   }, 600);
@@ -108,8 +126,7 @@ async function forwardGeocode(query) {
     if (results.length > 0) {
       const { lat, lon } = results[0];
       map.setView([parseFloat(lat), parseFloat(lon)], 16);
-      // moveend fires automatically after setView, which re-fills
-      // the address field with the precise reverse-geocoded result
+    
     }
   } catch (err) {
     console.error('Forward geocoding failed:', err);
@@ -162,7 +179,7 @@ function initMediaUpload() {
       state.mediaFiles.push({ file, previewUrl: URL.createObjectURL(file) });
     }
 
-    input.value = ''; // allows re-selecting the same file again later
+    input.value = ''; 
     renderMediaGrid();
   });
 }
@@ -172,8 +189,7 @@ function renderMediaGrid() {
   const addTile = document.getElementById('mediaAddTile');
   const countEl = document.getElementById('mediaCount');
 
-  // Clear everything except the "+" add tile, then re-insert photo
-  // tiles before it
+  
   grid.querySelectorAll('.media-photo-tile').forEach(el => el.remove());
 
   state.mediaFiles.forEach((item, index) => {
@@ -203,44 +219,93 @@ function renderMediaGrid() {
   addTile.disabled = state.mediaFiles.length >= MAX_PHOTOS;
 }
 
-/* ============================================================
-   AUTO-GENERATE DESCRIPTION
-   This is a simple client-side template built from the form's own
-   fields — NOT a real AI service call. There's no confirmed AI
-   endpoint for this project, so faking one would be misleading.
-   This still gives a genuinely useful starting draft the person
-   can edit, which is what the button visually promises.
-   ============================================================ */
+/* AUTO-GENERATE DESCRIPTION */
 
 function initAutoGenerate() {
-  document.getElementById('autogenBtn').addEventListener('click', () => {
-    const title = document.getElementById('listingTitle').value.trim();
-    const type = document.getElementById('propertyType').selectedOptions[0]?.text || 'property';
-    const bedrooms = document.getElementById('bedrooms').value;
-    const bathrooms = document.getElementById('bathrooms').value;
-    const sqft = document.getElementById('squareFootage').value.trim();
-    const address = document.getElementById('addressLocation').value.trim();
-    const amenityLabels = Array.from(state.amenities).map(formatAmenityLabel);
+  const btn = document.getElementById('autogenBtn');
 
-    const parts = [];
-    parts.push(`${title || 'This ' + type.toLowerCase()} is a ${type.toLowerCase()} located ${address ? 'at ' + address : 'in a well-connected neighborhood'}.`);
+  btn.addEventListener('click', async () => {
+    const statusEl = document.getElementById('formStatus');
+    const descriptionEl = document.getElementById('description');
+    const originalLabel = btn.textContent;
 
-    if (bedrooms || bathrooms) {
-      parts.push(`It features ${bedrooms || '—'} bedroom${bedrooms === '1' ? '' : 's'} and ${bathrooms || '—'} bathroom${bathrooms === '1' ? '' : 's'}${sqft ? `, spread across ${sqft}` : ''}.`);
+    const payload = buildAiPayload();
+
+    if (payload.userInput.length < 3) {
+      setStatus(statusEl, 'Fill in a few property details first (title, type, etc.) before generating.', 'error');
+      return;
+    }
+    if (payload.userInput.length > 2000) {
+      payload.userInput = payload.userInput.slice(0, 2000);
     }
 
-    if (amenityLabels.length > 0) {
-      parts.push(`Residents enjoy access to ${amenityLabels.join(', ')}.`);
+    btn.disabled = true;
+    btn.textContent = 'Generating…';
+    setStatus(statusEl, 'Generating description with AI…', '');
+
+    try {
+      const data = await generateAiDescription(payload);
+
+      const generated =
+        data?.description ??
+        data?.data?.description ??
+        data?.text ??
+        data?.result;
+
+      if (!generated) {
+        throw new Error('AI response did not include a description.');
+      }
+
+      descriptionEl.value = generated;
+      setStatus(statusEl, 'Description generated.', 'success');
+    } catch (err) {
+      console.error('AI description generation failed:', err);
+      setStatus(statusEl, `Couldn't generate a description: ${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     }
-
-    parts.push('Book a viewing today to see it in person.');
-
-    document.getElementById('description').value = parts.join(' ');
   });
+}
+
+
+function buildAiPayload() {
+  const title = document.getElementById('listingTitle').value.trim();
+  const propertyType = document.getElementById('propertyType').selectedOptions[0]?.text || '';
+  const bedrooms = document.getElementById('bedrooms').value;
+  const bathrooms = document.getElementById('bathrooms').value;
+  const squareFootage = document.getElementById('squareFootage').value.trim();
+  const address = document.getElementById('addressLocation').value.trim();
+  const rentPrice = document.getElementById('rentPrice').value;
+  const amenityLabels = Array.from(state.amenities).map(formatAmenityLabel);
+
+  const parts = [];
+
+  if (title) parts.push(`Listing title: ${title}.`);
+  if (propertyType) parts.push(`Property type: ${propertyType}.`);
+  if (bedrooms || bathrooms) {
+    parts.push(`${bedrooms || '—'} bedroom(s), ${bathrooms || '—'} bathroom(s).`);
+  }
+  if (squareFootage) parts.push(`Size: ${squareFootage}.`);
+  if (address) parts.push(`Location: ${address}.`);
+  if (rentPrice) parts.push(`Rent price: ${rentPrice}.`);
+  if (amenityLabels.length > 0) parts.push(`Amenities: ${amenityLabels.join(', ')}.`);
+
+  const userInput = parts.join(' ').trim();
+
+  return { userInput };
 }
 
 function formatAmenityLabel(value) {
   return value.replace(/_/g, ' ');
+}
+
+async function generateAiDescription(payload) {
+  // NOTE: matches the '/properties' convention used elsewhere in this
+  // file — CONFIG.BASE_URL / CONFIG.MOCK_BASE_PATH already include the
+  // '/api/v1' prefix, so it must NOT be repeated here. Adding it caused
+  // a 404 (the request hit /api/v1/api/v1/ai/generate-description).
+  return postJson('/ai/generate-description', payload);
 }
 
 /* ============================================================
@@ -328,7 +393,15 @@ async function submitListing(isDraft) {
     }  else {
   showToast();
   setTimeout(() => {
-    window.location.href = 'dashboard-landlord.html';
+    // BUG FIXED: this was 'dashboard-landlord.html' — the words were
+    // swapped relative to the route actually used everywhere else in
+    // this file (see initTopbarButtons' backToDashboardBtn handler
+    // above, which correctly uses 'landlord-dashboard.html'). Since
+    // that swapped name isn't a real deployed route on Vercel, the
+    // POST itself succeeded (201 Created, confirmed in the Network
+    // tab) but the redirect that followed hit Vercel's platform-level
+    // 404 page instead of the dashboard.
+    window.location.href = 'landlord-dashboard.html';
   }, 1500);
 } 
   } catch (err) {
@@ -365,6 +438,51 @@ async function postMultipart(endpoint, formData) {
   }
 
   return response.json();
+}
+
+/* JSON POST helper — for endpoints (like the AI Listing Assistant)
+   that expect an application/json body rather than multipart form
+   data. Mirrors postMultipart's auth/base-URL handling exactly so
+   both go through the same CONFIG.USE_MOCK_DATA switch. */
+async function postJson(endpoint, body) {
+  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+  const url = CONFIG.USE_MOCK_DATA
+    ? `${CONFIG.MOCK_BASE_PATH}${endpoint}`
+    : `${CONFIG.BASE_URL}${endpoint}`;
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      // Log the raw body so validation details (which don't always
+      // live under `.message` — e.g. NestJS's ValidationPipe puts an
+      // array there, but some APIs use `.errors` or `.error`) are
+      // visible in the console without opening the Network tab.
+      console.error('postJson error body:', errorBody);
+      message = formatErrorMessage(errorBody) || message;
+    } catch (_) { /* not JSON */ }
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+function formatErrorMessage(body) {
+  if (!body) return null;
+  if (typeof body.message === 'string') return body.message;
+  if (Array.isArray(body.message)) return body.message.join('; ');
+  if (typeof body.error === 'string') return body.error;
+  if (Array.isArray(body.errors)) return body.errors.join('; ');
+  return null;
 }
 
 /* ============================================================

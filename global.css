@@ -7,6 +7,7 @@ html, body {
   color: #1e293b;
   /* min-height: 100vh; */
   height: 100vh;
+  height: 100dvh; /* Accounts for mobile browser chrome (address bar) resizing the viewport */
   overflow: hidden; /* Prevents double scrolling bars across the window */
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
@@ -16,12 +17,29 @@ html, body {
   box-sizing: inherit;
 }
 
+/* Visible keyboard focus on every interactive element (quality floor —
+   none of the buttons below had an explicit focus style before). */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid #003354;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
 /* ---------- 2. PARENT DASHBOARD GRID SHELL SYSTEM ---------- */
 
 .inbox-body{
    margin: 0;
   padding: 0;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   box-sizing: border-box;
   /* overflow: hidden; */
@@ -35,7 +53,8 @@ html, body {
   grid-template-rows: 1fr auto;
   grid-template-columns: 280px 1fr;
   width: 100%;                        
-  height: 100vh;                      
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   align-items: stretch;
 }
@@ -47,9 +66,11 @@ html, body {
     grid-row: 1/2;
   height: 100%;
   display: flex;
+  margin-left: 1rem;
   flex-direction: column;
   box-sizing: border-box;
   overflow-y: auto;
+  min-width: 0; /* lets flex/grid children shrink below content size instead of overflowing horizontally */
 }
 
 /* ---------- 3. FIXED NAVIGATION TOP BAR ARCHITECTURE ---------- */
@@ -63,19 +84,27 @@ html, body {
   padding: 1.5rem ;
   /* margin-top: -40px; */
   flex-shrink: 0; 
+  gap: 12px;
 }
 
 .header-tittle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #002349; /* Premium deep navy branding tone */
   margin: 0;
   letter-spacing: -0.3px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .search-wrapper {
   position: relative;
   width: 320px;
+  max-width: 100%;
 }
 
 .search-input {
@@ -114,6 +143,7 @@ html, body {
   border: 1px solid #edf2f7;
   flex-grow: 1; /* Automatically expands to populate remaining vertical space cleanly */
   width: 100%;
+  min-width: 0;
   /* max-height: calc(100vh - 160px); Locks bounding parameters safely to fit visible viewports */
   display: flex;
   overflow: hidden;
@@ -127,36 +157,45 @@ html, body {
   flex-direction: column;
   width: 100%;
   height: 100%;
+  min-width: 0;
   /* box-sizing: border-box; */
 }
 
 .conversations-heading {
-  /* margin: 0 0 16px 0; */
   font-size: 2.2rem;
-  font-weight: 700;
+  font-weight: 650;
   color: #0f172a;
 }
 
 .conversation-tabs {
   display: flex;
   gap: 10px;
+  margin-top: 1.1rem;
   margin-bottom: 20px;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 12px;
-  /* position: relative; */
   z-index: 5;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox: keep the row clean when it needs to scroll on narrow screens */
+}
+
+.conversation-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
   background-color: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #36BBFF;
   color: #475569;
-  padding: 6px 16px;
-  font-size: 13px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.5;
   font-weight: 600;
-  border-radius: 20px;
+  border-radius: 2rem;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -201,12 +240,14 @@ html, body {
 .convo-details {
   flex-grow: 1;
   overflow: hidden;
+  min-width: 0;
 }
 
 .convo-meta-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 3px;
 }
 
@@ -214,12 +255,16 @@ html, body {
   font-size: 15px;
   font-weight: 700;
   color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .convo-time {
   font-size: 11px;
   color: #94a3b8;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .convo-location {
@@ -249,6 +294,7 @@ html, body {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   background-color: #ffffff;
 }
@@ -294,6 +340,7 @@ html, body {
   font-size: 14px;
   line-height: 1.45;
   box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  word-break: break-word;
 }
 
 .bubble-incoming .bubble-content { background-color: #0c6896; color: #ffffff; border-top-left-radius: 2px; }
@@ -332,6 +379,7 @@ html, body {
   outline: none;
   padding: 10px 0;
   font-size: 14px;
+  min-width: 0;
 }
 
 .chat-action-btn {
@@ -343,6 +391,7 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 6px;
+  flex-shrink: 0;
 }
 
 .chat-send-btn-pill {
@@ -351,6 +400,7 @@ html, body {
   border-radius: 50%;
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
 }
 
 .chat-skeleton-loader {
@@ -377,9 +427,11 @@ html, body {
   left: 0;
   z-index: 10;
   padding-left: 300px; /* Aligns content past the fixed layout sidebar space */
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.footer-content { display: flex; align-items: center; gap: 8px; }
+.footer-content { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .copy-right { font-size: 13px; color: #64748b; margin: 0; }
 .footer-logo { display: flex; align-items: center; gap: 4px; margin: 0 12px; }
 .footer-icon { width: 16px; height: 16px; }
@@ -391,17 +443,93 @@ html, body {
 
 /* ============================================================
    RESPONSIVE VIEWPORT BREAKPOINTS
+   Ordered widest → narrowest so later, more specific rules win
+   without needing !important.
    ============================================================ */
-@media (max-width: 1023px) {
-  #sidebar-placeholder { width: 0; }
-  .dash-main { padding: 20px; }
-  .footer-container { padding-left: 24px; padding-right: 24px; position: relative; width: 100%; }
+
+/* ----- Small laptop / narrow desktop: trim the sidebar and search
+   before anything needs to actually reflow ----- */
+@media (max-width: 1200px) {
+  .inbox-shell { grid-template-columns: 240px 1fr; }
+  .search-wrapper { width: 260px; }
+  .conversations-heading { font-size: 1.9rem; }
 }
 
+/* ----- Tablet: collapse the sidebar column entirely. NOTE: this
+   assumes the sidebar's own script (sidebar.js / sidebar.html)
+   handles small-screen access itself — e.g. as a fixed-position
+   drawer/hamburger overlay that doesn't depend on this grid track.
+   If it doesn't, the sidebar will be fully hidden with no way to
+   reopen it below this width, so please verify against the actual
+   sidebar implementation. ----- */
+@media (max-width: 1023px) {
+  .inbox-shell { grid-template-columns: 1fr; }
+  #sidebar-placeholder { width: 0; overflow: hidden; }
+  .inbox-main { grid-column: 1 / -1; }
+  .dash-main { padding: 20px; }
+  .footer-container { padding-left: 24px; padding-right: 24px; position: relative; width: 100%; }
+  .messages-page { padding: 20px; }
+}
+
+/* ----- Mobile: stack the header, widen chat bubbles, make tabs a
+   horizontally-scrolling row, tighten spacing throughout ----- */
 @media (max-width: 768px) {
-  .nav-bar-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .nav-bar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    height: auto;
+    padding: 1rem;
+  }
+  .header-actions { width: 100%; }
   .search-wrapper { width: 100%; }
-  .messages-page-layout { max-height: calc(100vh - 220px); }
-  .footer-container { flex-direction: column-reverse; gap: 12px; text-align: center; }
+  /* 16px prevents iOS Safari from auto-zooming the page on focus */
+  .search-input { font-size: 16px; }
+  .chat-input-field { font-size: 16px; }
+
+  .messages-page-layout { max-height: calc(100vh - 220px); max-height: calc(100dvh - 220px); }
+  .messages-page { padding: 16px; }
+  .conversations-heading { font-size: 1.6rem; }
+
+  .convo-card-row { padding: 12px 8px; }
+  .convo-avatar { width: 38px; height: 38px; margin-right: 10px; }
+
+  .chat-header-banner { padding: 12px 16px; }
+  .chat-messages-stream { padding: 16px; gap: 10px; }
+  .bubble-content { max-width: 82%; font-size: 13.5px; }
+  .chat-input-bar-action-tray { padding: 12px 16px; }
+
+  .footer-container { flex-direction: column-reverse; gap: 12px; text-align: center; padding: 16px 20px; }
   .footer-content { flex-direction: column; gap: 4px; }
+  .footer-links { margin-top: 4px; }
+}
+
+/* ----- Small phones: final tightening pass ----- */
+@media (max-width: 480px) {
+  .header-tittle { font-size: 1.25rem; }
+  .conversations-heading { font-size: 1.4rem; }
+
+  .conversation-tabs { gap: 6px; margin-bottom: 14px; }
+  .tab-btn { padding: 5px 12px; font-size: 12px; }
+
+  .convo-name { font-size: 14px; }
+  .convo-snippet { font-size: 12px; }
+  .convo-location { font-size: 11px; }
+  .convo-time { font-size: 10px; }
+
+  .bubble-content { max-width: 88%; padding: 10px 13px; font-size: 13px; }
+  .chat-input-form { padding: 4px 4px 4px 12px; gap: 8px; }
+  .chat-send-btn-pill { width: 32px; height: 32px; }
+
+  .footer-logo { margin: 0 6px; }
+  .copy-right, .all-rights, .footer-links { font-size: 11px; }
+}
+
+/* ----- Short/landscape phones: the fixed 3.5rem+ header and footer
+   eat a large share of a short viewport, so let the message list
+   reclaim as much vertical space as possible ----- */
+@media (max-width: 900px) and (max-height: 480px) and (orientation: landscape) {
+  .nav-bar-header { flex-direction: row; align-items: center; padding: 0.75rem 1rem; }
+  .messages-page-layout { max-height: none; }
+  .chat-messages-stream { padding: 12px 20px; }
 }

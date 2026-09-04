@@ -2,9 +2,9 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Check routing limits early
-  checkRouteGuard(); 
-  
-  // 2. FIXED: Verify placeholders exist on the current page before attempting to fetch fragments
+  checkRouteGuard();
+
+  // 2. Verify placeholders exist on the current page before attempting to fetch fragments
   const loadingPromises = [];
 
   if (document.getElementById('sidebar-placeholder')) {
@@ -20,23 +20,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Wait until all layout template files are completely loaded into the placeholders
   await Promise.all(loadingPromises);
 
-  // 3. FIXED: Hydrate standard baseline metadata metrics ONLY after layouts are safe in the DOM
+  // 3. Hydrate standard baseline metadata metrics ONLY after layouts are safe in the DOM
   highlightActiveNavLink();
   updateHeaderAuthState();
   setFooterYear();
   renderProperties();
+  syncAllProfileAvatars(); // NEW: hydrate any .user-avatar-sync images on this page
 });
 
 async function loadPartial(url, placeholderId) {
   const el = document.getElementById(placeholderId);
   if (!el) return;
+
+  const cacheKey = `partial:${url}`;
+
+  // NEW: paint instantly from cache if we've fetched this partial before
+  // (e.g. the user already loaded the dashboard once this session), so the
+  // sidebar/header/footer show up with zero network wait on every page
+  // after the first.
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    el.innerHTML = cached;
+    if (placeholderId === 'header-placeholder') {
+      updateHeaderAuthState();
+      highlightActiveNavLink();
+    }
+    if (placeholderId === 'sidebar-placeholder') {
+      window.dispatchEvent(new Event('partialsLoaded'));
+    }
+  }
+
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
-    
-    // SAFE INNERHTML: Keeps your pre-styled horizontal container div nodes intact
-    el.innerHTML = await res.text();
-    
+    const html = await res.text();
+
+    // NEW: if the cached version was already rendered and nothing changed,
+    // skip re-touching the DOM (avoids re-running init logic / event
+    // listeners twice, and avoids a visible flicker on repeat visits).
+    if (cached === html) return;
+
+    el.innerHTML = html;
+    sessionStorage.setItem(cacheKey, html);
+
     if (placeholderId === 'header-placeholder') {
       updateHeaderAuthState();
       highlightActiveNavLink();
@@ -48,6 +74,9 @@ async function loadPartial(url, placeholderId) {
     }
   } catch (err) {
     console.error(err);
+    // If the fetch fails but we already rendered from cache above, the
+    // user still sees a working sidebar — this just means we couldn't
+    // refresh it this time.
   }
 }
 
@@ -63,7 +92,7 @@ function logoutUser() {
   localStorage.removeItem('username');
   localStorage.removeItem('selectedRole'); // Clear role choice on logout
   if (window.api && typeof window.api.clearSession === 'function') {
-    window.api.clearSession(); 
+    window.api.clearSession();
   }
 }
 
@@ -136,7 +165,7 @@ document.addEventListener('click', (e) => {
 
 async function renderProperties() {
   const container = document.getElementById('propertyList');
-  if (!container) return; 
+  if (!container) return;
 
   try {
     const response = await window.api.get('/properties');
@@ -160,39 +189,57 @@ async function renderProperties() {
   }
 }
 
-window.HavenHubSession = { loginUser, logoutUser, isUserLoggedIn, getCurrentUsername };
+/* ============================================================
+   SHARED AVATAR SYNC
+   Any <img> anywhere in the app — sidebar, dashboard banners,
+   inbox message threads, etc. — can opt in to staying in sync
+   with the user's uploaded photo by adding this class:
+
+     <img class="user-avatar-sync" alt="...">
+
+   No per-page JS needed. This runs automatically on every page
+   load (via DOMContentLoaded below) and again immediately after
+   a successful upload on the Settings page.
+   ============================================================ */
+
+function syncAllProfileAvatars(url) {
+  const avatarUrl = url || localStorage.getItem('userAvatarUrl') || localStorage.getItem('profilePicture');
+  if (!avatarUrl) return;
+  document.querySelectorAll('.user-avatar-sync').forEach(img => {
+    img.src = avatarUrl;
+  });
+}
+
+window.HavenHubSession = { loginUser, logoutUser, isUserLoggedIn, getCurrentUsername, syncAllProfileAvatars };
 
 /* ============================================================
    ROLE-AWARE ROUTE GUARD
    ============================================================ */
 function checkRouteGuard() {
   const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-  
-  // 1. Establish strict boolean session states
+
   const isLoggedIn = isUserLoggedIn();
-  const activeRole = localStorage.getItem('selectedRole') || ''; 
+  const activeRole = localStorage.getItem('selectedRole') || '';
 
   const securePages = [
     'landlord-dashboard.html',
     'seeker-dashboard.html',
     'add-property.html'
   ];
-  
-  // 2. Intercept unauthenticated access to secure profile layers
+
   if (securePages.includes(currentPath) && !isLoggedIn) {
     console.warn("Intercepted unauthenticated access. Redirecting to login frame.");
     window.location.replace('login.html');
     return;
   }
 
-  // 3. CROSS-ROLE ROUTE PROTECTION (Prevents Seekers from opening Landlord panels and vice versa)
   if (isLoggedIn && activeRole) {
     const normalizedRole = activeRole.toUpperCase().trim();
-    
+
     if (currentPath === 'landlord-dashboard.html' && normalizedRole !== 'LANDLORD') {
       console.warn("Cross-role anomaly caught. Forcing Seeker dashboard view.");
       window.location.replace('seeker-dashboard.html');
-    } 
+    }
     else if (currentPath === 'seeker-dashboard.html' && normalizedRole === 'LANDLORD') {
       console.warn("Cross-role anomaly caught. Forcing Landlord dashboard view.");
       window.location.replace('landlord-dashboard.html');

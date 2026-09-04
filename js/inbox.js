@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Wait for the partialsLoaded event from main.js so the DOM elements are present
   window.addEventListener('partialsLoaded', initializeInboxModule);
-  
+
   if (document.getElementById('conversationsList')) {
     initializeInboxModule();
   }
@@ -18,7 +18,7 @@ let activeSelectedThreadId = null;
 async function initializeInboxModule() {
   const container = document.getElementById('conversationsList');
   if (!container || container.dataset.initialized === "true") return;
-  container.dataset.initialized = "true"; 
+  container.dataset.initialized = "true";
 
   setupTabListeners();
   await loadConversationsFeed();
@@ -27,17 +27,17 @@ async function initializeInboxModule() {
 /* ---------- 1. FETCH LIVE THREADS FROM BACKEND ---------- */
 async function loadConversationsFeed() {
   const container = document.getElementById('conversationsList');
-  
+
   try {
     if (!window.api) throw new Error("api.js framework reference is missing.");
 
     // Dynamic execution targeting your exact Swagger path: GET /enquiries/threads
     // api.js handles appending the base URL and authorization tokens automatically
     const response = await window.api.get('/enquiries/threads');
-    
+
     // Normalize data structure depending on how the response object is nested
     chatConversationsDataset = response?.items || response?.data || response || [];
-    
+
     renderConversationsList(chatConversationsDataset);
     updateTabBadgeIndicators(chatConversationsDataset);
 
@@ -92,10 +92,25 @@ function renderConversationsList(threads) {
   });
 }
 
+/* ---------- 2b. UPDATE TAB BADGE COUNTS ---------- */
+function updateTabBadgeIndicators(threads) {
+  const countAllEl = document.getElementById('countAll');
+  const countUnreadEl = document.getElementById('countUnread');
+  const countArchiveEl = document.getElementById('countArchive');
+
+  const totalCount = threads.length;
+  const unreadCount = threads.filter(t => t.isRead === false || t.unreadCount > 0).length;
+  const archiveCount = threads.filter(t => t.isArchived === true).length;
+
+  if (countAllEl) countAllEl.textContent = `(${totalCount})`;
+  if (countUnreadEl) countUnreadEl.textContent = `(${unreadCount})`;
+  if (countArchiveEl) countArchiveEl.textContent = `(${archiveCount})`;
+}
+
 /* ---------- 3. FETCH & OPEN SUB-MESSAGE CHAT WINDOW ---------- */
 async function openActiveChatWindow(threadId) {
   activeSelectedThreadId = threadId;
-  
+
   const listView = document.getElementById('conversationsListViewPanel');
   const chatWindow = document.getElementById('chatWindowView');
 
@@ -110,7 +125,7 @@ async function openActiveChatWindow(threadId) {
     // Dynamic fetch matching your Swagger path: GET /api/v1/enquiries/threads/{threadId}
     const threadData = await window.api.get(`/enquiries/threads/${threadId}`);
     const messages = threadData?.messages || threadData?.data?.messages || threadData || [];
-    
+
     // Fallback data details derived from cache if nested header objects are separate
     const currentThread = chatConversationsDataset.find(c => String(c.id || c.threadId) === String(threadId));
     const displayAvatar = currentThread?.userAvatar || "images/Avatar 4.svg";
@@ -174,7 +189,7 @@ function closeChatWindow() {
 
   if (chatWindow) chatWindow.style.display = 'none';
   if (listView) listView.style.display = 'flex';
-  
+
   loadConversationsFeed(); // Re-sync changes upon panel swap actions
 }
 
@@ -186,9 +201,6 @@ function renderMessageBubbles(messages) {
     stream.innerHTML = `<div style="text-align:center; padding:40px; font-size:13px; color:#94a3b8;">No message logs recorded. Send a greeting below!</div>`;
     return;
   }
-
-  // Get current user id to determine which message bubbles go left vs right dynamically
-  const cachedRole = (localStorage.getItem('selectedRole') || '').toLowerCase();
 
   stream.innerHTML = messages.map(m => {
     // Evaluates sender origins automatically to float bubbles left vs right layout grids
@@ -225,45 +237,53 @@ async function handleSendMessageSubmit(e) {
 
   const userText = input.value.trim();
   input.value = ""; // Clear text field immediately for instant feedback
-// Optimistically append the message to the screen right away to make it look responsive
-const stream = document.getElementById('chatMessagesStream');
-const localTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-if (stream)
-   {stream.innerHTML += <div class="chat-bubble-row bubble-outgoing"> <div class="bubble-content"> 
-   ${userText} <div class="chat-bubble-meta"><span>${localTime}</span></div> </div> </div>;
-   stream.scrollTop = stream.scrollHeight;
-  } 
+
+  // Optimistically append the message to the screen right away to make it look responsive
+  const stream = document.getElementById('chatMessagesStream');
+  const localTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (stream) {
+    stream.innerHTML += `
+      <div class="chat-bubble-row bubble-outgoing">
+        <div class="bubble-content">
+          ${userText}
+          <div class="chat-bubble-meta"><span>${localTime}</span></div>
+        </div>
+      </div>
+    `;
+    stream.scrollTop = stream.scrollHeight;
+  }
+
   try {
     // Triggers payload processing straight onto: POST /api/v1/enquiries
-    const payload = {threadId: activeSelectedThreadId,message: userText };
+    const payload = { threadId: activeSelectedThreadId, message: userText };
     await window.api.post('/enquiries', payload);
     console.log("Live message dispatched cleanly over gateway pipelines.");
+  } catch (apiErr) {
+    console.error("Backend transmission lost, caching trace locally:", apiErr);
   }
-   catch (apiErr) {console.error("Backend transmission lost, caching trace locally:", apiErr);}
-  }
-  /* ---------- 5. DISPATCH READ EVENTS TRACKERS ---------- */
-  async function triggerMarkAsRead(threadId) {
-    try {
-      // Triggers background update targeting your endpoint:
-       PATCH /api/v1/enquiries/{id}/read 
-        await window.api.patch(`/enquiries/${threadId}/read`);
+}
+
+/* ---------- 5. DISPATCH READ EVENTS TRACKERS ---------- */
+async function triggerMarkAsRead(threadId) {
+  try {
+    // Triggers background update targeting your endpoint: PATCH /api/v1/enquiries/{id}/read
+    await window.api.patch(`/enquiries/${threadId}/read`);
   } catch (err) {
     console.warn("Read confirmation trace pass bypassed:", err.message);
   }
 }
 
-/* ---------- 6. TAB NAVIGATION SYSTEM FILTERS (Replace Only This) ---------- */
+/* ---------- 6. TAB NAVIGATION SYSTEM FILTERS ---------- */
 function setupTabListeners() {
   const tabs = ['tabAll', 'tabUnread', 'tabArchive'];
-  
+
   tabs.forEach(tabId => {
     const tabElement = document.getElementById(tabId);
     if (!tabElement) return;
 
-    // FIXED: Added event propagation blocks to stop layout templates from blocking mouse clicks
-    tabElement.addEventListener('click', function(e) {
+    tabElement.addEventListener('click', function (e) {
       e.preventDefault();
-      e.stopPropagation(); // 👈 This unblocks the buttons instantly!
+      e.stopPropagation();
 
       console.log(`Tab change registered: ${tabId}`);
 

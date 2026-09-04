@@ -6,6 +6,22 @@
    - Save changes → PUT (updates first/last name + phone)
    - Change Photo → file picker → upload (POST, multipart)
    - Change Password → opens modal → Update Password → PUT
+
+   CONFIRMED (per backend, commit 6b08ea9):
+     POST /api/v1/users/me/photo — multipart/form-data, file field
+     named 'photo' or 'avatar'. This matches what we already send
+     below — no changes needed to the request itself.
+     PUT /api/v1/users/me/password — { currentPassword, newPassword }
+     PUT /api/v1/users/me — { firstName, lastName, phone|phoneNumber }
+
+   STILL UNCONFIRMED: the *response* body shape on a successful
+   photo upload. The backend announcement only documented the
+   request format. uploadPhoto() below guesses `data.avatarUrl ||
+   data.url`, but since this is "fully integrated with Cloudinary,"
+   the real field is just as likely to be `secure_url` (Cloudinary's
+   own default response key) or something nested. Check the
+   console.log added below on the next real upload and adjust the
+   fallback chain to match.
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,6 +47,9 @@ async function loadProfile() {
 
     if (user.avatarUrl) {
       document.getElementById('avatarPreview').src = user.avatarUrl;
+      // NEW: keep the sidebar's cache in sync with whatever the server
+      // actually has, so a fresh page load doesn't fall back to default.
+      localStorage.setItem('userAvatarUrl', user.avatarUrl);
     }
 
     // Sync Sidebar Display
@@ -85,7 +104,7 @@ function wireProfileForm() {
     setStatus(statusEl, 'Saving…', '');
 
     try {
-      await window.api.put('/users/me', { firstName, lastName, phone });
+      await window.api.put('/users/me', { firstName, lastName, phoneNumber });
       setStatus(statusEl, 'Changes saved.', 'success');
 
       // Keep sidebar name synced when saved
@@ -126,7 +145,6 @@ function wirePhotoUpload() {
       return;
     }
 
-    // Show local preview immediately
     const localPreviewUrl = URL.createObjectURL(file);
     const previousSrc = preview.src;
     preview.src = localPreviewUrl;
@@ -177,12 +195,32 @@ async function uploadPhoto(file) {
 
   const data = await response.json();
 
+  // TEMP DEBUG: the backend announcement only documented the request
+  // shape, not the response. Check this log on the next real upload to
+  // find the actual field name holding the hosted image URL (likely
+  // avatarUrl, url, or Cloudinary's own secure_url), then update the
+  // fallback chain below and remove this log once confirmed.
+  console.log('Photo upload response body:', data);
+
   // Update profile and sidebar image elements directly
-  const newAvatarUrl = data.avatarUrl || data.url;
+  const newAvatarUrl = data.avatarUrl || data.url || data.secure_url || data.photoUrl;
   if (newAvatarUrl) {
     document.getElementById('avatarPreview').src = newAvatarUrl;
     const sidebarAvatar = document.querySelector('.dash-profile-avatar');
     if (sidebarAvatar) sidebarAvatar.src = newAvatarUrl;
+
+    // NEW: this was the missing piece — without persisting here, the
+    // sidebar has no way to know about the new photo on the next page
+    // load and falls back to the default avatar image.
+    localStorage.setItem('userAvatarUrl', newAvatarUrl);
+
+    // NEW: also refresh any other opted-in avatar images already on
+    // this page (see main.js — any <img class="user-avatar-sync">).
+    window.HavenHubSession?.syncAllProfileAvatars?.(newAvatarUrl);
+  } else {
+    // If none of the guessed keys matched, we know immediately instead
+    // of silently leaving the sidebar/localStorage stale.
+    console.warn('Photo uploaded, but no recognized URL field was found in the response — sidebar/localStorage were NOT updated. See the logged response body above.');
   }
 
   return data;
