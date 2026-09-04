@@ -812,7 +812,7 @@ margin-top: -2rem;
 .dash-main {
   grid-column: 2;
   box-sizing: border-box;
-  padding: 2rem;
+  padding: 3rem;
   overflow-y: auto;
   height: 100vh;
   background-color: #ffffff;

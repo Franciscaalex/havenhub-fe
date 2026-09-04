@@ -382,7 +382,6 @@ async function submitListing(isDraft) {
   setStatus(statusEl, isDraft ? 'Saving draft…' : 'Submitting…', '');
 
   const formData = buildFormPayload();
-  // ASSUMPTION — not yet confirmed: POST /properties/drafts vs POST /properties
   const endpoint = isDraft ? '/properties/drafts' : '/properties';
 
   try {
@@ -390,20 +389,13 @@ async function submitListing(isDraft) {
 
     if (isDraft) {
       setStatus(statusEl, 'Draft saved.', 'success');
-    }  else {
-  showToast();
-  setTimeout(() => {
-    // BUG FIXED: this was 'dashboard-landlord.html' — the words were
-    // swapped relative to the route actually used everywhere else in
-    // this file (see initTopbarButtons' backToDashboardBtn handler
-    // above, which correctly uses 'landlord-dashboard.html'). Since
-    // that swapped name isn't a real deployed route on Vercel, the
-    // POST itself succeeded (201 Created, confirmed in the Network
-    // tab) but the redirect that followed hit Vercel's platform-level
-    // 404 page instead of the dashboard.
-    window.location.href = 'landlord-dashboard.html';
-  }, 1500);
-} 
+    } else {
+      showToast();
+      setTimeout(() => {
+        // FIXED REDIRECT ROUTE: Corrects the Vercel deployment 404 error by hitting your actual route name
+        window.location.href = 'landlord-dashboard.html';
+      }, 1500);
+    } 
   } catch (err) {
     setStatus(statusEl, err.message, 'error');
   } finally {
