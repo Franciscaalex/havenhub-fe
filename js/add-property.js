@@ -226,7 +226,7 @@ function initAutoGenerate() {
 
   btn.addEventListener('click', async () => {
     const statusEl = document.getElementById('formStatus');
-    const descriptionEl = document.getElementById('description');
+       const descriptionEl = document.getElementById('description');
     const originalLabel = btn.textContent;
 
     const payload = buildAiPayload();
@@ -247,12 +247,12 @@ function initAutoGenerate() {
       const data = await generateAiDescription(payload);
 
       const generated =
-        data?.description ??
-        data?.data?.description ??
+        data?.generatedDescription ??
+        data?.data?.generatedDescription ??
         data?.text ??
         data?.result;
 
-      if (!generated) {
+      if (!data?.success || !generated) {
         throw new Error('AI response did not include a description.');
       }
 
@@ -267,7 +267,6 @@ function initAutoGenerate() {
     }
   });
 }
-
 
 function buildAiPayload() {
   const title = document.getElementById('listingTitle').value.trim();
@@ -296,6 +295,17 @@ function buildAiPayload() {
   return { userInput };
 }
 
+function formatAmenityLabel(value) {
+  return value.replace(/_/g, ' ');
+}
+
+async function generateAiDescription(payload) {
+  // NOTE: matches the '/properties' convention used elsewhere in this
+  // file — CONFIG.BASE_URL / CONFIG.MOCK_BASE_PATH already include the
+  // '/api/v1' prefix, so it must NOT be repeated here. Adding it caused
+  // a 404 (the request hit /api/v1/api/v1/ai/generate-description).
+  return postJson('/ai/generate-description', payload);
+}
 function formatAmenityLabel(value) {
   return value.replace(/_/g, ' ');
 }

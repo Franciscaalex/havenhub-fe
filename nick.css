@@ -28,17 +28,14 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+html, body {
+  height: 100%;
 }
-
+ 
 body {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text-dark);
-  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 a {
@@ -279,15 +276,26 @@ nav.desktop-nav a:hover {
    SAVED PAGE TOOLBAR
    ========================================================================== */
 
+   .page-content {
+  flex: 1;
+  width: 100%;
+  padding: 1rem;
+  overflow-y: auto;
+}
+ 
+
+   .hero{
+margin-top: -5.5rem;
+margin-left: -3.5rem;
+   }
 .saved-toolbar {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 14px 20px 0;
   display: flex;
-  align-items: center;
+  align-items:center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 2rem;
+  margin-left: -3.5rem;
 }
 .saved-tabs {
   display: flex;
@@ -295,7 +303,7 @@ nav.desktop-nav a:hover {
   flex-wrap: wrap;
 }
 .saved-tab {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--border);
   color: var(--text-dark);
   border-radius: var(--radius-pill);
@@ -303,19 +311,21 @@ nav.desktop-nav a:hover {
   font-size: 13px;
   font-weight: 600;
 }
+.saved-tab.active:hover{
+  background: var(--navy);
+  color: #ffffff;
+}
 .saved-tab.active {
   background: var(--navy);
+  color: #ffffff;
   border-color: var(--navy);
-  color: #fff;
-}
-.saved-tab:hover:not(.active) {
-  background: #f2f4f7;
 }
 .saved-sort {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
+  margin-right: -2.5rem;
   color: var(--text-gray);
 }
 .sort-select {
@@ -339,9 +349,8 @@ nav.desktop-nav a:hover {
 /* ==========================================================================
    SEARCH & FILTERS
    ========================================================================== */
-
 .search-section {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 16px 20px 6px;
   position: relative;
@@ -350,6 +359,7 @@ nav.desktop-nav a:hover {
   display: flex;
   gap: 10px;
   margin-bottom: 0;
+  width: 92vw;
 }
 .search-input-wrap {
   flex: 1;
@@ -378,7 +388,7 @@ nav.desktop-nav a:hover {
 }
 .search-btn {
   display: none;
-  background: var(--accent-blue);
+  background: var(--navy);
   color: #fff;
   border: none;
   padding: 0 22px;
@@ -553,12 +563,12 @@ nav.desktop-nav a:hover {
    ========================================================================== */
 
 .grid {
-  max-width: 1200px;
+  width: 93vw;
   margin: 0 auto;
   padding: 16px 20px 40px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 1rem;
 }
 
 @media (max-width: 420px) {
@@ -712,6 +722,14 @@ nav.desktop-nav a:hover {
 }
 .status-badge.rented {
   background: var(--red);
+}
+.status-badge-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 6px 16px;
+  font-size: 12px;
 }
 
 /* ---------- Card Actions ---------- */
@@ -936,15 +954,15 @@ nav.desktop-nav a:hover {
 /* ---------- Details Header ---------- */
 
 .details-header {
-  background: var(--navy);
+  background: var(--navy-deep);
   color: #fff;
-  padding: 12px 16px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   position: relative;
-  z-index: 40;
+  z-index: 100;
 }
 .details-back {
   display: flex;
@@ -1094,28 +1112,42 @@ nav.desktop-nav a:hover {
 }
 
 /* ---------- Details Badges ---------- */
-
-.details-badges {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
 .details-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--orange);
-  color: #fff;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text-dark);
   border-radius: var(--radius-pill);
-  padding: 10px 20px;
+  padding: 6px 18px 6px 6px;
   font-size: 13px;
   font-weight: 600;
 }
-.details-badge img {
-  width: 16px;
-  height: 16px;
+.badge-icon-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--navy-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.badge-icon-circle img {
+  width: 13px;
+  height: 13px;
   filter: brightness(0) invert(1);
+}
+ 
+.details-gallery-empty {
+  background-color: #F1F5F9;
+}
+
+@media (min-width: 700px) {
+  .details-content-grid {
+    grid-template-columns: 1fr 340px;
+  }
 }
 
 /* ---------- Details Highlights ---------- */
@@ -1188,6 +1220,145 @@ nav.desktop-nav a:hover {
   color: var(--text-gray);
 }
 
+.details-sidebar-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  position: sticky;
+  top: 20px;
+}
+ 
+.sidebar-annual-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy-deep);
+}
+ 
+.sidebar-lease-meta {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin: 4px 0 18px;
+}
+ 
+.sidebar-landlord-label {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+ 
+.sidebar-landlord-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+ 
+.sidebar-landlord-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+ 
+.sidebar-landlord-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+ 
+.sidebar-landlord-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+ 
+.sidebar-verified-badge {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 600;
+  margin-top: 2px;
+}
+ 
+.sidebar-enquire-btn {
+  width: 100%;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.sidebar-enquire-btn:hover {
+  background: var(--navy-deep);
+}
+ 
+.sidebar-secondary-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+ 
+.sidebar-ghost-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-gray);
+  padding: 4px;
+}
+.sidebar-ghost-btn:hover {
+  color: var(--navy);
+}
+.sidebar-ghost-btn.is-saved {
+  color: var(--accent-blue);
+}
+.sidebar-ghost-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+ /* ai button */
+ .details-highlights-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.details-highlights-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-summarize-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ai-summarize-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+.ai-summarize-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+ 
 /* ==========================================================================
    SETTINGS PAGE
    ========================================================================== */

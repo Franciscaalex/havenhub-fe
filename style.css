@@ -26,12 +26,13 @@
 
 /* HEADER / NAV / FOOTER */
 
-.page-header {
+/* .page-header {
   background: var(--color-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px 80px;
+  margin-right: -5rem;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -39,7 +40,7 @@
 
 .nav-links ul {
   display: flex;
-  gap: 36px;
+  gap: 1rem;
   list-style: none;
   align-items: center;
 }
@@ -62,7 +63,7 @@
 .header-logo {
   display: flex;
   align-items: center;
-}
+} */
 
 /* Hamburger button  */
  

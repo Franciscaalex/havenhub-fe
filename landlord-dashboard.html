@@ -14,7 +14,7 @@
     <div class="dash-overlay" id="dashOverlay"></div>
 <div id="sidebar-placeholder"></div>
     <div class="dash-shell">
-      
+
       <!-- ============ MAIN COLUMN ============ -->
       <div class="dash-main">
         <!-- ============ TOPBAR ============ -->
@@ -65,25 +65,24 @@
           </div>
         </header>
 
-        <!-- ============ CONTENT: loading skeleton ============ -->
         <!-- ============ CONTENT: LOADING SKELETON ============ -->
         <div class="dash-content" id="dashLoading" style="display: block">
           <p class="dash-loading-text">Loading your dashboard...</p>
         </div>
 
-        <!-- ============ CONTENT: EMPTY STATE (PHASE A NEW USER) ============ -->
+        <!-- ============ CONTENT: EMPTY STATE (NO PROPERTIES YET) ============ -->
         <div
           class="dash-content dash-empty"
           id="dashEmptyState"
           style="display: none"
         >
           <div class="dash-stats-row" id="statsRowEmpty">
-            <!-- Will be filled with $0, -, 0, $0 cards by your script -->
+            <!-- Filled with $0, -, 0, $0 cards by dashboard-landlord.js -->
           </div>
 
           <div class="dash-empty-panel">
             <span class="dash-empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 40 40" fill="none" xmlns="http://w3.org">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle
                   cx="20"
                   cy="20"
@@ -114,14 +113,17 @@
           </div>
         </div>
 
-        <!-- ============ CONTENT: POPULATED STATE (PHASE B ACTIVE USER) ============ -->
+        <!-- ============ CONTENT: POPULATED STATE (PROPERTIES EXIST) ============ -->
+        <!-- Reacts live to API data: chart + colored stat cards appear once
+             financial/booking activity starts; until then only the Recent
+             Activity panel and property grid render. -->
         <div
           class="dash-content dash-populated"
           id="dashPopulatedState"
           style="display: none"
         >
           <div class="dash-stats-row" id="statsRow">
-            <!-- Dynamic Cards filled by your script -->
+            <!-- Dynamic Cards filled by dashboard-landlord.js -->
           </div>
 
           <div class="dash-panels-row" id="panelsRow">

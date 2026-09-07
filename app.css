@@ -785,7 +785,7 @@ margin-top: -2rem;
   }
 }
 
- /* Landlord Dashboard */
+/* Landlord Dashboard */
 .dash-body {
   margin: 0;
   padding: 0;
@@ -795,20 +795,16 @@ margin-top: -2rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* .dash-shell {
+/* Landlord Dashboard Flex Grid Wrapper */
+.dash-shell {
   display: grid;
-  grid-template-rows: 1fr auto;
-  height: 91.5vh;
-  width: 98vw;
+  /* Left column matches your sidebar width, right column takes the remaining screen */
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  width: 100vw;
   align-items: stretch;
 }
-.dash-main {
-  grid-column: 2/3;
-  grid-row: 1/2;
-  box-sizing: border-box;
-  overflow-y: auto;
-} */
-
+/* Ensure main content handles internal scrolling independently */
 .dash-main {
   grid-column: 2;
   box-sizing: border-box;
@@ -817,7 +813,6 @@ margin-top: -2rem;
   height: 100vh;
   background-color: #ffffff;
 }
-
 /* Clear floating margins from topbar containers */
 .dash-topbar {
   display: flex;
@@ -828,55 +823,7 @@ margin-top: -2rem;
   width: 100%;
   margin-bottom: 2rem;
 }
-.dash-shell {
-  display: grid;
-  /* Left column matches your sidebar width, right column takes the remaining screen */
-  grid-template-columns: 260px 1fr; 
-  min-height: 100vh;
-  width: 100vw;
-  align-items: stretch;
-}
 
-/* State-Driven Dashboard Grid Layouts (States 2, 3 & 4) */
-.dash-panels-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-bottom: 32px;
-  width: 100%;
-}
-
-/* State 4 — Full layout with graph visible */
-.dash-panels-row.full-dashboard-grid .dash-chart-panel {
-  display: block;
-  flex: 2;
-  min-width: 320px;
-}
-.dash-panels-row.full-dashboard-grid .dash-activity-panel {
-  flex: 1;
-  min-width: 280px;
-}
-
-/* States 2 & 3 — Narrow layout configuration when financial activity is missing */
-.dash-panels-row.narrow-activity-only-grid {
-  display: grid;
-  grid-template-columns: 1fr 340px; /* Properties take up the remaining left space */
-  gap: 24px;
-}
-.dash-panels-row.narrow-activity-only-grid .dash-chart-panel {
-  display: none !important;
-}
-
-/* Empty Panel Centering Context */
-.dash-empty-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  text-align: center;
-  width: 100%;
-}
 .dash-menu-btn {
   display: none;
   flex-direction: column;
@@ -961,15 +908,19 @@ margin-top: -2rem;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* State-Driven Stat Cards Styling */
-.financial-idle-health {
-  border-color: #E2E8F0;
+/* Dynamic stat card variants — only applied once real financial/booking
+   activity exists (see dashboard-landlord.js buildStatCards). */
+.dash-stat-card.stat-positive {
+  background: #ECFDF5;
+  border-color: #A7F3D0;
 }
-.financial-active-health {
-  border-color: #CBD5E1;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+.dash-stat-card.stat-negative {
+  background: #FDF2F3;
+  border-color: #FBCFD3;
 }
 
 .stat-card-title {
@@ -989,16 +940,14 @@ margin-top: -2rem;
 .stat-card-subtitle {
   font-size: 12px;
   margin: 0;
-  color: #64748B;
 }
 
-/* Contextual Value Colors */
-.text-green-healthy { color: #16A34A !important; }
-.text-red-overdue { color: #DC2626 !important; }
 .text-muted { color: #94A3B8; }
 .text-danger { color: #EF4444; font-weight: 500; }
 .text-warning { color: #F59E0B; font-weight: 500; }
+.text-success { color: #0E7490; font-weight: 500; }
 
+/* State-Driven Dashboard Grid Layouts (States 2, 3 & 4) */
 .dash-panels-row {
   display: flex;
   flex-wrap: wrap;
@@ -1007,10 +956,7 @@ margin-top: -2rem;
   width: 100%;
 }
 
-/* ============================================================
-   REAL-TIME CONDITIONAL STATE MODIFIERS (STATES 2/3 vs STATE 4)
-   ============================================================ */
-/* State 4 — Full Financial Activities layout config */
+/* State 4 — Full layout with graph visible */
 .dash-panels-row.full-dashboard-grid .dash-chart-panel {
   display: block;
   flex: 2;
@@ -1021,19 +967,22 @@ margin-top: -2rem;
   min-width: 280px;
 }
 
-/* States 2 & 3 — No financial activity, narrow right activity container */
+/* States 2 & 3 — Narrow layout configuration when financial activity is missing */
 .dash-panels-row.narrow-activity-only-grid {
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: 1fr 340px; /* Recent Activity sits in the right column */
+  gap: 24px;
 }
 .dash-panels-row.narrow-activity-only-grid .dash-chart-panel {
   display: none !important;
 }
-.dash-panels-row.narrow-activity-only-grid .dash-activity-panel {
-  flex: 0 0 340px; /* Forces exact architectural constraint on the right side */
-  width: 340px;
+.dash-panels-row.narrow-activity-only-grid .dash-activity-panel.standalone {
+  grid-column: 2;
 }
 
 .dash-chart-panel {
+  flex: 2;
+  min-width: 320px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 16px;
@@ -1103,6 +1052,8 @@ margin-top: -2rem;
 }
 
 .dash-activity-panel {
+  flex: 1;
+  min-width: 280px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 16px;
@@ -1111,11 +1062,18 @@ margin-top: -2rem;
   flex-direction: column;
 }
 
+/* Pre-activity mode: sits in the 340px grid column defined by
+   .narrow-activity-only-grid above. */
+.dash-activity-panel.standalone {
+  min-width: 0;
+}
+
 .activity-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 12px;
 }
 
 .add-property-btn-top {
@@ -1128,6 +1086,7 @@ margin-top: -2rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .add-property-btn-top:hover {
@@ -1160,6 +1119,21 @@ margin-top: -2rem;
   margin-left: 8px;
 }
 
+/* Status dot shown before each activity item's title, colored by type. */
+.activity-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.activity-dot-warning { background-color: #F59E0B; }
+.activity-dot-success { background-color: #16A34A; }
+.activity-dot-info { background-color: #0E7490; }
+.activity-dot-danger { background-color: #DC2626; }
+
 .no-activity-text {
   font-size: 13px;
   text-align: center;
@@ -1178,6 +1152,11 @@ margin-top: -2rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-content: start;
+  padding-right: 4px; /* keeps cards clear of the scrollbar */
 }
 
 .property-figma-card {
@@ -1191,12 +1170,15 @@ margin-top: -2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
 }
 
+/* Structural photo frame — kept at the same size/shape/tint as the
+   original Figma image slot, but no longer holds an actual <img>. */
 .property-figma-img {
   width: 100px;
   height: 70px;
-  object-fit: cover;
+  flex-shrink: 0;
   border-radius: 8px;
   background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
 }
 
 .property-figma-info {
@@ -1243,19 +1225,6 @@ margin-top: -2rem;
   color: #DC2626;
 }
 
-.carousel-active-fluid {
-  display: flex !important;
-  grid-template-columns: none !important;
-  flex-wrap: nowrap !important;
-  overflow-x: hidden !important;
-  gap: 20px;
-}
-
-.carousel-active-fluid .property-figma-card {
-  flex: 0 0 calc(50% - 10px);
-  min-width: 280px;
-}
-
 .badge-rented { background-color: #ffe4e6; color: #9f1239; }
 
 .dash-btn-primary {
@@ -1271,38 +1240,71 @@ margin-top: -2rem;
 
 .dash-btn-full { width: 100%; text-align: center; margin-top: auto; }
 
+/* Empty Panel Centering Context */
 .dash-empty-panel {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem ;
-  margin-right: 2rem;
+  min-height: 50vh;
   text-align: center;
+  width: 100%;
 }
 
 .dash-empty-icon { color: #003354; width: 44px; height: 44px; margin-bottom: 12px; }
 
 @media (max-width: 900px) {
+  /* Sidebar becomes a slide-in overlay below this width (see sidebar.js /
+     dashMenuBtn), so main content takes the full row instead of sharing
+     a fixed 260px column with it. */
+  .dash-shell {
+    grid-template-columns: 1fr;
+  }
+  .dash-main {
+    grid-column: 1;
+    padding: 1.25rem;
+  }
+  .dash-menu-btn {
+    display: flex;
+  }
+
+  .dash-panels-row.full-dashboard-grid {
+    flex-direction: column;
+  }
   .dash-panels-row.full-dashboard-grid .dash-chart-panel,
-  .dash-panels-row.full-dashboard-grid .dash-activity-panel,
-  .dash-panels-row.narrow-activity-only-grid .dash-activity-panel {
-    flex: none !important;
-    width: 100% !important;
+  .dash-panels-row.full-dashboard-grid .dash-activity-panel {
+    flex: none;
+    width: 100%;
+  }
+  .dash-panels-row.narrow-activity-only-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-panels-row.narrow-activity-only-grid .dash-activity-panel.standalone {
+    grid-column: 1;
   }
 }
 
 @media (max-width: 640px) {
-  .dash-listings-row {
-    grid-template-columns: 1fr;
+  /* Grid stays 2 columns at every width per spec — cards shrink and the
+     panel scrolls vertically instead of collapsing to a single column. */
+  .property-figma-card {
+    padding: 12px;
+    gap: 10px;
   }
-  .carousel-active-fluid .property-figma-card {
-    flex: 0 0 100%;
+  .property-figma-img {
+    width: 64px;
+    height: 48px;
+  }
+  .activity-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .add-property-btn-top {
+    align-self: flex-start;
   }
 }
 
-
-/* ################################################################
+ /* ################################################################
    ################   SETTINGS PAGE (settings.html)   ############
    ################################################################ */
 

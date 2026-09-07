@@ -115,6 +115,7 @@ window.addEventListener('partialsLoaded', () => {
       applyLocalCacheProfileData();
     }
   }
+  
 
   function applyLocalCacheProfileData() {
     if (sidebarUserName) {
@@ -176,4 +177,32 @@ window.addEventListener('partialsLoaded', () => {
 
     window.location.replace('login.html');
   });
+
+  /*  inbox notification */
+
+document.addEventListener('partialsLoaded', refreshSidebarInboxBadge);
+// In case sidebar.js runs after partialsLoaded already fired once.
+refreshSidebarInboxBadge();
+
+async function refreshSidebarInboxBadge() {
+  const badge = document.getElementById('sidebarInboxBadge');
+  if (!badge || !window.api) return;
+
+  try {
+    const response = await window.api.get('/enquiries/unread-count');
+    
+    const unreadCount = typeof response === 'number'
+      ? response
+      : Number(response?.count ?? response?.unreadCount ?? 0);
+
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  } catch (err) {
+    console.warn('Could not refresh sidebar inbox badge:', err.message);
+  }
+}
 });

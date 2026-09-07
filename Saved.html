@@ -8,14 +8,10 @@
 </head>
 <body>
 
-    <div id="header-placeholder"></div>
+   <div id="header-placeholder"></div> 
 
     <main class="page-content">
-    </main>
-
-    <div id="footer-placeholder"></div>
-
-    <div class="hero">
+      <div class="hero">
     <h1 id="savedHeading">My Saved Properties (0)</h1>
     <p>
       Keep track of the homes you are most interested in.
@@ -31,11 +27,11 @@
         All (0)
       </button>
 
-      <button class="saved-tab" data-status="Available" type="button">
+      <button class="saved-tab active" data-status="Available" type="button">
         Available (0)
       </button>
 
-      <button class="saved-tab" data-status="Rented" type="button">
+      <button class="saved-tab active" data-status="Rented" type="button">
         Rented (0)
       </button>
 
@@ -56,12 +52,15 @@
 
   </div>
 
+  
   <main class="grid" id="propertyGrid"></main>
+    </main>
 
+
+   <div id="footer-placeholder"></div> 
+  
   <script src="js/api.js"></script>
     <script src="js/main.js"></script>
-  <script src="inquire-modal.js"></script>
-  <script src="saved.js"></script>
-    
+  <script src="js/saved.js"></script> 
 </body>
 </html>

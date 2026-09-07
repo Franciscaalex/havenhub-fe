@@ -177,7 +177,7 @@ a:focus-visible {
   z-index: 5;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox: keep the row clean when it needs to scroll on narrow screens */
+  scrollbar-width: none; 
 }
 
 .conversation-tabs::-webkit-scrollbar {
@@ -409,6 +409,121 @@ a:focus-visible {
   padding: 40px;
   font-size: 14px;
   width: 100%;
+}
+
+/* 
+   Styles for, emoji picker, attachment
+   bubbles, and send-status  */
+
+.chat-attachment-preview-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.attachment-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: #94A3B8;
+  padding: 0;
+}
+
+.attachment-remove-btn:hover {
+  color: #EF4444;
+}
+
+.chat-send-status {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #DC2626;
+}
+
+.bubble-attachment-pending {
+  font-size: 11px;
+  color: #94A3B8;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.bubble-attachment-image {
+  display: block;
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-top: 6px;
+  object-fit: cover;
+}
+
+.bubble-attachment-doc {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #0E7490;
+  text-decoration: underline;
+}
+
+.chat-emoji-picker {
+  position: absolute;
+  bottom: 56px;
+  right: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+}
+
+.emoji-option {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.emoji-option:hover {
+  background: #F1F5F9;
+}
+
+.chat-input-bar-action-tray {
+  position: relative; /* anchors the emoji picker above the input bar */
+}
+
+/* Sidebar unread-count badge on the Inbox nav item */
+.sidebar-badge {
+  display: inline-block;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #DC2626;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  margin-left: 6px;
 }
 
 /* ---------- 6. GLOBAL FOOTER STRIP SYSTEM ---------- */

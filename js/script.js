@@ -64,10 +64,10 @@
 
   // 2. MARKUP ICON AND TEMPLATE GENERATORS
   function bedIcon() {
-    return '<img src="Bed.png" alt="Bed">';
+    return '<img src="images/Bed.png" alt="Bed">';
   }
   function bathIcon() {
-    return '<img src="Shower.png" alt="Bath">';
+    return '<img src="images/Shower.png" alt="Bath">';
   }
 
   function heartIcon(isSaved) {
@@ -94,7 +94,7 @@
     card.innerHTML = `
       <!-- INTERACTIVE IMAGE LINK: Navigates cleanly to details -->
       <a href="property-details.html?id=${p.id}" class="card-media-link" aria-label="View details for ${p.address}">
-        <div class="card-media" style="background-image:url('${p.img || 'images/property-placeholder.png'}')"></div>
+        <div class="card-media${p.img ? '' : ' card-media-empty'}" style="${p.img ? `background-image:url('${p.img}')` : 'background-color:#F1F5F9'}"></div>
       </a>
       
       <!-- HEART BOOKMARK KEYLESS TRIGGER VALUE -->
@@ -185,6 +185,12 @@
       nowSaved ? "Remove from saved" : "Save property"
     );
     btn.innerHTML = heartIcon(nowSaved);
+
+    // Per request: saving a property (not un-saving) sends the seeker
+    // straight to their saved list to see it.
+    if (nowSaved) {
+      window.location.href = "saved.html";
+    }
   });
 
   [typeSelect, minSelect, maxSelect, bedsSelect].forEach((el) => {
@@ -319,19 +325,25 @@ if (savedProfileImage && profileAvatar) {
       const response = await window.api.get('/properties?limit=50');
       const apiItems = response?.items || response || [];
 
-      // Re-map keys smoothly into the client-side variable array fields
-      PROPERTIES = apiItems.map(item => {
-        // Resolve status string constants from server payload models
-        const rawStatus = (item.status || 'AVAILABLE').toUpperCase();
-        let finalStatus = 'Available';
+      // Re-map keys smoothly into the client-side variable array fields.
+      // Confirmed via the admin audit log (GET /admin/audit-logs — a
+      // PROPERTY_APPROVED entry logs "Listing approved and published to
+      // discovery feed") that approval IS the publish step on this
+      // backend; there's no separate AVAILABLE transition afterward. So
+      // APPROVED counts as a real, live listing here, same as AVAILABLE.
+      const mappedItems = apiItems.map(item => {
+        const rawStatus = (item.status || 'PENDING_REVIEW').toUpperCase();
+        let finalStatus = 'Pending';
 
         if (rawStatus === 'APPROVED' || rawStatus === 'AVAILABLE') {
           finalStatus = 'Available';
         } else if (rawStatus === 'RENTED') {
           finalStatus = 'Rented';
-           } else if (rawStatus === 'PENDING' || rawStatus === 'PENDING_REVIEW') {
-          finalStatus = 'Pending';
         }
+        // Anything else (PENDING_REVIEW, REJECTED, etc.) stays 'Pending'
+        // and gets filtered out below — it never reaches PROPERTIES, so
+        // it can never render on this page regardless of any future
+        // change to renderCard/getFilteredProperties.
 
         return {
           id: item._id || item.id,
@@ -342,11 +354,20 @@ if (savedProfileImage && profileAvatar) {
           sqft: item.squareFeet || item.sqft || 0,
           type: item.propertyType || item.type || 'Apartment',
           status: finalStatus,
-          // STRICT LIVE MODE: Only load genuine images returning from API array blocks
-          img: item.imageUrl || (item.images && item.images[0]) || 'images/property-placeholder.png'
+          // Real API images only — no local placeholder fallback. If a
+          // property has no imageUrl/images from the API, img stays null
+          // and renderCard shows a plain tinted frame instead of a stand-in
+          // photo, so nothing on screen is ever mistaken for a real photo.
+          img: item.imageUrl || (item.images && item.images[0]) || null
         };
       });
- window.HAVENHUB_PROPERTIES = PROPERTIES; // Keep backward compatibility context intact
+
+      // Real listings only — drop anything not yet made available (or
+      // already rented, which is still a real, published listing worth
+      // showing for reference) before it ever reaches the grid.
+      PROPERTIES = mappedItems.filter(p => p.status === 'Available' || p.status === 'Rented');
+
+      window.HAVENHUB_PROPERTIES = PROPERTIES; // Keep backward compatibility context intact
       applyFilters();
 
     } catch (err) {
