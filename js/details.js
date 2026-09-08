@@ -120,15 +120,9 @@
   // Combined Layout Generator
   // --------------------------------
   function renderProperty(property) {
-    const keyHighlights = property.keyHighlights || [
-      `Prime Location: 5 mins drive from local business hub with 24/7 security.`,
-      `Excellent Value: Rent includes water treatment and dedicated underground parking spot.`,
-      `Tenant Rating: Rated 4.9/5 for landlord responsiveness and neighbourhood quietness.`,
-    ];
-
     const amenities = Array.isArray(property.amenities) && property.amenities.length > 0
       ? property.amenities.map(formatAmenity)
-      : ["Swimming Pool", "Fitness Center", "24/7 Power Backup", "Gated Security", "Reserved Parking", "High-Speed WIFI"];
+      : null; // No fake fallback list — render "No amenities listed" instead.
 
     const monthlyPrice = Number(property.price) || 0;
     const annualPrice = monthlyPrice * 12;
@@ -175,22 +169,23 @@
               </span>
             </div>
 
-            <!-- Key Highlights Box -->
+            <!-- Key Highlights Box — the header itself is the AI-summarize
+                 trigger. No content shows until the seeker clicks it, and
+                 what appears is generated from this specific listing's
+                 real description — never generic filler text. -->
             <div class="details-highlights">
-              <div class="details-highlights-title">
+              <button type="button" id="aiSummarizeBtn" class="details-highlights-title ai-summarize-trigger">
                 <span class="details-highlights-title-left">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2L15 9.5L22 10L16.5 15L18.5 22L12 18L5.5 22L7.5 15L2 10L9 9.5L12 2Z"/>
                   </svg>
                   Key Highlights
                 </span>
-                <button type="button" id="aiSummarizeBtn" class="ai-summarize-btn">
-                  ✨ AI Summarize
-                </button>
+                <span class="ai-summarize-cta">✨ Generate with AI</span>
+              </button>
+              <div id="keyHighlightsContent" class="details-highlights-empty">
+                Click above to generate AI highlights from this listing's description.
               </div>
-              <ul id="keyHighlightsList">
-                ${keyHighlights.map((highlight) => `<li>${highlight}</li>`).join("")}
-              </ul>
             </div>
 
             <div class="details-section">
@@ -199,9 +194,10 @@
             </div>
             <div class="details-section">
               <h3>Amenities</h3>
-              <p class="details-amenities">
-                ${amenities.map((amenity) => `<span>${amenity}</span>`).join("")}
-              </p>
+              ${amenities
+                ? `<p class="details-amenities">${amenities.map((amenity) => `<span>${amenity}</span>`).join("")}</p>`
+                : `<p class="details-amenities-empty">No amenities listed for this property.</p>`
+              }
             </div>
           </div>
 
@@ -264,9 +260,7 @@
     });
 
     document.getElementById('enquireNowBtn')?.addEventListener('click', () => {
-      const threadParams = new URLSearchParams({ propertyId });
-      if (property.landlordId) threadParams.set('landlordId', property.landlordId);
-      window.location.href = `thread.html?${threadParams.toString()}`;
+      openInquireModal(property);
     });
 
     document.getElementById('shareListingBtn')?.addEventListener('click', async () => {
@@ -287,6 +281,136 @@
   }
 
   // --------------------------------
+  // Inquire Now modal — real property data, real POST /enquiries call.
+  // --------------------------------
+  function normalizeStatus(rawStatus) {
+    const status = (rawStatus || 'PENDING_REVIEW').toUpperCase();
+    if (status === 'APPROVED' || status === 'AVAILABLE') return 'Available';
+    if (status === 'RENTED') return 'Rented';
+    return 'Pending';
+  }
+
+  function injectInquireModal() {
+    if (document.getElementById('inquireOverlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'inquireOverlay';
+    overlay.className = 'inquire-overlay';
+    overlay.innerHTML = `
+      <div class="inquire-modal">
+        <div class="inquire-header">
+          <h2>Inquire Now</h2>
+          <button type="button" class="inquire-close" id="inquireCloseBtn" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="inquire-property" id="inquirePropertyCard"></div>
+
+        <label class="inquire-label" for="inquireMessage">Message</label>
+        <textarea id="inquireMessage" rows="4" placeholder="Introduce yourself and ask any questions about this property…"></textarea>
+
+        <p class="inquire-disclaimer">Your information is shared securely with the landlord.</p>
+        <p class="inquire-send-status" id="inquireSendStatus" hidden></p>
+
+        <div class="inquire-actions">
+          <button type="button" class="clear-btn" id="inquireCancelBtn">Cancel</button>
+          <button type="button" class="apply-btn inquire-send" id="inquireSendBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            Send message
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('inquireCloseBtn').addEventListener('click', closeInquireModal);
+    document.getElementById('inquireCancelBtn').addEventListener('click', closeInquireModal);
+    // Click on the dimmed backdrop (not the modal itself) also closes it.
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeInquireModal(); });
+  }
+
+  function openInquireModal(property) {
+    injectInquireModal();
+
+    const overlay = document.getElementById('inquireOverlay');
+    const card = document.getElementById('inquirePropertyCard');
+    const statusText = normalizeStatus(property.status);
+    const statusClass = statusText.toLowerCase();
+    const img = Array.isArray(property.images) && property.images[0];
+
+    // Real API image only — no placeholder file, matching the rest of
+    // the app. Falls back to a plain tinted frame if there's no photo.
+    card.innerHTML = `
+      ${img
+        ? `<img src="${img}" alt="${property.title || 'Property photo'}">`
+        : `<div class="inquire-property-photo-empty"></div>`}
+      <div class="inquire-property-info">
+        <span class="inquire-property-name">${property.title || 'Untitled Property'}</span>
+        <span class="inquire-property-location">${property.address || property.location || ''}</span>
+        <span class="status-badge ${statusClass}">${statusText}</span>
+      </div>
+    `;
+
+    const textarea = document.getElementById('inquireMessage');
+    textarea.value = '';
+    hideInquireStatus();
+    overlay.classList.add('open');
+    textarea.focus();
+
+    // Re-bind fresh each open so the closure always has the current property.
+    document.getElementById('inquireSendBtn').onclick = () => handleSendInquiry(property);
+  }
+
+  function closeInquireModal() {
+    document.getElementById('inquireOverlay')?.classList.remove('open');
+  }
+
+  function showInquireStatus(message) {
+    const el = document.getElementById('inquireSendStatus');
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+  }
+
+  function hideInquireStatus() {
+    const el = document.getElementById('inquireSendStatus');
+    if (el) el.hidden = true;
+  }
+
+  async function handleSendInquiry(property) {
+    const textarea = document.getElementById('inquireMessage');
+    const sendBtn = document.getElementById('inquireSendBtn');
+    const message = textarea.value.trim();
+
+    if (!message) {
+      showInquireStatus('Please enter a message before sending.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    hideInquireStatus();
+
+    try {
+      // Confirmed via Swagger: POST /enquiries takes { propertyId, message }.
+      await window.api.post('/enquiries', { propertyId, message });
+
+      const threadParams = new URLSearchParams({ propertyId });
+      if (property.landlordId) threadParams.set('landlordId', property.landlordId);
+      window.location.href = `thread.html?${threadParams.toString()}`;
+
+    } catch (err) {
+      console.error('Failed to send enquiry:', err);
+      showInquireStatus(`Couldn't send your message: ${err.message}`);
+      sendBtn.disabled = false;
+    }
+  }
+
+  // --------------------------------
   // AI Summarize (POST /ai/summarize)
   // --------------------------------
   // Confirmed via Swagger: request body takes { description } (matching
@@ -298,18 +422,20 @@
   // earlier.
   async function handleAiSummarize(property) {
     const btn = document.getElementById('aiSummarizeBtn');
-    const listEl = document.getElementById('keyHighlightsList');
-    if (!btn || !listEl) return;
+    const ctaLabel = btn?.querySelector('.ai-summarize-cta');
+    const contentEl = document.getElementById('keyHighlightsContent');
+    if (!btn || !ctaLabel || !contentEl) return;
 
     const description = property.description || '';
     if (!description.trim()) {
-      alert('This listing has no description to summarize.');
+      contentEl.textContent = 'This listing has no description to summarize.';
       return;
     }
 
-    const originalLabel = btn.textContent;
+    const originalLabel = ctaLabel.textContent;
     btn.disabled = true;
-    btn.textContent = 'Summarizing…';
+    ctaLabel.textContent = 'Summarizing…';
+    contentEl.textContent = 'Generating highlights from this listing…';
 
     try {
       const data = await window.api.post('/ai/summarize', { description });
@@ -333,14 +459,15 @@
         throw new Error('AI response did not include any highlights.');
       }
 
-      listEl.innerHTML = items.map(h => `<li>${h}</li>`).join('');
+      contentEl.innerHTML = `<ul>${items.map(h => `<li>${h}</li>`).join('')}</ul>`;
+      ctaLabel.textContent = '✨ Regenerate';
 
     } catch (err) {
       console.error('AI summarize failed:', err);
-      alert(`Couldn't generate highlights: ${err.message}`);
+      contentEl.textContent = `Couldn't generate highlights: ${err.message}`;
+      ctaLabel.textContent = originalLabel;
     } finally {
       btn.disabled = false;
-      btn.textContent = originalLabel;
     }
   }
 

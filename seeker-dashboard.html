@@ -32,26 +32,8 @@
 
     <div class="filters-row" id="filtersRow">
 
-      <div class="filters-header">
-        <span class="filters-title">Filters</span>
-
-        <button
-          class="filters-collapse-btn"
-          id="filtersCollapseBtn"
-          aria-label="Collapse filters"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="18 15 12 9 6 15"/>
-          </svg>
-        </button>
-      </div>
 
       <div class="filter-field">
-        <label class="filter-label" for="filter-type">
-          Property Type
-        </label>
-
         <select class="filter-select" id="filter-type">
           <option value="">property Type</option>
           <option value="House">House</option>
@@ -64,18 +46,12 @@
       <div class="filter-price-row">
 
         <div class="filter-field">
-          <label class="filter-label" for="filter-min">
-            Min Price
-          </label>
 
           <input type="number" class="filter-price-input"
             id="filter-min" placeholder="Min price" min="0" step="1">
         </div>
 
         <div class="filter-field">
-          <label class="filter-label" for="filter-max">
-            Max Price
-          </label>
 
           <input type="number" class="filter-price-input"
             id="filter-max" placeholder="Max price"  min="0" step="1">
@@ -84,9 +60,6 @@
       </div>
 
       <div class="filter-field">
-        <label class="filter-label" for="filter-beds">
-          Bedrooms
-        </label>
 
         <select class="filter-select" id="filter-beds">
           <option value="">Bedrooms</option>
@@ -101,16 +74,12 @@
         Clear Filters
       </button>
 
-      <button class="apply-btn" id="applyBtn">
-        Apply Filters
-      </button>
 
     </div>
   </section>
 
   <main class="grid" id="propertyGrid"></main>
 
-  <div id="footer-placeholder"></div>
 
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>

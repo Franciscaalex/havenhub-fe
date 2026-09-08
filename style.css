@@ -24,51 +24,74 @@
 }
 
 
-/* HEADER / NAV / FOOTER */
-
-/* .page-header {
+/* HEADER / NAV / FOOTER  */
+ 
+.page-header {
   background: var(--color-primary);
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 80px;
-  margin-right: -5rem;
+  padding: 10px 20px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-sizing: border-box;
 }
-
+ 
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+ 
 .nav-links ul {
   display: flex;
   gap: 1rem;
   list-style: none;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
-
+ 
 .nav-links a {
   text-decoration: none;
   color: var(--color-text-main);
   font-weight: 500;
-  font-size: 17px;
+  font-size: 1rem;
 }
-
+ 
 .nav-links a:hover {
   color: #17ea65;
 }
-
+ 
 .nav-links a.active-link {
   color: #17ea65;
 }
-
+ 
 .header-logo {
   display: flex;
   align-items: center;
-} */
-
-/* Hamburger button  */
+}
+ 
+.logo-icon {
+  width: auto;
+  height: 2rem;
+  margin-right: 5px;
+}
+ 
+.haven-logo,
+.hub-logo {
+  font-family: 'Roboto', sans-serif;
+  font-size: 23px;
+  letter-spacing: 2px;
+  font-weight: 200;
+  color: var(--color-text-main);
+}
+ 
+/* ---------- Hamburger button ---------- */
  
 .hamburger-btn {
-  display: none; 
+  display: none;
   flex-direction: column;
   justify-content: space-between;
   width: 28px;
@@ -101,33 +124,94 @@
   transform: translateY(-8.5px) rotate(-45deg);
 }
  
-.logo-icon {
-  width: auto;
-  height: 2rem;
-  margin-right: 5px;
+/* ---------- Right-side utilities (bell / settings / avatar) ---------- */
+/* These classes exist in your HTML but had no matching rules at all
+   before this fix — .profile-icon / .profile-bell / .btn-logout /
+   .nav-username below are the old classes your CSS still has, kept
+   in case anything else references them, but nothing in your current
+   header HTML uses them anymore. */
+ 
+.profile-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
  
-.haven-logo,
-.hub-logo {
-  font-family: 'Roboto', sans-serif;
-  font-size: 23px;
-  letter-spacing: 2px;
-  font-weight: 200;
+.nav-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
  
-.haven-logo,
-.hub-logo {
-  color: var(--color-text-main);
+.utility-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }
-
-/* Right-side icons (bell + avatar) */
-
+ 
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2px solid var(--color-primary);
+}
+ 
+.nav-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  color: #fff;
+}
+.nav-icon-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+ 
+.header-avatar-wrap {
+  display: flex;
+  align-items: center;
+}
+ 
+.avatar-trigger-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+}
+ 
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+ 
+/* ---------- Legacy classes (unused by the current header.html, kept
+   as-is in case something else on the site still references them) ---------- */
+ 
 div.profile-icon {
   display: flex;
   align-items: center;
   gap: 14px;
 }
-
+ 
 img.profile-icon {
   width: auto;
   height: 2rem;
@@ -135,18 +219,18 @@ img.profile-icon {
   object-fit: cover;
   cursor: pointer;
 }
-
+ 
 .profile-bell {
   width: auto;
   height: 1.5rem;
   cursor: pointer;
   filter: brightness(0) invert(1);
 }
-
+ 
 .profile-bell:hover {
   opacity: 0.8;
 }
-
+ 
 .btn-logout {
   background: none;
   border: 1px solid var(--color-text-main);
@@ -157,13 +241,46 @@ img.profile-icon {
   cursor: pointer;
   margin-left: 8px;
 }
-
+ 
 .nav-username {
   font-weight: 500;
   font-size: 0.9rem;
   color: var(--color-text-main);
 }
-
+ 
+/* ---------- Mobile nav collapse ---------- */
+/* IMPORTANT ASSUMPTION: I don't have header.js, so I don't know for
+   certain what class it toggles on #navLinks when the hamburger is
+   clicked. This assumes it toggles ".open" (the same convention used
+   elsewhere in this codebase, e.g. nick.css's .mobile-menu.open). If
+   the hamburger doesn't visually show/hide the nav after this, check
+   header.js for the actual class name it toggles and tell me — it's
+   a one-line fix here to match it. */
+ 
+@media (max-width: 860px) {
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-primary);
+    padding: 16px 24px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  .nav-links.open {
+    display: flex;
+  }
+  .nav-links ul {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .hamburger-btn {
+    display: flex;
+  }
+}
+ 
 .footer-container {
   background-color: #ffffff;
   padding: 30px 80px;
@@ -640,15 +757,7 @@ body.role-page {
   gap: 3rem;
 }
 
-/* ============================================================
-   ROLE GRID
-   The screenshot uses small, fixed-size thumbnails with a lot of
-   whitespace around them — not images stretched to fill the full
-   column width. Fixed column widths + generous gaps reproduce
-   that look; the mobile breakpoint below switches to a fluid
-   single column instead, since fixed pixel widths stop making
-   sense on a narrow phone screen.
-   ============================================================ */
+/* ROLE GRID */
 
 .role-grid {
   display: grid;

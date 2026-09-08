@@ -27,6 +27,10 @@ let pendingAttachments = [];
 // Small, safe default palette — expand freely, this is just common ones.
 const EMOJI_PALETTE = ['😀', '😂', '😍', '👍', '🙏', '🎉', '😢', '😮', '❤️', '🔥', '👏', '🤔', '😊', '🙌', '✅', '📸'];
 
+// Guards so we only ever attach the "click outside closes the emoji
+// picker" listener once, no matter how many times a chat thread is opened.
+let emojiOutsideClickHandlerAttached = false;
+
 async function initializeInboxModule() {
   const container = document.getElementById('conversationsList');
   if (!container || container.dataset.initialized === "true") return;
@@ -205,7 +209,7 @@ async function openActiveChatWindow(threadId) {
     <div class="chat-attachment-preview-tray" id="chatAttachmentTray" hidden></div>
     <div class="chat-send-status" id="chatSendStatus" hidden></div>
 
-    <div class="chat-input-bar-action-tray">
+    <div class="chat-input-bar-action-tray" style="position:relative;">
       <form class="chat-input-form" id="chatSubmissionForm">
         <input type="file" id="chatAttachmentInput" accept="image/*,.pdf,.doc,.docx" multiple hidden>
 
@@ -233,7 +237,9 @@ async function openActiveChatWindow(threadId) {
         </button>
       </form>
 
-      <div class="chat-emoji-picker" id="chatEmojiPicker" hidden></div>
+      <div class="chat-emoji-picker" id="chatEmojiPicker" hidden
+           style="position:absolute; bottom:56px; right:8px; z-index:1000; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; box-shadow:0 10px 30px rgba(15,23,42,0.15); grid-template-columns:repeat(4,1fr); gap:6px; max-width:200px;">
+      </div>
     </div>
   `;
 
@@ -246,6 +252,7 @@ async function openActiveChatWindow(threadId) {
   document.getElementById('chatAttachmentInput')?.addEventListener('change', handleAttachmentSelect);
   document.getElementById('chatEmojiBtn')?.addEventListener('click', toggleEmojiPicker);
   buildEmojiPicker();
+  ensureEmojiOutsideClickHandler();
 
   await loadThreadMessages(threadId);
 
@@ -353,6 +360,7 @@ async function handleSendMessageSubmit(e) {
   input.value = "";
   clearAttachmentPreview();
   hideSendStatus();
+  closeEmojiPicker();
 
   // Optimistically append the message to the screen right away so it feels
   // responsive — but this is now provisional, not final. loadThreadMessages()
@@ -515,17 +523,52 @@ function buildEmojiPicker() {
   if (!picker) return;
 
   picker.innerHTML = EMOJI_PALETTE.map(emoji =>
-    `<button type="button" class="emoji-option">${emoji}</button>`
+    `<button type="button" class="emoji-option" style="font-size:18px; line-height:1; padding:4px; border:none; background:none; cursor:pointer; border-radius:6px;">${emoji}</button>`
   ).join('');
 
   picker.querySelectorAll('.emoji-option').forEach(btn => {
-    btn.addEventListener('click', () => insertEmojiAtCursor(btn.textContent));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      insertEmojiAtCursor(btn.textContent);
+    });
   });
 }
 
-function toggleEmojiPicker() {
+// Opens the picker as a positioned popup above the input bar (so it never
+// covers the send button), and closes it again on a second click of the
+// same icon. Stops the click from bubbling to the document-level "close on
+// outside click" listener below, which would otherwise re-close it
+// immediately on the same click that opened it.
+function toggleEmojiPicker(e) {
+  e?.stopPropagation();
   const picker = document.getElementById('chatEmojiPicker');
-  if (picker) picker.hidden = !picker.hidden;
+  if (!picker) return;
+
+  const willOpen = picker.hidden;
+  picker.hidden = !willOpen;
+  picker.style.display = willOpen ? 'grid' : 'none';
+}
+
+function closeEmojiPicker() {
+  const picker = document.getElementById('chatEmojiPicker');
+  if (!picker) return;
+  picker.hidden = true;
+  picker.style.display = 'none';
+}
+
+// Registered once (guarded), not per chat-open, so repeated thread opens
+// don't stack up duplicate document-level listeners.
+function ensureEmojiOutsideClickHandler() {
+  if (emojiOutsideClickHandlerAttached) return;
+  emojiOutsideClickHandlerAttached = true;
+
+  document.addEventListener('click', (e) => {
+    const picker = document.getElementById('chatEmojiPicker');
+    const emojiBtn = document.getElementById('chatEmojiBtn');
+    if (!picker || picker.hidden) return;
+    if (picker.contains(e.target) || emojiBtn?.contains(e.target)) return;
+    closeEmojiPicker();
+  });
 }
 
 function insertEmojiAtCursor(emoji) {

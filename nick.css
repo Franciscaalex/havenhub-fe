@@ -350,7 +350,7 @@ margin-left: -3.5rem;
    SEARCH & FILTERS
    ========================================================================== */
 .search-section {
-  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   padding: 16px 20px 6px;
   position: relative;
@@ -358,6 +358,7 @@ margin-left: -3.5rem;
 .search-row {
   display: flex;
   gap: 10px;
+  margin-top: 1rem;
   margin-bottom: 0;
   width: 92vw;
 }
@@ -504,7 +505,6 @@ margin-left: -3.5rem;
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  -moz-appearance: textfield;
 }
 .filter-price-input::placeholder {
   color: var(--text-gray);
@@ -523,7 +523,7 @@ margin-left: -3.5rem;
 
 .clear-btn {
   background: #fff;
-  border: 1px solid var(--navy);
+  border: 1px solid var(--accent-blue);
   color: var(--navy);
   border-radius: var(--radius-pill);
   padding: 9px 18px;
@@ -563,11 +563,11 @@ margin-left: -3.5rem;
    ========================================================================== */
 
 .grid {
-  width: 93vw;
+  width: 100vw;
   margin: 0 auto;
   padding: 16px 20px 40px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
@@ -1139,7 +1139,7 @@ margin-left: -3.5rem;
   height: 13px;
   filter: brightness(0) invert(1);
 }
- 
+
 .details-gallery-empty {
   background-color: #F1F5F9;
 }
@@ -1329,52 +1329,99 @@ margin-left: -3.5rem;
   flex-shrink: 0;
 }
  /* ai button */
- .details-highlights-title {
+ .details-highlights-title.ai-summarize-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 10px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.ai-summarize-trigger:hover .ai-summarize-cta {
+  background: rgba(255, 255, 255, 0.25);
+}
+.ai-summarize-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 .details-highlights-title-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.ai-summarize-btn {
+.ai-summarize-cta {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
   border-radius: var(--radius-pill);
   padding: 6px 14px;
   font-size: 12px;
   font-weight: 600;
-}
-.ai-summarize-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-.ai-summarize-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  flex-shrink: 0;
 }
  
+.details-highlights-empty {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  font-style: italic;
+}
+.details-highlights ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  margin: 0;
+  list-style: disc;
+}
+.details-highlights li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+ 
+.details-amenities-empty {
+  font-size: 13px;
+  color: var(--text-gray);
+  font-style: italic;
+  margin: 0;
+}
+ /* inquire form */
+ .inquire-property-photo-empty {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background-color: #F1F5F9;
+  flex-shrink: 0;
+}
+ 
+.inquire-send-status {
+  font-size: 12px;
+  color: var(--red);
+  margin: -6px 0 4px;
+}
 /* ==========================================================================
    SETTINGS PAGE
    ========================================================================== */
 
 .settings-container {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 2rem;
 }
 .settings-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 36px;
+  gap: 1rem;
 }
 .settings-section-title {
-  font-size: 20px;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-dark);
   margin: 0 0 18px;
@@ -1404,7 +1451,7 @@ margin-left: -3.5rem;
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  border: 4px solid var(--accent-blue);
+  border: 4px solid var(--navy);
   object-fit: cover;
   display: block;
   background: #dfe3e8;
@@ -1413,7 +1460,7 @@ margin-left: -3.5rem;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--navy-deep);
+  background: var(--navy);
   color: #fff;
   border: none;
   border-radius: var(--radius-pill);
@@ -1422,7 +1469,7 @@ margin-left: -3.5rem;
   font-weight: 600;
 }
 .change-photo-btn:hover {
-  background: var(--navy);
+  background: var(--navy-deep);
 }
 .change-photo-btn svg {
   width: 15px;
@@ -1487,7 +1534,7 @@ margin-left: -3.5rem;
 /* ---------- Settings Buttons ---------- */
 
 .save-btn {
-  background: var(--navy-deep);
+  background: var(--navy);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -1496,11 +1543,11 @@ margin-left: -3.5rem;
   font-weight: 600;
 }
 .save-btn:hover {
-  background: var(--navy);
+  background: var(--navy-deep);
 }
 
 .change-password-btn {
-  background: var(--navy-deep);
+  background: var(--navy);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -1510,7 +1557,7 @@ margin-left: -3.5rem;
   margin-bottom: 22px;
 }
 .change-password-btn:hover {
-  background: var(--navy);
+  background: var(--navy-deep);
 }
 
 /* ---------- Password Panel ---------- */
@@ -1559,9 +1606,9 @@ margin-left: -3.5rem;
 
 .logout-btn {
   display: block;
-  width: 50%;
+  width: 10%;
   margin: 40px auto 0;
-  background: var(--accent-blue);
+  background: var(--navy);
   color: #fff;
   border: none;
   border-radius: var(--radius-pill);
@@ -1570,7 +1617,7 @@ margin-left: -3.5rem;
   font-weight: 700;
 }
 .logout-btn:hover {
-  background: var(--navy-deep);
+  background: var(--accent-blue);
 }
 
 
@@ -1711,7 +1758,7 @@ select:focus-visible {
 
   /* ---------- Filters ---------- */
 
-  .filters-row {
+   .filters-row {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1721,15 +1768,11 @@ select:focus-visible {
     border: none;
     box-shadow: none;
     padding: 14px 0 0;
-  }
-  .filters-header,
-  .filter-label,
-  .apply-btn {
-    display: none;
-  }
+  } 
+ 
   .filter-field {
     flex: 1 1 auto;
-    min-width: 110px;
+    width: 110px;
   }
   .filter-price-row {
     display: contents;

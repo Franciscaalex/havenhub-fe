@@ -3,53 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Havenhub — ChatThread</title>
+    <title>Messages — AvenHub (Seeker)</title>
     <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg">
 </head>
 <body>
 
 <div class="thread-page">
 
-    <div id="header-placeholder"></div>
+    <div id="pageHeaderMount"></div>
+    <script>
+      // Fetch the real, already-styled header.html and inject just its
+      // <header> into the page, then load header.js afterward so its
+      // element lookups (hamburger, avatar upload, notification dot)
+      // find real DOM nodes instead of running against nothing.
+      (function () {
+        const mount = document.getElementById('pageHeaderMount');
+        fetch('header.html')
+          .then((res) => {
+            if (!res.ok) throw new Error(`header.html responded ${res.status}`);
+            return res.text();
+          })
+          .then((html) => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const headerEl = doc.querySelector('header.page-header') || doc.querySelector('header');
+            if (headerEl && mount) {
+              mount.replaceWith(headerEl);
+            } else if (mount) {
+              mount.innerHTML = html;
+            }
+          })
+          .then(() => {
+            const s = document.createElement('script');
+            s.src = 'js/header.js';
+            document.body.appendChild(s);
+          })
+          .catch((err) => {
+            console.error('Could not load header.html:', err);
+            if (mount) mount.innerHTML = '<div class="conversations-empty">Could not load the page header.</div>';
+          });
+      })();
+    </script>
 
-   
-    <main class="thread-main">
+    <main class="seeker-inbox-main">
 
-       
-        <header class="thread-header">
-            <div class="logo-container">
-                <img src="assets/HavenHub-03 2.svg" alt="havenhub-logo">
-                <span class="header-text">Landlord</span>
-            </div>
+        <!-- DYNAMIC CONTENT VIEW SYSTEM ALTERNATOR -->
+        <div class="messages-page-layout">
 
-            <div class="thread-header-info">
-                <a href="chat.html" class="back-link"><img src="image/ArrowLeft.svg" alt="arrow"></a>
-                <img id="threadAvatar" src="" alt="" class="thread-avatar">
-                <div class="thread-header-details">
-                    <h3 id="threadName"></h3>
-                    <p id="threadProperty"></p>
+            <!-- PANEL VIEW A: CONVERSATION LIST -->
+            <div class="seeker-list-panel" id="conversationsListViewPanel">
+                <h3 class="conversations-heading">Conversations</h3>
+
+                <div class="conversation-tabs">
+                    <button type="button" id="seekerTabAll" class="tab-btn active">
+                        All <span id="seekerCountAll">(0)</span>
+                    </button>
+                    <button type="button" id="seekerTabUnread" class="tab-btn">
+                        Unread <span id="seekerCountUnread">(0)</span>
+                    </button>
+                    <button type="button" id="seekerTabArchive" class="tab-btn">
+                        Archive <span id="seekerCountArchive">(0)</span>
+                    </button>
+                </div>
+
+                <!-- Real-Time Target Row Feed Anchor -->
+                <div class="conversations-list" id="seekerConversationsList">
+                    <div class="chat-skeleton-loader">Syncing secure connection channels...</div>
                 </div>
             </div>
 
-            <div class="header-actions">
-                <input type="text" placeholder="Search conversations..." class="search-input">
+            <!-- PANEL VIEW B: ACTIVE CHAT WINDOW -->
+            <div class="chat-window-view" id="chatWindowView">
+                <div class="chat-window-placeholder" id="chatWindowPlaceholder">
+                    <div>
+                        <p style="font-weight:600; color:var(--navy); margin-bottom:4px;">Select a conversation</p>
+                        <p style="margin:0;">Pick a thread on the left to see your messages with that landlord.</p>
+                    </div>
+                </div>
+
+                <!-- Injected dynamically by js/thread.js when a conversation is selected -->
+                <div class="thread-open" id="threadOpen" hidden>
+                    <header class="thread-header">
+                        <button type="button" class="back-link seeker-back-btn" id="seekerBackBtn" aria-label="Back to conversations">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <div id="threadAvatarWrap"></div>
+                        <div class="thread-header-details">
+                            <h3 id="threadName">&nbsp;</h3>
+                            <p id="threadProperty">&nbsp;</p>
+                        </div>
+                        <div class="header-actions">
+                            <input type="text" placeholder="Search conversation..." class="search-input" id="threadSearch">
+                        </div>
+                    </header>
+
+                    <div class="messages-container" id="messagesContainer"></div>
+
+                    <form id="messageForm" class="message-input-bar">
+                        <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+                        <button type="submit" class="btn-send" id="sendBtn" aria-label="Send message">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12l16-7-6.5 16-3-6.5L4 12z" fill="currentColor"/></svg>
+                        </button>
+                    </form>
+                </div>
             </div>
-        </header>
-
-        
-        <div class="messages-container" id="messagesContainer"></div>
-
-        
-        <form id="messageForm" class="message-input-bar">
-            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
-            <button type="submit" class="btn-primary">Send</button>
-        </form>
+        </div>
 
     </main>
 
 </div>
-
-<div id="footer-placeholder"></div>
 
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>

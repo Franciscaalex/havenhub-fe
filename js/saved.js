@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const landlordId = e.currentTarget.dataset.landlordId;
       const params = new URLSearchParams({ propertyId: pId });
       if (landlordId) params.set('landlordId', landlordId);
-      window.location.href = `inquire.html?${params.toString()}`;
+      window.location.href = `thread.html?${params.toString()}`;
     });
 
     return card;
