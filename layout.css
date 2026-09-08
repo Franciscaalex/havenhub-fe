@@ -1,0 +1,28 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    align-items: stretch;
+}
+
+.admin-sidebar {
+    background-color: #003453;
+    overflow-y: auto;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.admin-content {
+    padding: 32px 40px;
+    overflow: hidden;
+}
+
+.hidden {
+    display: none !important;
+}

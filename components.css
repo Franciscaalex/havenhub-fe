@@ -1,0 +1,211 @@
+/* ==========================================================================
+   HAV-186 — Toast Notification Utility & Styling
+   HAV-189 — Moderation Form Input Guardrails & Validation
+   Colors matched exactly to custom.css (admin dashboard / moderation queue).
+   ========================================================================== */
+
+:root {
+  --hh-navy: #003453;          
+  --hh-navy-dark: #041823;     
+  --hh-blue: #006494;          
+  --hh-success: #1a9c4a;       
+  --hh-success-bg: #e3f7e9;    
+  --hh-error: #dc2626;        
+  --hh-error-bg: #fdeaea;      
+  --hh-text: #16191f;          
+  --hh-text-muted: #636363;    
+  --hh-border: #eee;           
+}
+
+/* ---------- Toasts ----------  */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 380px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--hh-border);
+  border-left: 4px solid transparent;
+  box-shadow: 0 8px 24px rgba(15, 31, 61, 0.12);
+  transform: translateX(24px);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  pointer-events: auto;
+}
+
+.toast--visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+.toast--leaving {
+  transform: translateX(24px);
+  opacity: 0;
+}
+.toast--success {
+  border-left-color: var(--hh-success);
+}
+.toast--error {
+  border-left-color: var(--hh-error);
+}
+.toast__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.toast--success .toast__icon {
+  background: var(--hh-success);
+}
+.toast--error .toast__icon {
+  background: var(--hh-error);
+}
+.toast__message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--hh-text);
+  font-weight: 500;
+}
+.toast__dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--hh-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.toast__dismiss:hover {
+  color: var(--hh-text);
+}
+@media (max-width: 480px) {
+  .toast-container {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+  }
+  .toast {
+    max-width: none;
+  }
+}
+
+/* ---------- Moderation modal (HAV-189) ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 24, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  padding: 16px;
+}
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 48px rgba(10, 16, 32, 0.3);
+}
+.modal__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--hh-navy);
+  margin: 0 0 6px;
+}
+.modal__subtitle {
+  font-size: 14px;
+  color: #5a6478;
+  margin: 0 0 18px;
+}
+.modal__field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hh-navy);
+  margin-bottom: 6px;
+}
+.modal__field textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  border: 1.5px solid #d7dcea;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--hh-navy);
+  box-sizing: border-box;
+}
+.modal__field textarea:focus {
+  outline: none;
+  border-color: var(--hh-blue);
+  box-shadow: 0 0 0 3px rgba(62, 155, 224, 0.15);
+}
+.modal__field.has-error textarea {
+  border-color: var(--hh-error);
+}
+.modal__error {
+  display: none;
+  font-size: 12.5px;
+  color: var(--hh-error);
+  margin-top: 6px;
+}
+.modal__field.has-error .modal__error {
+  display: block;
+}
+.modal__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.btn--approve {
+  background: var(--hh-success);
+  color: #fff;
+}
+.btn--reject {
+  background: var(--hh-error);
+  color: #fff;
+}
+
+.btn--ghost {
+  background: #eef1f7;
+  color: var(--hh-navy);
+}
