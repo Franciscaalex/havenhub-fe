@@ -4,6 +4,7 @@
    ============================================================ */
 (function () {
   let PROPERTIES = [];
+  let serverSavedIds = null;
 
   const grid = document.getElementById("propertyGrid");
   const searchInput = document.getElementById("search-input");
@@ -20,7 +21,6 @@
 
   const STORAGE_KEY = "havenhub_saved_properties";
 
-  // 1. LOCAL STORAGE PERSISTENCE SYNC
   function getSavedEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -45,21 +45,68 @@
     STORAGE_KEY,
   };
 
-  function toggleSaved(id) {
+  function extractSavedIds(raw) {
+    const list = Array.isArray(raw) ? raw : (raw?.items || raw?.data || []);
+    return list
+      .map((entry) => {
+        if (typeof entry === "string") return entry;
+        return entry?.property?._id || entry?.property?.id
+          || entry?.propertyId || entry?._id || entry?.id || null;
+      })
+      .filter(Boolean)
+      .map(String);
+  }
+
+  async function fetchServerSavedIds() {
+    try {
+      if (!window.api) return null;
+      const raw = await window.api.get("/saved-properties");
+      return extractSavedIds(raw);
+    } catch (err) {
+      // Not logged in / offline / endpoint hiccup — fall back to the
+      // local cache rather than breaking the grid.
+      console.error("Could not load saved properties from server:", err);
+      return null;
+    }
+  }
+
+  async function toggleSaved(id) {
     const entries = getSavedEntries();
     const idx = entries.findIndex((e) => e.id === id);
-    if (idx > -1) {
-      entries.splice(idx, 1);
-    } else {
+    const willSave = idx === -1;
+
+    try {
+      if (willSave) {
+        await window.api.post(`/saved-properties/${id}`);
+      } else {
+        await window.api.delete(`/saved-properties/${id}`);
+      }
+    } catch (err) {
+      // 409 "already bookmarked" / 404 "not bookmarked" just mean the
+      // server already agrees with where we're headed — still fine to
+      // update the local cache. Anything else, bail out without touching
+      // local state so the UI doesn't lie about what's actually saved.
+      const alreadyInSync = willSave
+        ? /already bookmarked/i.test(err.message)
+        : /not bookmarked/i.test(err.message);
+      if (!alreadyInSync) {
+        console.error("Failed to sync saved property with server:", err);
+        throw err;
+      }
+    }
+
+    if (willSave) {
       entries.push({ id, savedAt: new Date().toISOString() });
+    } else {
+      entries.splice(idx, 1);
     }
     setSavedEntries(entries);
     document.dispatchEvent(
       new CustomEvent("property:saved-changed", {
-        detail: { id, saved: idx === -1 },
+        detail: { id, saved: willSave },
       }),
     );
-    return idx === -1;
+    return willSave;
   }
 
   // 2. MARKUP ICON AND TEMPLATE GENERATORS
@@ -148,7 +195,7 @@
   function redraw(list) {
     if (!grid) return;
     grid.innerHTML = "";
-    const savedIds = getSavedIds();
+    const savedIds = serverSavedIds || getSavedIds();
 
     if (list.length === 0) {
       grid.innerHTML = `
@@ -171,14 +218,24 @@
   /* ============================================================
      4. DELEGATE INTERACTION EVENTS & SLIDER EVENT BINDINGS
      ============================================================ */
-  grid?.addEventListener("click", (e) => {
+  grid?.addEventListener("click", async (e) => {
     const btn = e.target.closest(".heart-btn");
     if (!btn) return;
-    
+
     const id = btn.dataset.id;
     const resolvedId = isNaN(Number(id)) ? id : Number(id);
 
-    const nowSaved = toggleSaved(resolvedId);
+    btn.disabled = true;
+    let nowSaved;
+    try {
+      nowSaved = await toggleSaved(resolvedId);
+    } catch (err) {
+      btn.disabled = false;
+      alert(`Couldn't update saved properties: ${err.message}`);
+      return;
+    }
+    btn.disabled = false;
+
     btn.setAttribute("aria-pressed", nowSaved);
     btn.setAttribute(
       "aria-label",
@@ -382,6 +439,15 @@ if (savedProfileImage && profileAvatar) {
     }
   };
 
+  async function syncServerSavedIds() {
+    const ids = await fetchServerSavedIds();
+    if (ids !== null) {
+      serverSavedIds = ids;
+      applyFilters();
+    }
+  }
+
   // Launch execution pipeline parameters natively
   loadPropertiesFromAPI();
+  syncServerSavedIds();
 })();

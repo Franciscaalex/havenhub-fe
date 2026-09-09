@@ -13,11 +13,12 @@
   }
 
   // --------------------------------
-  // Saved/Wishlist — localStorage, same STORAGE_KEY as script.js and
-  // saved.js, so this page stays in sync with the rest of the app
-  // instead of depending on an unconfirmed server-side save endpoint.
+  // Saved/Wishlist — the server (GET/POST/DELETE /saved-properties, tied to
+  // the logged-in user) is the source of truth; localStorage is kept only
+  // as an optimistic same-tab cache, same STORAGE_KEY as script.js and
+  // saved.js.
   // --------------------------------
-  function getSavedIds() {
+  function getLocalSavedIds() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw).map(item => item.id) : [];
@@ -26,26 +27,59 @@
     }
   }
 
-  function toggleSavedLocal(id) {
+  // Confirmed response shape for GET /saved-properties: a bare array of
+  // bookmark rows, each shaped like { id: <bookmarkId>, userId, propertyId,
+  // property: {...full property...}, createdAt }.
+  function extractSavedIds(raw) {
+    const list = Array.isArray(raw) ? raw : (raw?.items || raw?.data || []);
+    return list
+      .map(entry => {
+        if (typeof entry === 'string') return entry;
+        return entry?.property?._id || entry?.property?.id
+          || entry?.propertyId || entry?._id || entry?.id || null;
+      })
+      .filter(Boolean)
+      .map(String);
+  }
+
+  async function isSavedOnServer(id) {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      let entries = raw ? JSON.parse(raw) : [];
-      const idx = entries.findIndex(e => e.id === id);
-      let nowSaved;
-      if (idx > -1) {
-        entries.splice(idx, 1);
-        nowSaved = false;
-      } else {
-        entries.push({ id, savedAt: new Date().toISOString() });
-        nowSaved = true;
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-      document.dispatchEvent(new CustomEvent('property:saved-changed', { detail: { id, saved: nowSaved } }));
-      return nowSaved;
-    } catch (e) {
-      console.error('Could not update saved list:', e);
+      if (!window.api) return null;
+      const raw = await window.api.get('/saved-properties');
+      return extractSavedIds(raw).includes(String(id));
+    } catch (err) {
+      console.error('Could not load saved status from server:', err);
       return null;
     }
+  }
+
+  async function toggleSaved(id) {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    let entries = raw ? JSON.parse(raw) : [];
+    const idx = entries.findIndex(e => e.id === id);
+    const willSave = idx === -1;
+
+    try {
+      if (willSave) {
+        await window.api.post(`/saved-properties/${id}`);
+      } else {
+        await window.api.delete(`/saved-properties/${id}`);
+      }
+    } catch (err) {
+      const alreadyInSync = willSave
+        ? /already bookmarked/i.test(err.message)
+        : /not bookmarked/i.test(err.message);
+      if (!alreadyInSync) throw err;
+    }
+
+    if (willSave) {
+      entries.push({ id, savedAt: new Date().toISOString() });
+    } else {
+      entries.splice(idx, 1);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    document.dispatchEvent(new CustomEvent('property:saved-changed', { detail: { id, saved: willSave } }));
+    return willSave;
   }
 
   // --------------------------------
@@ -135,7 +169,9 @@
     const depositLine = depositParts.join(' • ');
 
     const landlordName = [property.landlord?.firstName, property.landlord?.lastName].filter(Boolean).join(' ') || 'Verified Landlord';
-    const isSavedInitially = getSavedIds().includes(propertyId) || getSavedIds().includes(Number(propertyId));
+    // Instant best-guess from the local cache — reconciled against the
+    // server's answer right after render (see reconcileSavedState below).
+    const isSavedInitially = getLocalSavedIds().includes(propertyId) || getLocalSavedIds().includes(Number(propertyId));
 
     root.innerHTML = `
       <div class="details-container">
@@ -242,21 +278,46 @@
     `;
 
     wireInteractionButtons(property);
+    reconcileSavedState();
+  }
+
+  // Patches the Save button to match the server's answer, in case the
+  // local cache (used for the instant first paint above) was stale or
+  // simply didn't exist yet on this browser/origin.
+  async function reconcileSavedState() {
+    const btn = document.getElementById('saveWishlistBtn');
+    if (!btn) return;
+    const serverSaved = await isSavedOnServer(propertyId);
+    if (serverSaved === null || serverSaved === btn.classList.contains('is-saved')) return;
+    applySavedUi(btn, serverSaved);
+  }
+
+  function applySavedUi(btn, nowSaved) {
+    btn.classList.toggle('is-saved', nowSaved);
+    const label = btn.querySelector('span');
+    if (label) label.textContent = nowSaved ? 'Saved' : 'Save to Wishlist';
+    const icon = btn.querySelector('svg');
+    if (icon) icon.setAttribute('fill', nowSaved ? 'currentColor' : 'none');
   }
 
   // --------------------------------
   // Event Actions
   // --------------------------------
   function wireInteractionButtons(property) {
-    document.getElementById('saveWishlistBtn')?.addEventListener('click', (e) => {
+    document.getElementById('saveWishlistBtn')?.addEventListener('click', async (e) => {
       const btn = e.currentTarget;
-      const nowSaved = toggleSavedLocal(propertyId);
-      if (nowSaved === null) return; // storage write failed — leave UI as-is
-      btn.classList.toggle('is-saved', nowSaved);
-      const label = btn.querySelector('span');
-      if (label) label.textContent = nowSaved ? 'Saved' : 'Save to Wishlist';
-      const icon = btn.querySelector('svg');
-      if (icon) icon.setAttribute('fill', nowSaved ? 'currentColor' : 'none');
+      btn.disabled = true;
+      let nowSaved;
+      try {
+        nowSaved = await toggleSaved(propertyId);
+      } catch (err) {
+        console.error('Could not update saved list:', err);
+        btn.disabled = false;
+        alert(`Couldn't update saved properties: ${err.message}`);
+        return;
+      }
+      btn.disabled = false;
+      applySavedUi(btn, nowSaved);
     });
 
     document.getElementById('enquireNowBtn')?.addEventListener('click', () => {

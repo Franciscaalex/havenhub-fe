@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let savedAtById = new Map();
 
   // ---------- Storage helpers ----------
-  function getSavedEntries() {
+  // The server (GET/POST/DELETE /saved-properties, tied to the logged-in
+  // user) is the source of truth for this page. localStorage is only a
+  // same-tab optimistic cache.
+  function getLocalSavedEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
@@ -21,20 +24,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function getSavedIds() {
-    return getSavedEntries().map(item => item.id);
+  // Confirmed response shape for GET /saved-properties: a bare array of
+  // bookmark rows, each shaped like { id: <bookmarkId>, userId, propertyId,
+  // property: {...full property...}, createdAt }.
+  function extractSavedEntries(raw) {
+    const list = Array.isArray(raw) ? raw : (raw?.items || raw?.data || []);
+    return list
+      .map(entry => {
+        if (typeof entry === 'string') return { id: entry, savedAt: null, property: null };
+        const id = entry?.property?._id || entry?.property?.id
+          || entry?.propertyId || entry?._id || entry?.id || null;
+        const savedAt = entry?.savedAt || entry?.createdAt || null;
+        return id != null ? { id: String(id), savedAt, property: entry?.property || null } : null;
+      })
+      .filter(Boolean);
   }
 
-  function removeSavedId(id) {
+  async function fetchSavedEntries() {
+    if (!window.api) return null;
+    const raw = await window.api.get('/saved-properties');
+    console.log('Saved properties raw response:', raw);
+    return extractSavedEntries(raw);
+  }
+
+  async function removeSavedId(id) {
+    try {
+      await window.api.delete(`/saved-properties/${id}`);
+    } catch (err) {
+      if (!/not bookmarked/i.test(err.message)) {
+        console.error('Failed to remove saved property on server:', err);
+        alert(`Couldn't remove from saved properties: ${err.message}`);
+        return false;
+      }
+    }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      let entries = JSON.parse(raw);
-      entries = entries.filter(item => item.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      if (raw) {
+        const entries = JSON.parse(raw).filter(item => item.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      }
     } catch (e) {
       console.error(e);
     }
+    return true;
   }
 
   // ---------- Icons ----------
@@ -107,9 +139,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
 
     // Un-like / remove from saved.
-    card.querySelector('.inline-saved-trigger')?.addEventListener('click', (e) => {
+    card.querySelector('.inline-saved-trigger')?.addEventListener('click', async (e) => {
       e.preventDefault();
-      removeSavedId(pId);
+      const ok = await removeSavedId(String(pId));
+      if (!ok) return;
       loadSavedProperties();
     });
 
@@ -210,11 +243,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ---------- Main load ----------
   async function loadSavedProperties() {
     try {
-      const savedEntries = getSavedEntries();
+      if (!window.api) throw new Error("api.js module missing.");
+
+      let savedEntries;
+      try {
+        savedEntries = await fetchSavedEntries();
+      } catch (err) {
+        console.error("Could not load saved properties from server, falling back to local cache:", err);
+        savedEntries = null;
+      }
+      // Server is the source of truth; the local cache is only a
+      // fallback for when the server call itself fails (offline, etc).
+      if (savedEntries === null) {
+        savedEntries = getLocalSavedEntries().map(e => ({ id: String(e.id), savedAt: e.savedAt }));
+      }
       const savedIds = savedEntries.map(e => e.id);
 
       savedAtById = new Map(
-        savedEntries.map(e => [String(e.id), e.savedAt ? new Date(e.savedAt).getTime() : 0])
+        savedEntries.map(e => [e.id, e.savedAt ? new Date(e.savedAt).getTime() : 0])
       );
 
       if (savedIds.length === 0) {
@@ -228,15 +274,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         savedGrid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><p>Loading your saved listings…</p></div>`;
       }
 
-      if (!window.api) throw new Error("api.js module missing.");
-      const response = await window.api.get('/properties?limit=100');
-      const apiItems = response?.items || response || [];
+      // GET /saved-properties already embeds the full property object per
+      // bookmark, so skip the extra /properties fetch unless we fell back
+      // to the local cache (ids only, no embedded property data).
+      const propertiesById = new Map(
+        savedEntries.filter(e => e.property).map(e => [e.id, e.property])
+      );
 
-      allFavorited = apiItems
-        .filter(item => {
-          const targetId = item._id || item.id;
-          return savedIds.includes(targetId) || savedIds.includes(Number(targetId));
-        })
+      if (propertiesById.size < savedIds.length) {
+        const response = await window.api.get('/properties?limit=100');
+        const apiItems = response?.items || response || [];
+        apiItems.forEach(item => {
+          const targetId = String(item._id || item.id);
+          if (savedIds.includes(targetId) && !propertiesById.has(targetId)) {
+            propertiesById.set(targetId, item);
+          }
+        });
+      }
+
+      allFavorited = savedIds
+        .map(id => propertiesById.get(id))
+        .filter(Boolean)
         .map(item => ({ ...item, _displayStatus: normalizeStatus(item.status) }))
         .filter(item => item._displayStatus === 'Available' || item._displayStatus === 'Rented');
 
