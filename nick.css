@@ -289,7 +289,7 @@ nav.desktop-nav a:hover {
 margin-top: -5.5rem;
 margin-left: -3.5rem;
    }
-.saved-toolbar {
+/* .saved-toolbar {
   margin: 0 auto;
   padding: 14px 20px 0;
   display: flex;
@@ -297,7 +297,23 @@ margin-left: -3.5rem;
   justify-content: space-between;
   gap: 2rem;
   margin-left: -3.5rem;
+} */
+
+.page-content, .saved-toolbar, .grid {
+  width: 100% !important; /* Force calculation relative to parent, not screen screen size (vw) */
+  max-width: 1200px; /* Adjust to match your maximum desktop alignment threshold boundary */
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
 }
+
+/* Correct native flex row offsets if present */
+.saved-toolbar {
+  display: flex;
+  flex-wrap: wrap; /* Allows components to drop down cleanly on small screens instead of pushing sideways */
+  gap: 16px;
+}
+
 .saved-tabs {
   display: flex;
   gap: 8px;
