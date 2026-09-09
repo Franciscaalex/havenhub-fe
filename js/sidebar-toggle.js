@@ -1,89 +1,61 @@
-/**
- * Mobile hamburger menu — opens the sidebar as a full-screen overlay
- * on small screens. Works on admindash.html and moderation.html.
- */
-// document.addEventListener("DOMContentLoaded", () => {
-//   const toggleBtn = document.getElementById("sidebarToggleBtn");
-//   const sidebar = document.querySelector(".admin-sidebar");
-//   if (!toggleBtn || !sidebar) return;
-
-//   function openSidebar() {
-//     sidebar.classList.add("mobile-open");
-//     toggleBtn.classList.add("is-active");
-//     toggleBtn.setAttribute("aria-expanded", "true");
-//     document.body.classList.add("sidebar-open");
-//   }
-
-//   function closeSidebar() {
-//     sidebar.classList.remove("mobile-open");
-//     toggleBtn.classList.remove("is-active");
-//     toggleBtn.setAttribute("aria-expanded", "false");
-//     document.body.classList.remove("sidebar-open");
-//   }
-
-//   toggleBtn.addEventListener("click", () => {
-//     const isOpen = sidebar.classList.contains("mobile-open");
-//     if (isOpen) {
-//       closeSidebar();
-//     } else {
-//       openSidebar();
-//     }
-//   });
-
-//   sidebar.querySelectorAll(".nav-link").forEach((link) => {
-//     link.addEventListener("click", closeSidebar);
-//   });
-
-//   // Tapping outside the sidebar (on the dimmed backdrop) closes it too.
-//   document.addEventListener("click", (e) => {
-//     const isOpen = sidebar.classList.contains("mobile-open");
-//     const clickedInsideSidebar = sidebar.contains(e.target);
-//     const clickedToggleBtn = toggleBtn.contains(e.target);
-//     if (isOpen && !clickedInsideSidebar && !clickedToggleBtn) {
-//       closeSidebar();
-//     }
-//   });
-// });
-
-/* sidenav-loader.js — fetches sidenav.html,*/
+/* ==========================================================================
+   js/sidenav-loader.js — Administrative Async Sidenav Layout Fragment Mount Engine
+   ========================================================================== */
 
 (function () {
-  function loadSidenav() {
-    var mount = document.getElementById('sidenav-placeholder');
+  function loadSidenavFragment() {
+    const mount = document.getElementById('sidenav-placeholder');
     if (!mount) {
-      console.error('sidenav-loader.js: #sidenav-placeholder not found on this page — add <div id="sidenav-placeholder"></div> where the sidebar should go.');
+      console.error('sidenav-loader.js: #sidenav-placeholder element target missing from DOM structure template.');
       return;
     }
 
+    // Async load your external layout partial template file asset structure
     fetch('sidenav.html')
-      .then(function (res) {
-        if (!res.ok) throw new Error('sidenav.html responded ' + res.status);
+      .then((res) => {
+        if (!res.ok) throw new Error(`Network fault encountered: status code ${res.status}`);
         return res.text();
       })
-      .then(function (html) {
-        var doc = new DOMParser().parseFromString(html, 'text/html');
-        var asideEl = doc.querySelector('aside.admin-sidebar') || doc.querySelector('aside');
+      .then((html) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Target your explicit second template layout shell wrapper hook
+        const asideEl = doc.querySelector('aside.admin-sidebar') || doc.querySelector('aside');
+        
         if (asideEl) {
           mount.replaceWith(asideEl);
         } else {
           mount.innerHTML = html;
         }
+
+        // IMPORTANT FIX: Broadcasts the loaded notification cue so sidebar-toggle.js can bind immediately
+        window.dispatchEvent(new Event('partialsLoaded'));
       })
-      .then(function () {
-        ['js/moderation-init.js', 'js/sidebar-toggle.js'].forEach(function (src) {
-          var s = document.createElement('script');
-          s.src = src;
-          document.body.appendChild(s);
+      .then(() => {
+        // Sequentially initialize script tracking layers down the body anchor tag elements
+        ['js/moderation-init.js', 'js/sidebar-toggle.js'].forEach((src) => {
+          // Prevent resource duplication scripts if they already exist inside the document context
+          if (document.querySelector(`script[src="${src}"]`)) return;
+
+          const scriptTag = document.createElement('script');
+          scriptTag.src = src;
+          scriptTag.async = true; // Non-blocking asynchronous ingestion optimization flag applied
+          document.body.appendChild(scriptTag);
         });
       })
-      .catch(function (err) {
-        console.error('Could not load sidenav.html:', err);
-        mount.innerHTML = '<div style="padding:16px;color:#b00;">Could not load the sidebar (' + err.message + ').</div>';
+      .catch((err) => {
+        console.error('Could not map global side navigation footprint layouts:', err);
+        mount.innerHTML = `<div style="padding:16px; color:#ef4444; font-weight:600;">Failed to render sidebar pipeline layout components (${escapeHtml(err.message)}).</div>`;
       });
   }
 
-  // The mount div already exists in the HTML by the time this script tag is
-  // reached (scripts run in document order), so no need to wait for
-  // DOMContentLoaded — running immediately means the sidebar appears sooner.
-  loadSidenav();
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  // Fire fragment compilation instantly upon asset evaluation loop
+  loadSidenavFragment();
 })();

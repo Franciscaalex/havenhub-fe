@@ -119,17 +119,51 @@
       if (isMenuOpen() && !avatarWrap.contains(e.target)) closeMenu();
     });
 
+//     // ---------------- 3. Notifications ----------------
+
+//     const checkAdminNotifications = async () => {
+//       try {
+//         if (!window.api) return;
+//           const updates = await window.api.get('/admin/announcements');
+//         if (updates && updates.hasNewAnnouncements) {
+//           if (notificationDot) notificationDot.style.display = 'block';
+//         }
+//       } catch (e) {
+//         console.warn('Administrative tracker update stream offline.');
+//       }
+//     };
+
+//     notificationBtn?.addEventListener('click', () => {
+//       if (notificationDot) notificationDot.style.display = 'none';
+//       alert('Admin Updates: Your uploaded real-estate documents have been submitted to the verification matrix successfully!');
+//     });
+
+//     checkAdminNotifications();
+//   }
+// })();
     // ---------------- 3. Notifications ----------------
 
     const checkAdminNotifications = async () => {
       try {
         if (!window.api) return;
-        const updates = await window.api.get('/users/admin-announcements');
-        if (updates && updates.hasNewAnnouncements) {
+
+        // 1. Safety Guard: Check if the user is an admin.
+        // Regular seekers and landlords don't have access to /admin endpoints.
+        const currentRole = (localStorage.getItem('selectedRole') || '').toUpperCase().trim();
+        if (currentRole !== 'ADMIN') {
+          console.log('Skipping admin announcement synchronization for non-admin profile role.');
+          return; 
+        }
+        
+        // 2. Only make the network call if the user is authenticated as an Admin
+        const response = await window.api.get('/admin/announcements');
+        const updates = response?.data || response;
+        
+        if (updates && (updates.hasNewAnnouncements || updates.hasNew)) {
           if (notificationDot) notificationDot.style.display = 'block';
         }
       } catch (e) {
-        console.warn('Administrative tracker update stream offline.');
+        console.warn('Administrative tracker updates bypassed:', e.message);
       }
     };
 

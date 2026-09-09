@@ -34,36 +34,38 @@ body {
 }
 
 /* =========================================================
-   SIDEBAR - DESKTOP
+   SIDEBAR - DESKTOP LAYOUT CORE
    ========================================================= */
 
 .admin-sidebar {
-   width: 290px;
-  height: 100%;
-  background-color: #003354;
-  border-top-right-radius: 26px;
+  width: 290px;
+  height: 100vh;
+  background-color: #032d4b; /* Matched to dark navy background color mix in the image */
+  border-top-right-radius: 36px; /* Enhanced curvature anchor boundary */
   grid-column: 1/2;
   grid-row: 1/3;
-  padding: 20px;
+  padding: 30px 24px;
   box-sizing: border-box;
   position: fixed;
   top: 0;
   left: 0;
   color: #ffffff;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Sidebar scrollbar */
-
+/* Sidebar scrollbar hide/cleanup rules */
 .admin-sidebar::-webkit-scrollbar {
-    width: 5px;
+  width: 5px;
 }
 .admin-sidebar::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 .admin-sidebar::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
 }
 
 /* =========================================================
@@ -71,66 +73,75 @@ body {
    ========================================================= */
 
 .sidebar-logo {
-   display: flex;
+  display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 45px;
+  margin-bottom: 50px;
   padding-left: 8px;
 }
+
 .sidebar-logo img {
-    width: auto;
-    height: 21px;
+  width: auto;
+  height: 24px;
 }
+
 .sidebar-logo .logo-name {
-    font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: #ffffff;
-  font-style: bold;
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, sans-serif; /* Matched clean typography in image */
 }
 
 /* =========================================================
-   SIDEBAR NAVIGATION
+   SIDEBAR NAVIGATION MATRIX
    ========================================================= */
 
 .sidebar-nav {
-    display: flex;
+  display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
+
 .sidebar-nav ul {
-    list-style: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
+
 .sidebar-nav li {
-    margin-bottom: 4px;
+  margin-bottom: 8px;
 }
+
 .nav-link {
-    display: flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between; /* Pushes the "Coming Soon" badges cleanly to the right */
   text-decoration: none;
   background: none;
   border: none;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 20px;
+  border-radius: 24px; /* Matches the highly rounded pill look from the image */
   color: #ffffff;
-  font-size: 0.7rem;
+  font-size: 15px; /* Clean scannable text sizing */
   font-weight: 500;
   cursor: pointer;
   width: 100%;
-  text-align: left;
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
 .nav-link-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Uniform grid spacing for sidebar icons */
 }
+
 .nav-link-content img {
-    filter: brightness(0) invert(1);
-    transition: filter 0.2s ease;
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+  transition: filter 0.2s ease;
 }
 
 /* =========================================================
@@ -138,115 +149,105 @@ body {
    ========================================================= */
 
 .badge-soon {
-    display: inline-flex;
-    align-items: center;
-    width: auto;
-    padding: 4px 10px;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
 }
 
 /* =========================================================
-   SIDEBAR HOVER
+   INTERACTIVE STATES (HOVER / ACTIVE TRACKS)
    ========================================================= */
 
-.nav-link:hover {
-    background-color: #ffffff;
-    color: #041823;
-    font-weight: 600;
-}
-.nav-link:hover .nav-link-content {
-    color: #041823;
-}
-.nav-link:hover .nav-link-content img {
-    filter: brightness(0);
-}
-
-/* =========================================================
-   ACTIVE NAVIGATION
-   ========================================================= */
-
+.nav-link:hover, 
 .nav-link.active {
-    background-color: #ffffff;
-    color: #041823;
-    font-weight: 600;
+  background-color: #ffffff !important;
+  color: #032d4b !important;
+  font-weight: 600;
 }
-.nav-link.active .nav-link-content {
-    color: #041823;
-}
+
+.nav-link:hover .nav-link-content img,
 .nav-link.active .nav-link-content img {
-    filter: brightness(0);
+  filter: brightness(0) saturate(100%) invert(13%) sepia(35%) saturate(1637%) dvh(197deg) color-blur(#032d4b); /* Swaps vector icons dark blue */
 }
 
-/* =========================================================
-   DISABLED NAVIGATION
-   ========================================================= */
+.nav-link:hover .badge-soon,
+.nav-link.active .badge-soon {
+  color: #032d4b;
+  border-color: rgba(3, 45, 75, 0.4);
+}
 
+/* Disabled styling overrides for coming soon components */
 .nav-link.disabled {
-    opacity: 0.6;
-    pointer-events: none;
-    cursor: not-allowed;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* =========================================================
-   SIDEBAR FOOTER / ADMIN PROFILE
+   SIDEBAR FOOTER PANEL / ACCOUNT MENU
    ========================================================= */
 
 .sidebar-footer {
-    margin-top: auto;
+  margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 20px;
+  gap: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15); /* Thin split dividing divider rule line */
+  padding-top: 24px;
 }
+
 .admin-profile {
-    display: flex;
+  display: flex;
   align-items: center;
   gap: 12px;
   padding-left: 4px;
 }
+
 .admin-avatar {
-    width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
+
 .admin-name {
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 28px;
-    color: #ffffff;
-    letter-spacing: -0.5px;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
 }
+
 .admin-role {
-    font-size: 18px;
-    color: #ffffff;
+  font-size: 13px;
+  margin: 2px 0 0 0;
+  color: rgba(255, 255, 255, 0.7); /* Slightly muted text description */
 }
+
 .btn-logout {
-    width: 100%;
-    padding: 10px;
-    background-color: #003453;
-    color: #ffffff;
-    border: 1px solid #ffffff;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: 24px; /* Matches the pill border layout specs of your trigger components */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
 .btn-logout:hover {
-    background-color: #ffffff;
-    color: #041823;
+  background-color: #ffffff;
+  color: #032d4b;
 }
+
 
 /* =========================================================
    MAIN CONTENT

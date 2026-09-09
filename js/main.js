@@ -28,17 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   syncAllProfileAvatars(); // NEW: hydrate any .user-avatar-sync images on this page
 });
 
-async function loadPartial(url, placeholderId) {
+  async function loadPartial(url, placeholderId) {
   const el = document.getElementById(placeholderId);
   if (!el) return;
 
   const cacheKey = `partial:${url}`;
-
-  // NEW: paint instantly from cache if we've fetched this partial before
-  // (e.g. the user already loaded the dashboard once this session), so the
-  // sidebar/header/footer show up with zero network wait on every page
-  // after the first.
   const cached = sessionStorage.getItem(cacheKey);
+  
   if (cached) {
     el.innerHTML = cached;
     if (placeholderId === 'header-placeholder') {
@@ -55,9 +51,6 @@ async function loadPartial(url, placeholderId) {
     if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
     const html = await res.text();
 
-    // NEW: if the cached version was already rendered and nothing changed,
-    // skip re-touching the DOM (avoids re-running init logic / event
-    // listeners twice, and avoids a visible flicker on repeat visits).
     if (cached === html) return;
 
     el.innerHTML = html;
@@ -68,15 +61,11 @@ async function loadPartial(url, placeholderId) {
       highlightActiveNavLink();
     }
 
-    // Broadcast a window event to alert sidebar.js when its HTML structures are fully loaded
     if (placeholderId === 'sidebar-placeholder') {
       window.dispatchEvent(new Event('partialsLoaded'));
     }
   } catch (err) {
-    console.error(err);
-    // If the fetch fails but we already rendered from cache above, the
-    // user still sees a working sidebar — this just means we couldn't
-    // refresh it this time.
+    console.error(`Failed to refresh partial fragment [${url}]:`, err.message);
   }
 }
 

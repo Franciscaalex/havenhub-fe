@@ -1,28 +1,368 @@
-/* * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-} */
+/* ==========================================================================
+   custom.css — HavenHub Administrative Control Dashboard Core Workspace Stylesheet
+   ========================================================================== */
 
-/* .admin-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: 100vh;
-    align-items: stretch;
+:root {
+  --bg-primary: #f4f6f9;
+  --bg-panel: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --accent-blue: #3d6fb4;
+  
+  --stat-green: #e6f9f0;
+  --stat-green-text: #10b981;
+  --stat-purple: #f3efff;
+  --stat-purple-text: #7c4dff;
+  --stat-pink: #fff1f2;
+  --stat-pink-text: #f43f5e;
+  --stat-red: #fef2f2;
+  --stat-red-text: #ef4444;
+
+  --border-color: #e2e8f0;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.admin-sidebar {
-    background-color: #003453;
-    overflow-y: auto;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
 }
 
 .admin-content {
-    padding: 32px 40px;
-    overflow: hidden;
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  overflow-x: hidden;
 }
 
-.hidden {
-    display: none !important;
-} */
+/* ---- Top Header Row ---- */
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.admin-portal-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.admin-search {
+  position: relative;
+  width: 320px;
+}
+
+.admin-search .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+}
+
+.admin-search input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: var(--bg-panel);
+  outline: none;
+}
+
+/* ---- Welcome Section ---- */
+.dashboard-welcome h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.dashboard-welcome p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ---- Matrix Stat Cards ---- */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background-color: var(--bg-panel);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.stat-card .stat-label {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.stat-card .stat-value {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.stat-card .stat-value span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-total { background-color: var(--stat-green); color: var(--stat-green-text); }
+.stat-pending { background-color: var(--stat-purple); color: var(--stat-purple-text); }
+.stat-flagged { background-color: var(--stat-pink); color: var(--stat-pink-text); }
+.stat-reported { background-color: var(--stat-red); color: var(--stat-red-text); }
+
+/* ---- Panel Layout Structuring ---- */
+.pending-listings, .panel {
+  background-color: var(--bg-panel);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.view-all-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- Data Tables ---- */
+.listings-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.listings-table th {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.listings-table td {
+  padding: 16px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.property-title-cell {
+  font-weight: 600;
+}
+
+.property-price-cell {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.role-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.action-row-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.action-row-btn:hover {
+  background-color: var(--bg-primary);
+}
+
+/* ---- Split Bottom Panels Grid ---- */
+.bottom-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.activity-list, .report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-list li, .report-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.activity-list li:last-child, .report-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+  margin-right: 12px;
+}
+
+.activity-icon.approved { background-color: var(--stat-green); color: var(--stat-green-text); }
+.activity-icon.rejected { background-color: var(--stat-pink); color: var(--stat-pink-text); }
+
+.activity-sub, .report-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 2px 0 0 0;
+}
+
+.activity-time, .report-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---- Moderation Modal Overlay Overlay ---- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--bg-panel);
+  width: 100%;
+  max-width: 520px;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.modal__title { margin: 0 0 8px 0; font-size: 20px; font-weight: 700; }
+.modal__subtitle { margin: 0 0 1.5rem 0; color: var(--text-muted); font-size: 14px; }
+
+.modal__field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.modal__field textarea {
+  width: 100%;
+  height: 100px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  resize: none;
+  outline: none;
+}
+
+.modal__error {
+  color: var(--stat-red-text);
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn--ghost { background: none; color: var(--text-muted); }
+.btn--reject { background-color: var(--stat-pink); color: var(--stat-pink-text); }
+.btn--approve { background-color: var(--accent-blue); color: #fff; }
+
+/* ---- Priority Badges Layout Markers ---- */
+.priority-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.priority-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.priority-high { color: #b91c1c; }
+.priority-high::before { background-color: #ef4444; }
+
+.priority-low { color: #b45309; }
+.priority-low::before { background-color: #f59e0b; }
+
