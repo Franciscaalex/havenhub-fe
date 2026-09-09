@@ -1,64 +1,143 @@
-/* Inside your interactive header navigation controller execution stream */
-document.addEventListener('DOMContentLoaded', () => {
-  // Target nodes
-  const avatarBtn = document.getElementById('headerAvatarBtn');
-  const avatarInput = document.getElementById('headerAvatarInput');
-  const avatarImg = document.getElementById('headerAvatarImg');
-  const notificationBtn = document.getElementById('navNotificationBtn');
-  const notificationDot = document.getElementById('navNotificationDot');
+/* header.js — */
 
-  const PROFILE_IMAGE_STORAGE_KEY = "havenhub_profile_image";
+(function () {
+  const PROFILE_IMAGE_STORAGE_KEY = 'havenhub_profile_image';
+  const TOKEN_STORAGE_KEY = 'havenhub_token';
+  const USER_STORAGE_KEY = 'havenhub_user';
+  const UPLOAD_TRIGGER_ID = 'changePhotoBtn'; // matches seekers-settings.html's real button id
+  const SETTINGS_PREVIEW_ID = 'settingsAvatar'; // the larger photo preview on seekers-settings.html
 
-  // 1. PERSIST PORTRAIT PICTURE STORAGE CONTEXT SMOOTHLY
-  const savedAvatar = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
-  if (savedAvatar && avatarImg) {
-    avatarImg.src = savedAvatar;
+  document.addEventListener('DOMContentLoaded', init);
+  // If header.js is loaded dynamically *after* DOMContentLoaded already fired
+  // (as thread.html does once it injects header.html), run immediately too.
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    init();
   }
 
-  avatarBtn?.addEventListener('click', () => avatarInput?.click());
+  let initialized = false;
+  function init() {
+    if (initialized) return; // guard against double-init from the two triggers above
+    const avatarBtn = document.getElementById('headerAvatarBtn');
+    if (!avatarBtn) return; // header markup isn't in the DOM yet
+    initialized = true;
 
-  avatarInput?.addEventListener('change', () => {
-    const file = avatarInput.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert("Please upload a valid image file.");
-      return;
+    const avatarWrap = avatarBtn.closest('.header-avatar-wrap');
+    const avatarInput = document.getElementById('headerAvatarInput');
+    const avatarImg = document.getElementById('headerAvatarImg');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const notificationBtn = document.getElementById('navNotificationBtn');
+    const notificationDot = document.getElementById('navNotificationDot');
+
+    // ---------------- 1. Profile photo: load + persist across pages ----------------
+
+    const savedAvatar = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
+    if (savedAvatar) {
+      if (avatarImg) avatarImg.src = savedAvatar;
+      const settingsPreview = document.getElementById(SETTINGS_PREVIEW_ID);
+      if (settingsPreview) settingsPreview.src = savedAvatar;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Data = e.target.result;
+    function applyUploadedPhoto(base64Data) {
       if (avatarImg) avatarImg.src = base64Data;
-      localStorage.setItem(PROFILE_IMAGE_STORAGE_KEY, base64Data);
-      
-      // Mirror the update on alternative profile image components running across the page layout
-      const alternativeAvatar = document.getElementById('profileAvatar');
-      if (alternativeAvatar) alternativeAvatar.src = base64Data;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // 2. LIVE ADMIN UPDATE TRACKER FEED
-  const checkAdminNotifications = async () => {
-    try {
-      if (!window.api) return;
-      // Fetch data from updates system matching your swagger spec
-      const updates = await window.api.get('/users/admin-announcements');
-      
-      // Toggle red/orange circle highlight display state dynamically
-      if (updates && updates.hasNewAnnouncements) {
-        if (notificationDot) notificationDot.style.display = 'block';
+      try { localStorage.setItem(PROFILE_IMAGE_STORAGE_KEY, base64Data); } catch (e) {
+        console.error('Could not save profile photo (localStorage full or unavailable):', e);
       }
-    } catch (e) {
-      console.warn("Administrative tracker update stream offline.");
+      // Mirror onto the settings page's own larger preview image, if present.
+      const settingsPreview = document.getElementById(SETTINGS_PREVIEW_ID);
+      if (settingsPreview) settingsPreview.src = base64Data;
     }
-  };
 
-  notificationBtn?.addEventListener('click', () => {
-    if (notificationDot) notificationDot.style.display = 'none'; // Clear alert highlight on user click selection
-    alert("Admin Updates: Your uploaded real-estate documents have been submitted to the verification matrix successfully!");
-  });
+    avatarInput?.addEventListener('change', () => {
+      const file = avatarInput.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => applyUploadedPhoto(e.target.result);
+      reader.readAsDataURL(file);
+    });
 
-  // Check announcements status regularly
-  checkAdminNotifications();
-});
+    // Photo upload is triggered only by the settings page's own button,
+    // never by clicking the avatar (see UPLOAD_TRIGGER_ID above).
+    const uploadPhotoBtn = document.getElementById(UPLOAD_TRIGGER_ID);
+    uploadPhotoBtn?.addEventListener('click', () => avatarInput?.click());
+
+    // ---------------- 2. Avatar click: always toggles the account/logout menu ----------------
+
+    if (logoutBtn) {
+      logoutBtn.style.display = 'none'; // hidden until the avatar is clicked
+      if (avatarWrap) {
+        avatarWrap.style.position = avatarWrap.style.position || 'relative';
+        logoutBtn.style.position = 'absolute';
+        logoutBtn.style.top = 'calc(100% + 8px)';
+        logoutBtn.style.right = '0';
+        logoutBtn.style.zIndex = '50';
+      }
+    }
+
+    function isMenuOpen() {
+      return !!logoutBtn && logoutBtn.style.display !== 'none';
+    }
+
+    function openMenu() {
+      if (!logoutBtn) return;
+      logoutBtn.style.display = 'block';
+      avatarBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+      if (!logoutBtn) return;
+      logoutBtn.style.display = 'none';
+      avatarBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function logout() {
+      try {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        localStorage.removeItem(USER_STORAGE_KEY);
+      } catch (e) { /* ignore */ }
+      window.location.href = 'login.html';
+    }
+
+    avatarBtn.addEventListener('click', () => {
+      if (isMenuOpen()) {
+        logout();
+      } else {
+        openMenu();
+      }
+    });
+
+    logoutBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      logout();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!avatarWrap) return;
+      if (isMenuOpen() && !avatarWrap.contains(e.target)) closeMenu();
+    });
+
+    // ---------------- 3. Notifications ----------------
+
+    const checkAdminNotifications = async () => {
+      try {
+        if (!window.api) return;
+        const updates = await window.api.get('/users/admin-announcements');
+        if (updates && updates.hasNewAnnouncements) {
+          if (notificationDot) notificationDot.style.display = 'block';
+        }
+      } catch (e) {
+        console.warn('Administrative tracker update stream offline.');
+      }
+    };
+
+    notificationBtn?.addEventListener('click', () => {
+      if (notificationDot) notificationDot.style.display = 'none';
+      alert('Admin Updates: Your uploaded real-estate documents have been submitted to the verification matrix successfully!');
+    });
+
+    checkAdminNotifications();
+  }
+})();

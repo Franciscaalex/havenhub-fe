@@ -3,6 +3,9 @@
    Dynamic Real-Time Messaging & Enquiries Controller Engine
    ============================================================ */
 
+// Where a non-landlord (property seeker) gets sent instead of the inbox.
+const SEEKER_REDIRECT_URL = 'seeker-dashboard.html';
+
 document.addEventListener('DOMContentLoaded', () => {
   // Wait for the partialsLoaded event from main.js so the DOM elements are present
   window.addEventListener('partialsLoaded', initializeInboxModule);
@@ -15,10 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
 let chatConversationsDataset = [];
 let activeSelectedThreadId = null;
 
-// POST /enquiries takes propertyId, not threadId (confirmed via Swagger) —
-// this holds the property tied to whichever thread is currently open, so
-// sends can use the field the API actually expects.
-let activeSelectedPropertyId = null;
+// Confirmed by the backend team's fix: replying via inbox.html now sends
+// { threadId, message } — the backend uses threadId to append to the
+// existing conversation and correctly tag senderType/senderId, instead of
+// the old { propertyId, message } shape which was causing landlord
+// replies to self-message as a new inbound enquiry. propertyId is no
+// longer needed for sending, only threadId.
 
 // Files staged for the message currently being composed. Cleared on send
 // and whenever a different thread is opened.
@@ -36,8 +41,58 @@ async function initializeInboxModule() {
   if (!container || container.dataset.initialized === "true") return;
   container.dataset.initialized = "true";
 
+  // Landlord-only gate — property seekers never see thread data, not even
+  // briefly, because we check before anything is fetched or rendered.
+  const isLandlord = await enforceLandlordOnlyAccess();
+  if (!isLandlord) return;
+
   setupTabListeners();
   await loadConversationsFeed();
+}
+
+/* ---------- 0. LANDLORD-ONLY ACCESS GUARD ---------- */
+// Blocks property seekers from this dashboard. Reuses window.currentUser
+// if some other script (e.g. sidebar.js, which already shows "Chioma Ndu
+// / Landlord") has already fetched it, otherwise calls the confirmed
+// Swagger route GET /api/v1/users/me directly.
+//
+// Field name and value format confirmed via Swagger (PUT /users/me,
+// PUT /users/profile): the field is `role`, and it's an uppercase enum
+// string, e.g. "PROPERTY_SEEKER". See the comment in
+// enforceLandlordOnlyAccess for why the check targets that known value
+// rather than a guessed landlord-side value.
+async function enforceLandlordOnlyAccess() {
+  try {
+    const user = window.currentUser || await window.api.get('/users/me');
+    window.currentUser = user; // cache so other modules don't re-fetch
+
+    const role = resolveRole(user);
+
+    // Confirmed via Swagger (PUT /users/me and PUT /users/profile examples):
+    // the role field uses an uppercase enum, and the seeker value is
+    // exactly "PROPERTY_SEEKER". The landlord's exact enum value isn't
+    // shown anywhere in the docs, so rather than guess it (LANDLORD? 
+    // PROPERTY_LANDLORD? PROPERTY_OWNER?) and risk locking landlords out
+    // too, this blocks the one value we know for certain and lets
+    // everything else through.
+    if (role === 'PROPERTY_SEEKER') {
+      window.location.href = SEEKER_REDIRECT_URL;
+      return false;
+    }
+    return true;
+
+  } catch (err) {
+    console.error('Could not verify landlord access, blocking by default:', err);
+    // Fail closed: if we can't confirm who this is, don't show landlord
+    // enquiry data.
+    window.location.href = SEEKER_REDIRECT_URL;
+    return false;
+  }
+}
+
+function resolveRole(user) {
+  const raw = user?.role || user?.userType || user?.accountType || user?.type || '';
+  return String(raw).toUpperCase();
 }
 
 /* ---------- 1. FETCH LIVE THREADS FROM BACKEND ---------- */
@@ -182,7 +237,6 @@ async function openActiveChatWindow(threadId) {
   const seeker = lastMsg.seeker || {};
   const property = lastMsg.property || {};
 
-  activeSelectedPropertyId = property.id || null;
   const displayAvatar = seeker.avatarUrl || "images/Avatar 4.svg";
   const userName = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ') || 'Verified Tenant';
   const propertySubject = property.title || 'General Enquiry';
@@ -230,15 +284,16 @@ async function openActiveChatWindow(threadId) {
 
         <input type="text" class="chat-input-field" id="messageInputField" placeholder="Type a message" autocomplete="off">
 
-        <button type="submit" class="chat-action-btn chat-send-btn-pill" aria-label="Send Message">
-          <svg style="width:16px; height:16px; transform: rotate(90deg); margin-left: 2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <button type="submit" class="chat-action-btn chat-send-btn-pill" aria-label="Send Message"
+                style="position:relative !important; z-index:1001 !important; pointer-events:auto !important;">
+          <svg style="width:16px; height:16px; transform: rotate(90deg); margin-left: 2px; pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
       </form>
 
-      <div class="chat-emoji-picker" id="chatEmojiPicker" hidden
-           style="position:absolute; bottom:56px; right:8px; z-index:1000; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; box-shadow:0 10px 30px rgba(15,23,42,0.15); grid-template-columns:repeat(4,1fr); gap:6px; max-width:200px;">
+      <div class="chat-emoji-picker" id="chatEmojiPicker"
+           style="display:none !important; position:absolute !important; bottom:56px; right:8px; z-index:1000; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; box-shadow:0 10px 30px rgba(15,23,42,0.15); grid-template-columns:repeat(4,1fr); gap:6px; max-width:200px;">
       </div>
     </div>
   `;
@@ -268,7 +323,6 @@ function closeChatWindow() {
   if (listView) listView.style.display = 'flex';
 
   pendingAttachments = [];
-  activeSelectedPropertyId = null;
   loadConversationsFeed(); // Re-sync changes upon panel swap actions
 }
 
@@ -355,7 +409,7 @@ async function handleSendMessageSubmit(e) {
   const filesToSend = [...pendingAttachments];
 
   if (!userText && filesToSend.length === 0) return;
-  if (!activeSelectedThreadId || !activeSelectedPropertyId) return;
+  if (!activeSelectedThreadId) return;
 
   input.value = "";
   clearAttachmentPreview();
@@ -388,17 +442,21 @@ async function handleSendMessageSubmit(e) {
       // Multipart path — attachments require FormData, not JSON, so this
       // bypasses api.js's post() the same way add-property.js's photo
       // upload bypasses it.
-      // NOTE: confirmed via Swagger that POST /enquiries takes propertyId,
-      // not threadId — sending threadId was the actual cause of the 400s.
+      // FIXED per backend: sends threadId, not propertyId. Sending
+      // propertyId was the root cause of landlord replies being treated
+      // as a brand-new inbound enquiry (self-messaging) instead of being
+      // appended to the existing tenant conversation.
       const formData = new FormData();
-      formData.append('propertyId', activeSelectedPropertyId);
+      formData.append('threadId', activeSelectedThreadId);
       formData.append('message', userText);
       filesToSend.forEach(file => formData.append('attachments', file));
       await postEnquiryMultipart('/enquiries', formData);
     } else {
-      // Confirmed request body via Swagger: { propertyId, message } — no
-      // threadId field exists on this endpoint at all.
-      await window.api.post('/enquiries', { propertyId: activeSelectedPropertyId, message: userText });
+      // FIXED per backend: { threadId, message } — the backend now uses
+      // threadId to append to the existing conversation_id and correctly
+      // map senderId/receiverId (landlord -> tenant) instead of creating
+      // a new inbound enquiry addressed back to the landlord.
+      await window.api.post('/enquiries', { threadId: activeSelectedThreadId, message: userText });
     }
 
     console.log("Live message dispatched cleanly over gateway pipelines.");
@@ -536,24 +594,32 @@ function buildEmojiPicker() {
 
 // Opens the picker as a positioned popup above the input bar (so it never
 // covers the send button), and closes it again on a second click of the
-// same icon. Stops the click from bubbling to the document-level "close on
-// outside click" listener below, which would otherwise re-close it
-// immediately on the same click that opened it.
+// same icon. Uses setProperty(..., 'important') rather than a plain style
+// assignment or the `hidden` attribute — if app.css/global.css has ANY
+// rule setting `display` on .chat-emoji-picker, a normal inline style or
+// the `hidden` attribute both lose to it, which is what was keeping the
+// picker permanently visible before. !important is the one thing nothing
+// in an external stylesheet can silently override.
+function isEmojiPickerOpen(picker) {
+  return picker.style.display === 'grid';
+}
+
 function toggleEmojiPicker(e) {
   e?.stopPropagation();
   const picker = document.getElementById('chatEmojiPicker');
   if (!picker) return;
 
-  const willOpen = picker.hidden;
-  picker.hidden = !willOpen;
-  picker.style.display = willOpen ? 'grid' : 'none';
+  if (isEmojiPickerOpen(picker)) {
+    closeEmojiPicker();
+  } else {
+    picker.style.setProperty('display', 'grid', 'important');
+  }
 }
 
 function closeEmojiPicker() {
   const picker = document.getElementById('chatEmojiPicker');
   if (!picker) return;
-  picker.hidden = true;
-  picker.style.display = 'none';
+  picker.style.setProperty('display', 'none', 'important');
 }
 
 // Registered once (guarded), not per chat-open, so repeated thread opens
@@ -565,7 +631,7 @@ function ensureEmojiOutsideClickHandler() {
   document.addEventListener('click', (e) => {
     const picker = document.getElementById('chatEmojiPicker');
     const emojiBtn = document.getElementById('chatEmojiBtn');
-    if (!picker || picker.hidden) return;
+    if (!picker || !isEmojiPickerOpen(picker)) return;
     if (picker.contains(e.target) || emojiBtn?.contains(e.target)) return;
     closeEmojiPicker();
   });

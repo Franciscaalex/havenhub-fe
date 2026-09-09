@@ -1606,13 +1606,13 @@ margin-left: -3.5rem;
 
 .logout-btn {
   display: block;
-  width: 10%;
+  width: 15%;
   margin: 40px auto 0;
   background: var(--navy);
   color: #fff;
   border: none;
   border-radius: var(--radius-pill);
-  padding: 14px;
+  padding: 10px 14px;
   font-size: 15px;
   font-weight: 700;
 }

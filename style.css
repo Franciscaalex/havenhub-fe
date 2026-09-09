@@ -503,7 +503,7 @@ body.auth-page {
 .btn-submit {
   width: 100%;
   padding: 0.85rem;
-  background: rgba(21, 32, 60, 0.85);
+  background: #003453;
   color: var(--color-text-main);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;

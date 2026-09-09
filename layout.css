@@ -1,10 +1,10 @@
-* {
+/* * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
+} */
 
-.admin-layout {
+/* .admin-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
     min-height: 100vh;
@@ -25,4 +25,4 @@
 
 .hidden {
     display: none !important;
-}
+} */

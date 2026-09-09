@@ -484,6 +484,56 @@ margin-top: -2rem;
   border-top-right-radius: 24px;
 }
 
+/* "Coming Soon" nav items need a positioning anchor for the tooltip below */
+.dash-nav-soon {
+  position: relative;
+}
+
+/* Bright blue badge hover state (ID Verification's "badge-blue" variant) */
+.badge-blue {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dash-nav-soon:hover .badge-blue,
+.badge-blue:hover {
+  background-color: #36BBFF;
+  color: #FFFFFF;
+}
+
+/* Tooltip write-up for the ID Verification item specifically, targeted via
+   its existing data-tooltip-label attribute rather than adding new markup */
+.dash-nav-soon[data-tooltip-label="ID Verification"]:hover::after {
+  content: "ID Verification — this feature is under development.";
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* On narrow/collapsed sidebars there's no room to the right for the
+   tooltip, so drop it below the item instead */
+@media (max-width: 1023px) {
+  .dash-nav-soon[data-tooltip-label="ID Verification"]:hover::after {
+    left: 50%;
+    top: calc(100% + 8px);
+    transform: translateX(-50%);
+    white-space: normal;
+    max-width: 220px;
+  }
+}
+
 .dash-nav {
   display: flex;
   flex-direction: column;
@@ -562,7 +612,7 @@ margin-top: -2rem;
 }
 
 .badge-blue {
-  background-color: #24a0ed;
+  background-color: rgba(0, 0, 0, 0.25) ;
   color: #ffffff;
 }
 

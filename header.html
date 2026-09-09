@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Havenhub-header </title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="images/Logo Icon-Dark 1.svg">
+  <link rel="stylesheet" href="nick.css">
+<link rel="icon" type="image/svg+xml" href="images/Logo%20Icon-Dark%201.svg">
+
 </head>
 <body>
  <header class="page-header">
@@ -33,20 +35,27 @@
 
     <!-- Settings Navigation Anchor -->
     <a href="seekers-settings.html" class="nav-icon-link" aria-label="Account Settings">
-      <!-- FIXED: Added the missing gears utility icon seen in your design screen -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settings-svg-icon">
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
       </svg>
     </a>
 
-    <!-- Profile Image Upload Form Interceptor Wrapper -->
+    <!-- Profile Image Upload / Account Menu -->
     <div class="header-avatar-wrap">
-      <button class="avatar-trigger-btn" id="headerAvatarBtn" type="button" aria-label="Upload Profile Portrait Picture">
+      <button class="avatar-trigger-btn" id="headerAvatarBtn" type="button" aria-label="Profile menu" aria-haspopup="true" aria-expanded="false">
         <img id="headerAvatarImg" src="images/Avatar 4.svg" alt="User Profile Avatar" class="header-avatar">
       </button>
       <input type="file" id="headerAvatarInput" accept="image/*" style="display: none;">
+      <button
+        class="logout-btn"
+        id="logoutBtn"
+        type="button"
+      >
+        Log Out
+      </button>
     </div>
+
   </div>
 
   <!-- RESPONSIVE MOBILE ACCESSIBILITY HAMBURGER TOGGLE -->

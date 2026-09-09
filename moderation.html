@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Havenhub - Moderation Queue</title>
-        <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="stylesheet" href="layout.css">
+        <link rel="icon" type="image/png" sizes="32x32" href="images/Logo Icon-Dark 1.svg">
+        <link rel="preload" href="sidenav.html" as="fetch" crossorigin>
     <link rel="stylesheet" href="custom.css">
     <link rel="stylesheet" href="components.css">
 </head>
@@ -14,51 +14,8 @@
 <body>
 
     <div class="admin-layout">
-
-        <aside class="admin-sidebar">
-
-            <div class="sidebar-logo">
-                <img src="Group.svg" alt="Logo-icon">
-                <div class="logo-name">HAVENHUB</div>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="admindash.html" class="nav-link" data-view="view-dashboard">
-                            <span class="nav-link-content"><img src="HouseLine.svg" alt=""> Dashboard</span>
-                        </a></li>
-
-                    <li><a href="moderation.html" class="nav-link active" data-view="view-listings">
-                            <span class="nav-link-content"><img src="Chats.svg" alt=""> Moderation Queue</span>
-                        </a></li>
-
-                    <li><a href="#" class="nav-link disabled" data-view="view-reports">
-                            <span class="nav-link-content"><img src="UserCircle.svg" alt=""> Reports</span>
-                            <span class="badge-soon">Coming Soon</span>
-                        </a></li>
-
-                    <li><a href="#" class="nav-link disabled" data-view="view-audit">
-                            <span class="nav-link-content"><img src="Check.svg" alt=""> Audit Logs</span>
-                            <span class="badge-soon">Coming Soon</span>
-                        </a></li>
-
-                    <li><a href="#" class="nav-link" data-view="view-settings">
-                            <span class="nav-link-content"><img src="Gear.svg" alt=""> Settings</span>
-                        </a></li>
-                </ul>
-            </nav>
-
-            <div class="sidebar-footer">
-                <div class="admin-profile">
-                    <img src="Ellipse 11.svg" alt="Admin" class="admin-avatar">
-                    <div>
-                        <p class="admin-name">Loveth Adams</p>
-                        <p class="admin-role">Admin</p>
-                    </div>
-                </div>
-                <button id="logoutBtn" class="btn-logout">Log Out</button>
-            </div>
-
-        </aside>
+<div id="sidenav-placeholder"></div>
+<!-- <script src="js/sidenav-loader.js"></script> -->
 
         <main class="admin-content">
 
@@ -127,23 +84,6 @@
         </main>
     </div>
 
-    <footer class="admin-footer">
-        <div class="footer-copyright">
-            <img src="Copyright (1).svg" alt="copyright icon" class="footer-copyright-icon">
-            <span>2026</span>
-            <img src="Layer 3.svg" alt="HavenHub Logo" class="footer-logo-icon">
-            <span>All rights reserved</span>
-        </div>
-
-        <div class="footer-links">
-            <a href="#">Privacy Policy</a>
-            <span class="footer-divider">|</span>
-            <a href="#">Terms of Services</a>
-            <span class="footer-divider">|</span>
-            <a href="#">Help Center</a>
-        </div>
-    </footer>
-
     <div class="modal-overlay" id="moderationOverlay" style="display:none;">
         <div class="modal" id="moderationModal">
             <h3 class="modal__title">Review listing</h3>
@@ -165,8 +105,8 @@
 
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/moderation.js"></script>
     <script src="js/sidebar-toggle.js"></script>
+    <script src="js/moderation.js"></script>
 </body>
 
 </html>

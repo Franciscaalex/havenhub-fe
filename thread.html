@@ -11,40 +11,9 @@
 <body>
 
 <div class="thread-page">
-
-    <div id="pageHeaderMount"></div>
-    <script>
-      // Fetch the real, already-styled header.html and inject just its
-      // <header> into the page, then load header.js afterward so its
-      // element lookups (hamburger, avatar upload, notification dot)
-      // find real DOM nodes instead of running against nothing.
-      (function () {
-        const mount = document.getElementById('pageHeaderMount');
-        fetch('header.html')
-          .then((res) => {
-            if (!res.ok) throw new Error(`header.html responded ${res.status}`);
-            return res.text();
-          })
-          .then((html) => {
-            const doc = new DOMParser().parseFromString(html, 'text/html');
-            const headerEl = doc.querySelector('header.page-header') || doc.querySelector('header');
-            if (headerEl && mount) {
-              mount.replaceWith(headerEl);
-            } else if (mount) {
-              mount.innerHTML = html;
-            }
-          })
-          .then(() => {
-            const s = document.createElement('script');
-            s.src = 'js/header.js';
-            document.body.appendChild(s);
-          })
-          .catch((err) => {
-            console.error('Could not load header.html:', err);
-            if (mount) mount.innerHTML = '<div class="conversations-empty">Could not load the page header.</div>';
-          });
-      })();
-    </script>
+  <div id="header-placeholder"></div>
+    <!-- <div id="pageHeaderMount"></div> -->
+    <!-- <script src="js/header-loader.js"></script> -->
 
     <main class="seeker-inbox-main">
 
@@ -116,6 +85,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
+<script src="js/header.js"></script>
 <script src="js/thread.js"></script>
 
 </body>
