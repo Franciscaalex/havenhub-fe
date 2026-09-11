@@ -10,6 +10,11 @@
                         has started (chart shown, colored stat cards)
    States 2 vs 3 are not separate "pages" — they're the same populated
    view reacting live to whatever the stats endpoint returns.
+
+   NOTE: Clicking a property thumbnail opens an in-dashboard details
+   modal (see openPropertyDetailModal / property-figma-modal below).
+   property-details.html is the seeker-facing listing page and is
+   intentionally NOT used here — landlords stay on this dashboard.
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Holds the last full set of properties fetched from the API, so the
   // search box can filter client-side without re-hitting the network
-  // on every keystroke.
+  // on every keystroke, and so the details modal can look records up
+  // by id without a separate fetch.
   let allProperties = [];
 
   // Hard enforce absolute layout safety: instantly hide the populated dashboard containers
@@ -341,12 +347,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('addPropertyTopBtn')?.addEventListener('click', () => { window.location.href = 'add-property.html'; });
   }
 
-  // Renders the property grid. Cards keep their original size, shape, and
-  // background color, but no longer render an actual photo — the image
-  // slot is now an empty tinted frame (see .property-figma-img in app.css)
-  // rather than an <img> tag. A listing is only ever badged "Available"
-  // once the admin has explicitly set it to that status — approval alone
-  // is not enough.
+  // Renders the property grid. Each card shows its actual photo (falling
+  // back to a tinted placeholder frame only when no image field is present
+  // on the record), and the whole card is clickable/keyboard-activatable.
+  // Clicking a card opens the in-dashboard details modal (see
+  // openPropertyDetailModal) — landlords never leave this page, since
+  // property-details.html is the seeker-facing page only. A listing is
+  // only ever badged "Available" once the admin has explicitly set it to
+  // that status — approval alone is not enough.
   function renderLivePropertyGrid(propertiesList) {
     if (!listingsRow) return;
 
@@ -357,15 +365,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     listingsRow.innerHTML = propertiesList.map(item => {
       const statusRaw = (item.status || 'AVAILABLE').toUpperCase();
-// Every listing shows as "Available" as soon as it's created — approval
-// no longer gates the badge. RENTED is still called out explicitly.
-let badgeText = 'Available';
-let badgeClass = 'badge-figma-available';
+      // Every listing shows as "Available" as soon as it's created — approval
+      // no longer gates the badge. RENTED is still called out explicitly.
+      let badgeText = 'Available';
+      let badgeClass = 'badge-figma-available';
 
-if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-rented'; }
+      if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-rented'; }
+
+      // Photo field name isn't fully confirmed backend-side, so check the
+      // most likely candidates in order before giving up on a real image.
+      const imageUrl = item.imageUrl
+        || item.thumbnailUrl
+        || item.coverImage
+        || (Array.isArray(item.photos) && item.photos[0])
+        || (Array.isArray(item.images) && item.images[0])
+        || '';
+
+      const imageMarkup = imageUrl
+        ? `<img class="property-figma-img" src="${imageUrl}" alt="${item.title || 'Property photo'}" loading="lazy">`
+        : `<div class="property-figma-img" role="img" aria-label="Property photo placeholder"></div>`;
+
+      const propertyId = item.id ?? item._id ?? item.propertyId ?? '';
+
       return `
-        <div class="property-figma-card">
-          <div class="property-figma-img" role="img" aria-label="Property photo placeholder"></div>
+        <div class="property-figma-card" data-property-id="${propertyId}" role="button" tabindex="0" style="cursor:pointer;">
+          ${imageMarkup}
           <div class="property-figma-info">
             <div class="property-figma-meta">
               <h4>${item.title || 'Untitled Property'}</h4>
@@ -376,5 +400,158 @@ if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-re
         </div>
       `;
     }).join('');
+
+    // Wire click + keyboard activation to open the in-dashboard details
+    // modal for that property. Landlords stay on this page — they don't
+    // get routed to property-details.html, which is the seeker-facing
+    // listing page.
+    listingsRow.querySelectorAll('.property-figma-card').forEach(card => {
+      const propertyId = card.dataset.propertyId;
+      if (!propertyId) return; // no id on this record — nothing to show
+
+      const showDetail = () => openPropertyDetailModal(propertyId);
+
+      card.addEventListener('click', showDetail);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showDetail();
+        }
+      });
+    });
+  }
+
+  /* ============================================================
+     IN-DASHBOARD PROPERTY DETAIL MODAL
+     Replaces the old navigate-away-to-property-details.html flow.
+     The modal DOM is created once, lazily, and reused/repopulated
+     on every open so this works regardless of what markup already
+     exists in the host HTML page.
+     ============================================================ */
+
+  let detailModalEl = null;
+
+  function ensureDetailModal() {
+    if (detailModalEl) return detailModalEl;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'property-figma-modal-overlay';
+    overlay.id = 'propertyDetailModalOverlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.style.cssText = `
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    `;
+
+    overlay.innerHTML = `
+      <div class="property-figma-modal" role="dialog" aria-modal="true" aria-labelledby="propertyDetailModalTitle"
+           style="background:#fff; border-radius:12px; max-width:560px; width:100%; max-height:85vh; overflow-y:auto; position:relative;">
+        <button type="button" class="property-figma-modal-close" id="propertyDetailModalClose" aria-label="Close"
+                style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:22px; line-height:1; cursor:pointer;">&times;</button>
+        <div id="propertyDetailModalImageWrap"></div>
+        <div style="padding:20px 24px 24px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <h3 id="propertyDetailModalTitle" style="margin:0;"></h3>
+            <span id="propertyDetailModalBadge" class="badge-figma"></span>
+          </div>
+          <p id="propertyDetailModalSubtitle" class="text-muted" style="margin:0 0 16px;"></p>
+          <div id="propertyDetailModalStats" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-bottom:16px;"></div>
+          <div id="propertyDetailModalDescription" style="margin-bottom:16px;"></div>
+          <div id="propertyDetailModalActions" style="display:flex; gap:10px;"></div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    detailModalEl = overlay;
+
+    const close = () => closePropertyDetailModal();
+    overlay.querySelector('#propertyDetailModalClose').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.style.display !== 'none') close();
+    });
+
+    return overlay;
+  }
+
+  function closePropertyDetailModal() {
+    if (!detailModalEl) return;
+    detailModalEl.style.display = 'none';
+    detailModalEl.setAttribute('aria-hidden', 'true');
+    document.body.style.removeProperty('overflow');
+  }
+
+  // Looks up the property from the currently loaded list (no extra network
+  // round-trip needed since the dashboard already has full records) and
+  // populates the modal with its listing information.
+  function openPropertyDetailModal(propertyId) {
+    const item = allProperties.find(p => {
+      const id = p.id ?? p._id ?? p.propertyId ?? '';
+      return String(id) === String(propertyId);
+    });
+    if (!item) return;
+
+    const modal = ensureDetailModal();
+
+    const statusRaw = (item.status || 'AVAILABLE').toUpperCase();
+    const badgeText = statusRaw === 'RENTED' ? 'Rented' : 'Available';
+    const badgeClass = statusRaw === 'RENTED' ? 'badge-figma-rented' : 'badge-figma-available';
+
+    const imageUrl = item.imageUrl
+      || item.thumbnailUrl
+      || item.coverImage
+      || (Array.isArray(item.photos) && item.photos[0])
+      || (Array.isArray(item.images) && item.images[0])
+      || '';
+
+    modal.querySelector('#propertyDetailModalImageWrap').innerHTML = imageUrl
+      ? `<img src="${imageUrl}" alt="${item.title || 'Property photo'}" style="width:100%; max-height:260px; object-fit:cover; border-radius:12px 12px 0 0; display:block;">`
+      : `<div style="width:100%; height:180px; background:#eee; border-radius:12px 12px 0 0;"></div>`;
+
+    modal.querySelector('#propertyDetailModalTitle').textContent = item.title || 'Untitled Property';
+
+    const badgeEl = modal.querySelector('#propertyDetailModalBadge');
+    badgeEl.className = `badge-figma ${badgeClass}`;
+    badgeEl.textContent = badgeText;
+
+    modal.querySelector('#propertyDetailModalSubtitle').textContent = item.address || '';
+
+    const rent = Number(item.monthlyRent ?? item.rent ?? item.price) || 0;
+    const stats = [
+      { label: 'Type', value: item.propertyType || item.type || '—' },
+      { label: 'Bedrooms', value: item.bedrooms ?? '—' },
+      { label: 'Bathrooms', value: item.bathrooms ?? '—' },
+      { label: 'Monthly Rent', value: rent ? `₦${rent.toLocaleString()}` : '—' },
+    ];
+    modal.querySelector('#propertyDetailModalStats').innerHTML = stats.map(s => `
+      <div>
+        <p class="stat-card-title" style="margin:0 0 2px;">${s.label}</p>
+        <p style="margin:0; font-weight:600;">${s.value}</p>
+      </div>
+    `).join('');
+
+    modal.querySelector('#propertyDetailModalDescription').innerHTML = item.description
+      ? `<p style="margin:0;">${item.description}</p>`
+      : '';
+
+    modal.querySelector('#propertyDetailModalActions').innerHTML = `
+      <button type="button" class="add-property-btn-top" id="propertyDetailEditBtn">Edit Listing</button>
+    `;
+    modal.querySelector('#propertyDetailEditBtn')?.addEventListener('click', () => {
+      window.location.href = `add-property.html?id=${encodeURIComponent(propertyId)}`;
+    });
+
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
   }
 });

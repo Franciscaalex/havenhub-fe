@@ -2,32 +2,35 @@
 
 const state = {
   amenities: new Set(),
-  mediaFiles: [], 
-  mapCenter: { lat: 6.5244, lng: 3.3792 }, 
+  mediaFiles: [],
+  mapCenter: { lat: 6.5244, lng: 3.3792 },
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (!guardLandlordAccess()) return;
+/* ROLE GUARD */
 
-  initMap();
-  initAmenities();
-  initMediaUpload();
-  initAutoGenerate();
-  initTopbarButtons();
-  initFormSubmission();
-  initToast();
-});
+document.documentElement.style.visibility = 'hidden';
 
-/* ============================================================
-   ROLE GUARD
-   ============================================================ */
+const landlordAccessAllowed = guardLandlordAccess();
+
+if (landlordAccessAllowed) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.style.visibility = '';
+    initMap();
+    initAmenities();
+    initMediaUpload();
+    initAutoGenerate();
+    initTopbarButtons();
+    initFormSubmission();
+    initToast();
+  });
+}
 
 function guardLandlordAccess() {
   const token = localStorage.getItem(CONFIG.TOKEN_KEY);
 
   if (!token) {
-    // No session at all — send to login, not just the seeker dashboard.
-    window.location.href = 'login.html';
+    
+    window.location.replace('login.html');
     return false;
   }
 
@@ -36,7 +39,7 @@ function guardLandlordAccess() {
   if (role !== 'LANDLORD') {
     // Consistent with landlord-dashboard.html: wrong role gets bounced
     // back to their own dashboard rather than shown the form.
-    window.location.href = 'seeker-dashboard.html';
+    window.location.replace('seeker-dashboard.html');
     return false;
   }
 
@@ -79,7 +82,7 @@ function initMap() {
     maxZoom: 19,
   }).addTo(map);
 
-  
+
   map.on('moveend', () => {
     const center = map.getCenter();
     state.mapCenter = { lat: center.lat, lng: center.lng };
@@ -126,7 +129,7 @@ async function forwardGeocode(query) {
     if (results.length > 0) {
       const { lat, lon } = results[0];
       map.setView([parseFloat(lat), parseFloat(lon)], 16);
-    
+
     }
   } catch (err) {
     console.error('Forward geocoding failed:', err);
@@ -179,7 +182,7 @@ function initMediaUpload() {
       state.mediaFiles.push({ file, previewUrl: URL.createObjectURL(file) });
     }
 
-    input.value = ''; 
+    input.value = '';
     renderMediaGrid();
   });
 }
@@ -189,7 +192,7 @@ function renderMediaGrid() {
   const addTile = document.getElementById('mediaAddTile');
   const countEl = document.getElementById('mediaCount');
 
-  
+
   grid.querySelectorAll('.media-photo-tile').forEach(el => el.remove());
 
   state.mediaFiles.forEach((item, index) => {
@@ -226,7 +229,7 @@ function initAutoGenerate() {
 
   btn.addEventListener('click', async () => {
     const statusEl = document.getElementById('formStatus');
-       const descriptionEl = document.getElementById('description');
+    const descriptionEl = document.getElementById('description');
     const originalLabel = btn.textContent;
 
     const payload = buildAiPayload();
@@ -295,17 +298,6 @@ function buildAiPayload() {
   return { userInput };
 }
 
-function formatAmenityLabel(value) {
-  return value.replace(/_/g, ' ');
-}
-
-async function generateAiDescription(payload) {
-  // NOTE: matches the '/properties' convention used elsewhere in this
-  // file — CONFIG.BASE_URL / CONFIG.MOCK_BASE_PATH already include the
-  // '/api/v1' prefix, so it must NOT be repeated here. Adding it caused
-  // a 404 (the request hit /api/v1/api/v1/ai/generate-description).
-  return postJson('/ai/generate-description', payload);
-}
 function formatAmenityLabel(value) {
   return value.replace(/_/g, ' ');
 }
@@ -405,7 +397,7 @@ async function submitListing(isDraft) {
         // FIXED REDIRECT ROUTE: Corrects the Vercel deployment 404 error by hitting your actual route name
         window.location.href = 'landlord-dashboard.html';
       }, 1500);
-    } 
+    }
   } catch (err) {
     setStatus(statusEl, err.message, 'error');
   } finally {
