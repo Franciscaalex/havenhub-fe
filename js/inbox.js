@@ -18,16 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
 let chatConversationsDataset = [];
 let activeSelectedThreadId = null;
 
-// Confirmed by the backend team's fix: replying via inbox.html now sends
-// { threadId, message } — the backend uses threadId to append to the
-// existing conversation and correctly tag senderType/senderId, instead of
-// the old { propertyId, message } shape which was causing landlord
-// replies to self-message as a new inbound enquiry. propertyId is no
-// longer needed for sending, only threadId.
+let currentActiveTabId = 'tabAll';
 
-// Files staged for the message currently being composed. Cleared on send
-// and whenever a different thread is opened.
+
 let pendingAttachments = [];
+
+let activeThreadSeekerInfo = null;
 
 // Small, safe default palette — expand freely, this is just common ones.
 const EMOJI_PALETTE = ['😀', '😂', '😍', '👍', '🙏', '🎉', '😢', '😮', '❤️', '🔥', '👏', '🤔', '😊', '🙌', '✅', '📸'];
@@ -51,16 +47,7 @@ async function initializeInboxModule() {
 }
 
 /* ---------- 0. LANDLORD-ONLY ACCESS GUARD ---------- */
-// Blocks property seekers from this dashboard. Reuses window.currentUser
-// if some other script (e.g. sidebar.js, which already shows "Chioma Ndu
-// / Landlord") has already fetched it, otherwise calls the confirmed
-// Swagger route GET /api/v1/users/me directly.
-//
-// Field name and value format confirmed via Swagger (PUT /users/me,
-// PUT /users/profile): the field is `role`, and it's an uppercase enum
-// string, e.g. "PROPERTY_SEEKER". See the comment in
-// enforceLandlordOnlyAccess for why the check targets that known value
-// rather than a guessed landlord-side value.
+
 async function enforceLandlordOnlyAccess() {
   try {
     const user = window.currentUser || await window.api.get('/users/me');
@@ -68,13 +55,7 @@ async function enforceLandlordOnlyAccess() {
 
     const role = resolveRole(user);
 
-    // Confirmed via Swagger (PUT /users/me and PUT /users/profile examples):
-    // the role field uses an uppercase enum, and the seeker value is
-    // exactly "PROPERTY_SEEKER". The landlord's exact enum value isn't
-    // shown anywhere in the docs, so rather than guess it (LANDLORD? 
-    // PROPERTY_LANDLORD? PROPERTY_OWNER?) and risk locking landlords out
-    // too, this blocks the one value we know for certain and lets
-    // everything else through.
+   
     if (role === 'PROPERTY_SEEKER') {
       window.location.href = SEEKER_REDIRECT_URL;
       return false;
@@ -109,7 +90,7 @@ async function loadConversationsFeed() {
     // Normalize data structure depending on how the response object is nested
     chatConversationsDataset = response?.items || response?.data || response || [];
 
-    renderConversationsList(chatConversationsDataset);
+    applyActiveTabFilterAndRender();
     updateTabBadgeIndicators(chatConversationsDataset);
 
   } catch (err) {
@@ -120,13 +101,17 @@ async function loadConversationsFeed() {
   }
 }
 
+function applyActiveTabFilterAndRender() {
+  let filtered = [...chatConversationsDataset];
+  if (currentActiveTabId === 'tabUnread') {
+    filtered = chatConversationsDataset.filter(t => t.isRead === false);
+  } else if (currentActiveTabId === 'tabArchive') {
+    filtered = chatConversationsDataset.filter(t => t.isArchived === true);
+  }
+  renderConversationsList(filtered);
+}
 /* ---------- 2. RENDER THE THREADS IN THE LIST ---------- */
-// Real thread shape (confirmed against Swagger + a live GET /enquiries/threads
-// response): almost everything lives under `lastMessage`, not on the thread
-// object itself. There is no flat t.userName / t.userAvatar / t.propertySubject
-// / t.timestamp / t.isRead — those were guesses and never matched real data,
-// which is why avatars, names, and snippets were rendering wrong or as
-// "[object Object]" (lastMessage is an object, not a string).
+
 function renderConversationsList(threads) {
   const container = document.getElementById('conversationsList');
   if (!container) return;
@@ -137,17 +122,19 @@ function renderConversationsList(threads) {
   }
 
   container.innerHTML = threads.map(t => {
-    const lastMsg = t.lastMessage || {};
-    const seeker = lastMsg.seeker || {};
-    const property = lastMsg.property || {};
+    
+    const seeker = t.seeker || {};
+    const property = t.property || {};
 
-    const isUnread = lastMsg.isRead === false ? "unread-item" : "";
-    const displaySnippet = lastMsg.message || "No messages recorded.";
-    const displayAvatar = seeker.avatarUrl || "images/Avatar 4.svg";
-    const userName = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ') || 'Verified Tenant';
-    const propertySubject = property.title || 'General Enquiry';
-    const timestamp = lastMsg.createdAt
-      ? new Date(lastMsg.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const isUnread = t.isRead === false ? "unread-item" : "";
+    const displaySnippet = t.message || t.lastMessage || "No messages recorded.";
+    const displayAvatar = seeker.avatarUrl || t.userAvatar || "images/Avatar 4.svg";
+    const userName = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ') || t.userName || 'Verified Tenant';
+    const propertySubject = property.title || t.propertySubject || 'General Enquiry';
+
+    
+    const timestamp = t.createdAt
+      ? new Date(t.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })
       : 'Just now';
 
     return `
@@ -165,7 +152,6 @@ function renderConversationsList(threads) {
     `;
   }).join('');
 
-  // Setup click listeners to slide open individual message window panels
   container.querySelectorAll('.convo-card-row').forEach(row => {
     row.addEventListener('click', () => {
       const threadId = row.dataset.id;
@@ -181,27 +167,20 @@ function updateTabBadgeIndicators(threads) {
   const countArchiveEl = document.getElementById('countArchive');
 
   const totalCount = threads.length;
-  // Read status/archive flags live under lastMessage, not on the thread
-  // object itself — see renderConversationsList for the confirmed shape.
-  const unreadCount = threads.filter(t => t.lastMessage?.isRead === false).length;
-  const archiveCount = threads.filter(t => t.lastMessage?.isArchived === true).length;
+  // isRead / isArchived live directly on the thread object — see note
+  // in renderConversationsList.
+  const unreadCount = threads.filter(t => t.isRead === false).length;
+  const archiveCount = threads.filter(t => t.isArchived === true).length;
 
   if (countAllEl) countAllEl.textContent = `(${totalCount})`;
   if (countUnreadEl) countUnreadEl.textContent = `(${unreadCount})`;
   if (countArchiveEl) countArchiveEl.textContent = `(${archiveCount})`;
 
-  // Keep the sidebar's Inbox badge in sync while this page is open. Other
-  // pages get their own copy of this logic in sidebar.js (see the
-  // accompanying snippet) since inbox.js only runs here.
   updateSidebarInboxBadge(unreadCount);
 }
 
 /* ---------- 2c. SIDEBAR NOTIFICATION BADGE ---------- */
-// Looks for a badge element inside the sidebar's Inbox nav item. Add
-// something like:
-//   <a href="inbox.html">Inbox <span id="sidebarInboxBadge" class="sidebar-badge" hidden>0</span></a>
-// to sidebar.html if it isn't there yet. Safe no-op if the element
-// doesn't exist.
+
 function updateSidebarInboxBadge(unreadCount) {
   const badge = document.getElementById('sidebarInboxBadge');
   if (!badge) return;
@@ -228,18 +207,15 @@ async function openActiveChatWindow(threadId) {
     chatWindow.style.display = 'flex';
   }
   if (!chatWindow) return;
-
-  // Real thread shape (confirmed via Swagger + live response): everything
-  // lives under lastMessage, including the property id POST /enquiries
-  // actually needs — it takes propertyId, not threadId.
   const currentThread = chatConversationsDataset.find(c => String(c.threadId) === String(threadId));
-  const lastMsg = currentThread?.lastMessage || {};
-  const seeker = lastMsg.seeker || {};
-  const property = lastMsg.property || {};
+  const seeker = currentThread?.seeker || {};
+  const property = currentThread?.property || {};
 
-  const displayAvatar = seeker.avatarUrl || "images/Avatar 4.svg";
-  const userName = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ') || 'Verified Tenant';
-  const propertySubject = property.title || 'General Enquiry';
+  activeThreadSeekerInfo = seeker;
+
+  const displayAvatar = seeker.avatarUrl || currentThread?.userAvatar || "images/Avatar 4.svg";
+  const userName = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ') || currentThread?.userName || 'Verified Tenant';
+  const propertySubject = property.title || currentThread?.propertySubject || 'General Enquiry';
 
   // Build Chat Shell Window Frame layout
   chatWindow.innerHTML = `
@@ -315,6 +291,9 @@ async function openActiveChatWindow(threadId) {
   triggerMarkAsRead(threadId);
 }
 
+// Back arrow handler — returns to the conversation list and re-applies
+// whichever tab (All / Unread / Archive) was active before this chat was
+// opened, instead of always resetting to "All".
 function closeChatWindow() {
   const listView = document.getElementById('conversationsListViewPanel');
   const chatWindow = document.getElementById('chatWindowView');
@@ -323,7 +302,11 @@ function closeChatWindow() {
   if (listView) listView.style.display = 'flex';
 
   pendingAttachments = [];
-  loadConversationsFeed(); // Re-sync changes upon panel swap actions
+  activeThreadSeekerInfo = null;
+
+  // Re-sync with the server (loadConversationsFeed internally calls
+  // applyActiveTabFilterAndRender, which respects currentActiveTabId).
+  loadConversationsFeed();
 }
 
 /* ---------- 3b. LOAD (OR RELOAD) A THREAD'S MESSAGES ---------- */
@@ -356,19 +339,29 @@ function renderMessageBubbles(messages) {
   }
 
   stream.innerHTML = messages.map(m => {
-    // Evaluates sender origins automatically to float bubbles left vs right layout grids
-    // Landlord messages float right (outgoing), tenants stay left (incoming)
-    const isOutgoing = m.senderType?.toLowerCase() === 'landlord' || m.sender?.role?.toLowerCase() === 'landlord';
+    // Real message shape (confirmed via a live GET
+    // /enquiries/threads/{threadId} response): senderRole is the
+    // reliable field ("LANDLORD" / "PROPERTY_SEEKER") — senderType
+    // ("landlord"/"tenant") also works and is kept as a fallback.
+    const isOutgoing = m.senderRole === 'LANDLORD'
+      || m.senderType?.toLowerCase() === 'landlord'
+      || m.sender?.role?.toLowerCase() === 'landlord';
     const directionClass = isOutgoing ? 'bubble-outgoing' : 'bubble-incoming';
-    const timeDisplay = m.time || (m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '12:00 PM');
-    const attachments = m.attachments || m.files || [];
 
+    // m.time is backend-supplied but wrong — it's the UTC hour relabeled
+    // as local time with no WAT (+1) offset applied (e.g. 23:24 UTC sent
+    // as "11:24 PM" instead of the correct "12:24 AM" WAT). Always derive
+    // the display time from createdAt with an explicit timeZone instead.
+    const timeDisplay = m.createdAt
+      ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })
+      : '12:00 PM';
+
+    const attachments = m.attachments || m.files || [];
     const attachmentsHtml = attachments.map(att => {
       const url = typeof att === 'string' ? att : (att.url || att.fileUrl || '');
       const name = (typeof att === 'object' && (att.name || att.fileName)) || 'Attachment';
       const isImage = (typeof att === 'object' && (att.type || '').startsWith('image'))
         || /\.(png|jpe?g|gif|webp)$/i.test(url);
-
       if (!url) return '';
       if (isImage) {
         return `<a href="${url}" target="_blank" rel="noopener"><img src="${url}" class="bubble-attachment-image" alt="${escapeHtml(name)}"></a>`;
@@ -378,9 +371,30 @@ function renderMessageBubbles(messages) {
 
     const textContent = m.text || m.message || '';
 
+    // Sender's real shape is { name, role, avatar } — NOT firstName/
+    // lastName/avatarUrl. Falls back to the message's own full `seeker`
+    // object (which DOES use firstName/lastName/avatarUrl) if `sender`
+    // is ever missing, then to a generic label as a last resort.
+    let senderInfoHtml = '';
+    if (!isOutgoing) {
+      const sender = m.sender || {};
+      const seeker = m.seeker || {};
+      const senderAvatar = sender.avatar || seeker.avatarUrl || "images/Avatar 4.svg";
+      const senderName = sender.name
+        || [seeker.firstName, seeker.lastName].filter(Boolean).join(' ')
+        || 'Verified Tenant';
+      senderInfoHtml = `
+        <div class="bubble-sender-row">
+          <img src="${escapeHtml(senderAvatar)}" class="bubble-sender-avatar" alt="">
+          <span class="bubble-sender-name">${escapeHtml(senderName)}</span>
+        </div>
+      `;
+    }
+
     return `
       <div class="chat-bubble-row ${directionClass}">
         <div class="bubble-content">
+          ${senderInfoHtml}
           ${textContent ? escapeHtml(textContent) : ''}
           ${attachmentsHtml}
           <div class="chat-bubble-meta">
@@ -396,9 +410,8 @@ function renderMessageBubbles(messages) {
     `;
   }).join('');
 
-  stream.scrollTop = stream.scrollHeight; // Auto-scroll to the latest message
+  stream.scrollTop = stream.scrollHeight;
 }
-
 /* ---------- 4. SEND A MESSAGE VIA POST /enquiries ---------- */
 async function handleSendMessageSubmit(e) {
   e.preventDefault();
@@ -416,11 +429,9 @@ async function handleSendMessageSubmit(e) {
   hideSendStatus();
   closeEmojiPicker();
 
-  // Optimistically append the message to the screen right away so it feels
-  // responsive — but this is now provisional, not final. loadThreadMessages()
-  // below replaces it with whatever the server actually confirms was saved.
+
   const stream = document.getElementById('chatMessagesStream');
-  const localTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const localTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' });
   const tempId = `temp-${Date.now()}`;
   if (stream) {
     stream.insertAdjacentHTML('beforeend', `
@@ -439,33 +450,19 @@ async function handleSendMessageSubmit(e) {
 
   try {
     if (filesToSend.length > 0) {
-      // Multipart path — attachments require FormData, not JSON, so this
-      // bypasses api.js's post() the same way add-property.js's photo
-      // upload bypasses it.
-      // FIXED per backend: sends threadId, not propertyId. Sending
-      // propertyId was the root cause of landlord replies being treated
-      // as a brand-new inbound enquiry (self-messaging) instead of being
-      // appended to the existing tenant conversation.
+     
       const formData = new FormData();
       formData.append('threadId', activeSelectedThreadId);
       formData.append('message', userText);
       filesToSend.forEach(file => formData.append('attachments', file));
       await postEnquiryMultipart('/enquiries', formData);
     } else {
-      // FIXED per backend: { threadId, message } — the backend now uses
-      // threadId to append to the existing conversation_id and correctly
-      // map senderId/receiverId (landlord -> tenant) instead of creating
-      // a new inbound enquiry addressed back to the landlord.
+      
       await window.api.post('/enquiries', { threadId: activeSelectedThreadId, message: userText });
     }
 
     console.log("Live message dispatched cleanly over gateway pipelines.");
 
-    // Re-sync with the server so the thread reflects exactly what was
-    // persisted. This is the actual fix for messages "disappearing" —
-    // previously nothing ever confirmed the send had stuck, so a
-    // failed/partial save only surfaced the next time you reopened the
-    // thread, looking like the reply had vanished.
     document.getElementById(tempId)?.remove();
     await loadThreadMessages(activeSelectedThreadId);
 
@@ -592,14 +589,7 @@ function buildEmojiPicker() {
   });
 }
 
-// Opens the picker as a positioned popup above the input bar (so it never
-// covers the send button), and closes it again on a second click of the
-// same icon. Uses setProperty(..., 'important') rather than a plain style
-// assignment or the `hidden` attribute — if app.css/global.css has ANY
-// rule setting `display` on .chat-emoji-picker, a normal inline style or
-// the `hidden` attribute both lose to it, which is what was keeping the
-// picker permanently visible before. !important is the one thing nothing
-// in an external stylesheet can silently override.
+
 function isEmojiPickerOpen(picker) {
   return picker.style.display === 'grid';
 }
@@ -709,19 +699,30 @@ function setupTabListeners() {
 
       console.log(`Tab change registered: ${tabId}`);
 
+      currentActiveTabId = tabId;
+
       // Reset active classes across tabs
       tabs.forEach(t => document.getElementById(t)?.classList.remove('active'));
       this.classList.add('active');
 
-      let filtered = [...chatConversationsDataset];
-      if (tabId === 'tabUnread') {
-        filtered = chatConversationsDataset.filter(t => t.lastMessage?.isRead === false);
-      } else if (tabId === 'tabArchive') {
-        filtered = chatConversationsDataset.filter(t => t.lastMessage?.isArchived === true);
-      }
-
-      renderConversationsList(filtered);
+      applyActiveTabFilterAndRender();
     });
+  });
+}
+
+function setupHeaderSearch() {
+  const input = document.getElementById('chatSearchInput');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    const filtered = chatConversationsDataset.filter(t => {
+      const seeker = t.seeker || {};
+      const name = [seeker.firstName, seeker.lastName].filter(Boolean).join(' ').toLowerCase();
+      const property = (t.property?.title || t.propertySubject || '').toLowerCase();
+      return name.includes(query) || property.includes(query);
+    });
+    renderConversationsList(query ? filtered : chatConversationsDataset);
   });
 }
 

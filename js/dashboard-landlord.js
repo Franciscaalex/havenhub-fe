@@ -232,10 +232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!dynamic) {
       return `
-        <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">$${revenue.toLocaleString()}</h3></div>
+        <div class="dash-stat-card"><p class="stat-card-title">Total Monthly Revenue</p><h3 class="stat-card-value">₦${revenue.toLocaleString()}</h3></div>
         <div class="dash-stat-card"><p class="stat-card-title">Occupancy Rate</p><h3 class="stat-card-value">${occupancy !== undefined ? occupancy + '%' : '-'}</h3></div>
         <div class="dash-stat-card"><p class="stat-card-title">Pending Maintenance</p><h3 class="stat-card-value">${maintenance}</h3></div>
-        <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">$${overdue.toLocaleString()}</h3></div>
+        <div class="dash-stat-card"><p class="stat-card-title">Overdue Rent</p><h3 class="stat-card-value">₦${overdue.toLocaleString()}</h3></div>
       `;
     }
 
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <div class="dash-stat-card stat-positive">
         <p class="stat-card-title">Total Monthly Revenue</p>
-        <h3 class="stat-card-value">$${revenue.toLocaleString()}</h3>
+        <h3 class="stat-card-value">₦${revenue.toLocaleString()}</h3>
         ${revenueTrend !== undefined ? `<p class="stat-card-subtitle text-success">${revenueTrend > 0 ? '+' : ''}${revenueTrend}%</p>` : ''}
       </div>
       <div class="dash-stat-card ${Number(occupancy) > 0 ? 'stat-positive' : ''}">
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
       <div class="dash-stat-card ${hasOverdueAmount ? 'stat-negative' : ''}">
         <p class="stat-card-title">Overdue Rent</p>
-        <h3 class="stat-card-value">$${overdue.toLocaleString()}</h3>
+        <h3 class="stat-card-value">₦${overdue.toLocaleString()}</h3>
         <p class="stat-card-subtitle ${hasOverdueAmount ? 'text-danger' : 'text-success'}">${hasOverdueAmount ? 'Payment overdue' : 'Nothing overdue'}</p>
       </div>
     `;
@@ -356,17 +356,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     listingsRow.innerHTML = propertiesList.map(item => {
-      const statusRaw = (item.status || 'PENDING_REVIEW').toUpperCase();
-      let badgeText = 'Pending';
-      let badgeClass = 'badge-figma-pending';
+      const statusRaw = (item.status || 'AVAILABLE').toUpperCase();
+// Every listing shows as "Available" as soon as it's created — approval
+// no longer gates the badge. RENTED is still called out explicitly.
+let badgeText = 'Available';
+let badgeClass = 'badge-figma-available';
 
-      // Confirmed via the admin audit log (PROPERTY_APPROVED action logs
-      // "Listing approved and published to discovery feed") — approval IS
-      // the publish step on this backend, there's no separate AVAILABLE
-      // transition. So APPROVED earns the green badge, same as AVAILABLE.
-      if (statusRaw === 'APPROVED' || statusRaw === 'AVAILABLE') { badgeText = 'Available'; badgeClass = 'badge-figma-available'; }
-      else if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-rented'; }
-
+if (statusRaw === 'RENTED') { badgeText = 'Rented'; badgeClass = 'badge-figma-rented'; }
       return `
         <div class="property-figma-card">
           <div class="property-figma-img" role="img" aria-label="Property photo placeholder"></div>

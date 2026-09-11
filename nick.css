@@ -1622,16 +1622,17 @@ margin-left: -3.5rem;
 /* ---------- Logout ---------- */
 
 .logout-btn {
-  display: block;
-  width: 15%;
-  margin: 40px auto 0;
+  display: flex;
+  /* width: 15%; */
+  height: 50%;
+  /* margin: 1.5rem; */
   background: var(--navy);
   color: #fff;
   border: none;
-  border-radius: var(--radius-pill);
-  padding: 10px 14px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 1.5rem;
+  padding: 20px 25px;
+  font-size: 0.6rem;
+  font-weight: 500;
 }
 .logout-btn:hover {
   background: var(--accent-blue);

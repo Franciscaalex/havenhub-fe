@@ -43,7 +43,7 @@ async function loadProfile() {
     document.getElementById('firstName').value = user.firstName ?? '';
     document.getElementById('lastName').value = user.lastName ?? '';
     document.getElementById('emailAddress').value = user.email ?? '';
-    document.getElementById('phoneNumber').value = user.phone ?? '';
+  document.getElementById('phoneNumber').value = user.phoneNumber ?? '';
 
     if (user.avatarUrl) {
       document.getElementById('avatarPreview').src = user.avatarUrl;
@@ -91,10 +91,11 @@ function wireProfileForm() {
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const firstName = document.getElementById('firstName').value.trim();
+        const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
-    const phone = document.getElementById('phoneNumber').value.trim();
-
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+    
+      await window.api.put('/users/me', { firstName, lastName, phoneNumber });
     if (!firstName || !lastName) {
       setStatus(statusEl, 'First and last name are required.', 'error');
       return;
