@@ -73,10 +73,6 @@ window.addEventListener('partialsLoaded', () => {
       // Step A: Load immediate values from cache first to guarantee a fast, flash-free layout paint
       applyLocalCacheProfileData();
 
-      // Step B: Query your actual NestJS backend database server for the absolute latest profile state
-      // FIX: was hitting /users/profile first, which doesn't exist on this
-      // backend (always 404s) and only worked via the /users/me fallback.
-      // Calling /users/me directly avoids the guaranteed failed request.
       const response = await window.api.get('/users/me');
       const serverUserObject = response?.data || response;
 

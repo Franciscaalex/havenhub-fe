@@ -617,7 +617,7 @@ margin-top: -2rem;
 }
 
 .dash-sidebar-footer {
-  margin-top: auto;
+  margin-top: 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -871,7 +871,12 @@ margin-top: -2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #f1f5f9;
   width: 100%;
-  margin-bottom: 2rem;
+  margin-top: -3rem;
+  margin-bottom: 1rem;
+}
+
+.dash-content{
+  margin-top: 1.5rem;
 }
 
 .dash-menu-btn {
@@ -891,7 +896,7 @@ margin-top: -2rem;
 }
 
 .dash-welcome h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
   color: #002349;
   margin: 0 0 4px 0;

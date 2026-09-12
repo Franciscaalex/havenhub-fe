@@ -16,9 +16,19 @@
 
       <!-- MAIN COLUMN PANELS STREAM -->
       <div class="inbox-main">
-        <!-- TOP BAR CONTROL PLATFORM HEADER -->
-        <header class="nav-bar-header">
-          <h1 class="header-tittle">Messages & Enquiries</h1>
+        <!--
+          SHARED PAGE HEADER — one header for both states, not two.
+          #headerLeftZone swaps between the "Messages & Enquiries" title
+          (list view) and the open thread's back-arrow/avatar/name/subtitle
+          (chat view, via js/inbox.js setHeaderToChatContact()). The search
+          box stays in the same place in both states, which also fixes it
+          actually working — setupHeaderSearch() was previously defined in
+          inbox.js but never called, so the box did nothing.
+        -->
+        <header class="nav-bar-header" id="inboxHeader">
+          <div class="header-left-zone" id="headerLeftZone">
+            <h1 class="header-tittle">Messages & Enquiries</h1>
+          </div>
           <div class="header-actions">
             <div class="search-wrapper">
               <svg
@@ -66,7 +76,14 @@
             </div>
           </div>
 
-          <!-- PANEL VIEW B: ACTIVE LIVE CHAT STREAM WINDOW (Hidden by default until a card selection happens) -->
+          <!--
+            PANEL VIEW B: ACTIVE LIVE CHAT STREAM WINDOW
+            (Hidden by default until a card selection happens). This now
+            holds ONLY the message stream + input bar — the contact header
+            that used to be built inside this panel by inbox.js has moved
+            up into #headerLeftZone above, so the header is a single
+            full-width row instead of a second one nested in the chat panel.
+          -->
           <div class="chat-window-view" id="chatWindowView" hidden>
             <!-- Injected dynamically by your js/inbox.js module files -->
           </div>
