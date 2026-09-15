@@ -130,13 +130,28 @@
     </svg>`;
   }
 
+  // Maps the API's ISO currency code to a display symbol. Defaults to ₦
+  // (NGN) since that's what this backend actually returns, but stays
+  // accurate if a listing ever comes back in a different currency.
+  const CURRENCY_SYMBOLS = { NGN: "₦", USD: "$", GBP: "£", EUR: "€" };
+  function currencySymbol(code) {
+    if (!code) return "₦";
+    return CURRENCY_SYMBOLS[code.toUpperCase()] || `${code} `;
+  }
+
   function renderCard(p, isSaved) {
     const card = document.createElement("article");
     card.className = "card";
     const statusClass = p.status?.toLowerCase() === "rented" ? "rented" : "available";
-    
+
     const displayPrice = typeof p.price === 'number' ? p.price.toLocaleString() : p.price;
-    const displaySqft = typeof p.sqft === 'number' ? p.sqft.toLocaleString() : p.sqft;
+    const priceSymbol = currencySymbol(p.currency);
+    // sqft: guard against missing/zero values so the label always
+    // reads something sensible instead of "0 sqft" or a blank string.
+    const hasSqft = typeof p.sqft === 'number' ? p.sqft > 0 : !!p.sqft;
+    const displaySqft = hasSqft
+      ? (typeof p.sqft === 'number' ? p.sqft.toLocaleString() : p.sqft)
+      : 'N/A';
 
     card.innerHTML = `
       <!-- INTERACTIVE IMAGE LINK: Navigates cleanly to details -->
@@ -150,18 +165,18 @@
       </button>
 
       <div class="card-body">
-        <div class="price">$${displayPrice}/mo</div>
+        <div class="price">${priceSymbol}${displayPrice}/mo</div>
         <div class="address">${p.address || 'Location Unavailable'}</div>
         <div class="card-stats">
           <div class="stat-badge" title="${p.beds} Bedrooms">
             <span class="stat-icon bed-icon">${bedIcon()}</span>
-            <span class="badge-count">${p.beds}</span>
+            <span class="badge-count" style="background-color:#2e65d2;color:#fff;">${p.beds}</span>
           </div>
           <div class="stat-badge" title="${p.baths} Bathrooms">
             <span class="stat-icon">${bathIcon()}</span>
-            <span class="badge-count">${p.baths}</span>
+            <span class="badge-count" style="background-color:#2e65d2;color:#fff;">${p.baths}</span>
           </div>
-          <span class="sqft-text">${displaySqft} sqft</span>
+          <span class="sqft-text">${displaySqft}${hasSqft ? ' sqft' : ''}</span>
         </div>
         <span class="status-badge ${statusClass}">${p.status}</span>
       </div>
@@ -404,11 +419,15 @@ if (savedProfileImage && profileAvatar) {
 
         return {
           id: item._id || item.id,
-          price: item.price || 0,
+          price: item.price || item.rentPrice || 0,
+          // API's actual field name is "squareFootage" (confirmed against
+          // the Swagger schema) — the old "squareFeet" guess never matched
+          // a real response, which is why sqft always fell back to 0.
+          currency: item.currency || 'NGN',
           address: item.address || `${item.city || 'HavenHub'}, ${item.state || 'Property'}`,
           beds: item.bedrooms || item.beds || 0,
           baths: item.bathrooms || item.baths || 0,
-          sqft: item.squareFeet || item.sqft || 0,
+          sqft: item.squareFootage || item.squareFeet || item.sqft || 0,
           type: item.propertyType || item.type || 'Apartment',
           status: finalStatus,
           // Real API images only — no local placeholder fallback. If a

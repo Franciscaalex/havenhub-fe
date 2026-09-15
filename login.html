@@ -31,13 +31,13 @@
 
         <form id="loginForm" novalidate>
           <div class="form-group">
-            <input type="email" id="loginEmail" class="form-control" placeholder="Enter a valid email address">
+            <input type="email" id="loginEmail" class="form-control" placeholder="Enter a valid email address" autocomplete="email">
             <span class="error-message">Incorrect email address</span>
           </div>
 
           <div class="form-group">
             <div class="input-wrapper">
-              <input type="password" id="loginPassword" class="form-control" placeholder="********">
+              <input type="password" id="loginPassword" class="form-control" placeholder="********" autocomplete="current-password">
               <img src="images/EyeClosed.png" alt="TogglePassword" class="toggle-password-img" data-target="loginPassword">
             </div>
             <span class="error-message">Password is required</span>

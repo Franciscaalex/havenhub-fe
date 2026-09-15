@@ -24,16 +24,6 @@
     try { return localStorage.getItem(TOKEN_STORAGE_KEY); } catch (e) { return null; }
   }
 
-  // function decodeJwt(token) {
-  //   try {
-  //     const payload = token.split('.')[1];
-  //     const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-  //     return JSON.parse(decodeURIComponent(escape(json)));
-  //   } catch (e) {
-  //     return null;
-  //   }
-  // }
-
     function decodeJwt(token) {
     try {
       // Clean off any tracking hashes or trailing dashes appended to the raw token string
@@ -149,7 +139,19 @@
     return div.innerHTML;
   }
 
-  function avatarHtml(name, color, size) {
+  // Real profile photo takes priority — falls back to initials only when
+  // the API didn't give us a usable image URL for this person. This is
+  // what makes the list match real headshots instead of always showing
+  // colored initial circles.
+  function avatarHtml(name, color, size, photoUrl) {
+    if (photoUrl) {
+      const safeUrl = escapeHtml(photoUrl);
+      const safeName = escapeHtml(name || 'Contact');
+      const initials = (name || '?').trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+      // onerror swaps a broken image URL out for the initials fallback so a
+      // dead link never leaves a blank/broken-image icon in the list.
+      return `<img class="avatar avatar-photo" src="${safeUrl}" alt="${safeName}" width="${size}" height="${size}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML='<div class=&quot;avatar&quot; style=&quot;background:${color};width:${size}px;height:${size}px;&quot;>${initials}</div>'">`;
+    }
     if (window.AvenHubUI && typeof window.AvenHubUI.avatarHTML === 'function') {
       return window.AvenHubUI.avatarHTML(name, color, size);
     }
@@ -172,6 +174,31 @@
     };
   }
 
+  // Landlord/owner display name — widened key list so a real name from the
+  // API is found instead of silently falling back to the "Landlord"
+  // placeholder just because the field is spelled differently.
+  function resolveContactName(otherParty) {
+    const direct = pick(otherParty, [
+      'name', 'fullName', 'full_name', 'displayName', 'display_name', 'username',
+    ], null);
+    if (direct) return direct;
+    const joined = [
+      pick(otherParty, ['firstName', 'first_name'], ''),
+      pick(otherParty, ['lastName', 'last_name'], ''),
+    ].join(' ').trim();
+    return joined || null;
+  }
+
+  // Landlord/owner profile photo — same widened-key approach as the name,
+  // covering the common variants APIs use for an avatar/photo field.
+  function resolveContactPhoto(otherParty) {
+    return pick(otherParty, [
+      'photoUrl', 'photo_url', 'avatarUrl', 'avatar_url', 'avatar',
+      'profileImage', 'profile_image', 'profilePicture', 'profile_picture',
+      'imageUrl', 'image_url', 'image', 'picture',
+    ], null);
+  }
+
   function normalizeThreadDetail(raw, currentUserId) {
     const payload = unwrap(raw);
     const rawMessages = Array.isArray(payload)
@@ -189,7 +216,8 @@
       propertyId: pick(payload, ['propertyId', 'property.id'], null) || (firstRaw && pick(firstRaw, ['propertyId', 'property.id'], null)),
       propertyTitle: pick(property, ['title', 'name'], null) || pick(payload, ['propertyTitle'], null) || 'Property enquiry',
       propertyAddress: pick(property, ['address', 'location'], ''),
-      contactName: pick(otherParty, ['name', 'fullName'], null) || [pick(otherParty, ['firstName'], ''), pick(otherParty, ['lastName'], '')].join(' ').trim() || 'Landlord',
+      contactName: resolveContactName(otherParty) || 'Landlord',
+      contactPhoto: resolveContactPhoto(otherParty),
       messages,
     };
   }
@@ -200,7 +228,11 @@
     const lastMessage = pick(raw, ['lastMessage', 'latestMessage'], null);
 
     const lastText = pick(lastMessage, ['message', 'text', 'content'], null) ?? pick(raw, ['lastMessageText', 'preview', 'message'], '');
-    const lastAt = pick(lastMessage, ['createdAt', 'timestamp'], null) ?? pick(raw, ['lastMessageAt', 'updatedAt', 'createdAt'], null);
+    // Widened key list (including nested thread.* variants) so the real
+    // "last active" timestamp from the API is found instead of showing
+    // nothing when the field name doesn't match the first guess.
+    const lastAt = pick(lastMessage, ['createdAt', 'timestamp', 'sentAt'], null)
+      ?? pick(raw, ['lastMessageAt', 'lastActivityAt', 'updatedAt', 'createdAt', 'thread.updatedAt', 'thread.lastMessageAt'], null);
     const lastSenderId = pick(lastMessage, ['senderId', 'sender.id'], null) ?? pick(raw, ['lastMessageSenderId'], null);
     const lastIsMine = pick(lastMessage, ['isMine'], null) ?? (lastSenderId != null && currentUserId != null ? String(lastSenderId) === String(currentUserId) : null);
 
@@ -212,7 +244,8 @@
 
     return {
       id: pick(raw, ['id', 'threadId', '_id'], null),
-      contactName: pick(otherParty, ['name', 'fullName'], null) || [pick(otherParty, ['firstName'], ''), pick(otherParty, ['lastName'], '')].join(' ').trim() || 'Landlord',
+      contactName: resolveContactName(otherParty) || 'Landlord',
+      contactPhoto: resolveContactPhoto(otherParty),
       propertyTitle: pick(property, ['title', 'name'], null) || pick(raw, ['propertyTitle'], '') || 'Property enquiry',
       lastMessageText: lastText || '',
       lastMessageAt: lastAt,
@@ -353,7 +386,7 @@
           : 'No messages yet';
 
         div.innerHTML = `
-          ${avatarHtml(item.contactName, '#3D6FB4', 48)}
+          ${avatarHtml(item.contactName, '#3D6FB4', 48, item.contactPhoto)}
           <div class="conversation-details">
             <div class="conversation-top-row">
               <h4>${escapeHtml(item.contactName)}</h4>
@@ -448,8 +481,8 @@
         state.openThreadMessages = thread.messages;
 
         if (avatarWrap) {
-          avatarWrap.innerHTML = avatarHtml(thread.contactName, '#3D6FB4', 40)
-            .replace('class="avatar"', 'class="avatar thread-avatar"');
+          avatarWrap.innerHTML = avatarHtml(thread.contactName, '#3D6FB4', 40, thread.contactPhoto)
+            .replace('class="avatar', 'class="avatar thread-avatar');
         }
         if (nameEl) nameEl.textContent = thread.contactName;
         if (propertyEl) propertyEl.textContent = [thread.propertyTitle, thread.propertyAddress].filter(Boolean).join(' — ');

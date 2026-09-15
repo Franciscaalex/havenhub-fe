@@ -35,10 +35,19 @@ function isTokenExpired() {
 }
 
 function redirectToLogin() {
+  const currentPath = window.location.pathname;
+  
+  // CRITICAL GUARD: Stop the execution trail immediately if the user is already here
+  if (currentPath.includes('login.html') || currentPath.includes('signup.html')) {
+    clearSession();
+    return; 
+  }
+
   clearSession();
-  const returnTo = encodeURIComponent(window.location.pathname);
+  const returnTo = encodeURIComponent(currentPath);
   window.location.href = `login.html?redirect=${returnTo}`;
 }
+
 
 /* JWT interceptor + request wrapper  */
 
@@ -85,9 +94,22 @@ async function apiRequest(endpoint, options = {}) {
     throw new Error(`Network error contacting ${url}: ${networkErr.message}`);
   }
 
+    // Open api.js and replace the 401 block with this:
   if (response.status === 401) {
-    redirectToLogin();
-    throw new Error('Unauthorized — redirecting to login.');
+    const isAuthRoute = window.location.pathname.includes('login.html') || window.location.pathname.includes('signup.html');
+    
+    if (!isAuthRoute) {
+      redirectToLogin();
+      throw new Error('Unauthorized — redirecting to login.');
+    }
+    
+    // On the login page, extract the true error message instead of redirecting!
+    let loginMessage = 'Invalid email or password.';
+    try {
+      const errorBody = await response.json();
+      loginMessage = errorBody.message || loginMessage;
+    } catch (_) { }
+    throw new Error(loginMessage);
   }
 
   if (!response.ok) {
@@ -107,11 +129,11 @@ const api = {
   get: (endpoint) => apiRequest(endpoint, { method: 'GET' }),
   post: (endpoint, data) => apiRequest(endpoint, { method: 'POST', body: JSON.stringify(data) }),
   put: (endpoint, data) => apiRequest(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+  patch: (endpoint, data) => apiRequest(endpoint, { method: 'PATCH', body: data ? JSON.stringify(data) : undefined }),
   delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
 
   setToken,
   clearSession,
   isAuthenticated: () => !!getToken() && !isTokenExpired(),
 };
-
 window.api = api;

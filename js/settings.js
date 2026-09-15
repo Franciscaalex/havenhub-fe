@@ -1,23 +1,4 @@
-/* ============================================================
-   settings.js
-
-   Wires every button on the Settings page to the API:
-   - Loads current profile on page load (GET) & syncs sidebar
-   - Save changes → PUT (updates first/last name + phone)
-   - Change Photo → file picker → upload (POST, multipart)
-   - Change Password → opens modal → Update Password → PUT
-
-   CONFIRMED (per backend, commit 6b08ea9):
-     POST /api/v1/users/me/photo — multipart/form-data, file field
-     named 'photo' or 'avatar'. This matches what we already send
-     below — no changes needed to the request itself.
-     PUT /api/v1/users/me/password — { currentPassword, newPassword }
-     PUT /api/v1/users/me — { firstName, lastName, phone|phoneNumber }
-
-   Response field for the hosted photo URL is read defensively via
-   a fallback chain (avatarUrl / url / secure_url / photoUrl) since
-   the backend announcement only documented the request shape.
-   ============================================================ */
+/* settings.js */
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProfile();
@@ -34,7 +15,6 @@ async function loadProfile() {
   try {
     const user = await window.api.get('/users/me');
 
-    // Populate Settings Form
     document.getElementById('firstName').value = user.firstName ?? '';
     document.getElementById('lastName').value = user.lastName ?? '';
     document.getElementById('emailAddress').value = user.email ?? '';
@@ -42,12 +22,9 @@ async function loadProfile() {
 
     if (user.avatarUrl) {
       document.getElementById('avatarPreview').src = user.avatarUrl;
-      // Keep the sidebar's cache in sync with whatever the server
-      // actually has, so a fresh page load doesn't fall back to default.
       localStorage.setItem('userAvatarUrl', user.avatarUrl);
     }
 
-    // Sync Sidebar Display
     const sidebarName = document.getElementById('sidebarUserName');
     if (sidebarName && user.firstName) {
       sidebarName.textContent = user.firstName;
@@ -102,12 +79,8 @@ function wireProfileForm() {
       await window.api.put('/users/me', { firstName, lastName, phoneNumber });
       setStatus(statusEl, 'Changes saved.', 'success');
 
-      // Keep sidebar name synced when saved
       const sidebarName = document.getElementById('sidebarUserName');
       if (sidebarName) sidebarName.textContent = firstName;
-
-      // Clear the form fields immediately after a successful save
-      form.reset();
 
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
@@ -154,7 +127,7 @@ function wirePhotoUpload() {
       await uploadPhoto(file);
       setStatus(statusEl, 'Photo updated.', 'success');
     } catch (err) {
-      preview.src = previousSrc; // Roll back preview if upload fails
+      preview.src = previousSrc;
       setStatus(statusEl, err.message, 'error');
     } finally {
       changeBtn.disabled = false;
@@ -192,9 +165,6 @@ async function uploadPhoto(file) {
   }
 
   const data = await response.json();
-
-  // Read the hosted image URL defensively — backend docs only cover
-  // the request shape, so try the most likely response field names.
   const newAvatarUrl = data.avatarUrl || data.url || data.secure_url || data.photoUrl;
 
   if (newAvatarUrl) {
@@ -202,15 +172,11 @@ async function uploadPhoto(file) {
     const sidebarAvatar = document.querySelector('.dash-profile-avatar');
     if (sidebarAvatar) sidebarAvatar.src = newAvatarUrl;
 
-    // Persist so the sidebar knows about the new photo on next page load
-    // instead of falling back to the default avatar image.
     localStorage.setItem('userAvatarUrl', newAvatarUrl);
 
-    // Refresh any other opted-in avatar images already on this page
-    // (see main.js — any <img class="user-avatar-sync">).
     window.HavenHubSession?.syncAllProfileAvatars?.(newAvatarUrl);
   } else {
-    console.warn('Photo uploaded, but no recognized URL field was found in the response body:', data);
+    console.warn('Photo uploaded, but no recognized URL field was found in the response — sidebar/localStorage were NOT updated. Response body:', data);
   }
 
   return data;

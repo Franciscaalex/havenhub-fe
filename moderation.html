@@ -1,112 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Havenhub - Moderation Queue</title>
-        <link rel="icon" type="image/png" sizes="32x32" href="images/Logo Icon-Dark 1.svg">
-        <link rel="preload" href="sidenav.html" as="fetch" crossorigin>
-    <link rel="stylesheet" href="layout.css">
-    <link rel="stylesheet" href="custom.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
+  <title>HavenHub - Moderation Queue</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="sidenav.html" as="fetch" crossorigin>
+  <link rel="icon" type="image/png" sizes="32x32" href="images/Logo Icon-Dark 1.svg">
+  <link rel="stylesheet" href="layout.css">
+  <link rel="stylesheet" href="custom.css">
 </head>
-
 <body>
+  <div id="sidenav-placeholder"></div>
 
-    <div class="admin-layout">
-<div id="sidenav-placeholder"></div>
-<!-- <script src="js/sidenav-loader.js"></script> -->
+  <div class="admin-layout">
+    <main class="admin-content">
 
-        <main class="admin-content">
-
-            <div class="admin-topbar">
-                <button id="sidebarToggleBtn" class="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
-                    <span></span><span></span><span></span>
-                </button>
-                <span class="admin-portal-label">ADMIN PORTAL</span>
-
-                <div class="admin-search">
-                    <img src="MagnifyingGlass (1).svg" alt="search-icon" class="search-icon">
-                    <input type="text" placeholder="Search properties, tenants...">
-                </div>
-            </div>
-
-            <section id="view-listings">
-
-                <div class="dashboard-welcome">
-                    <h1>Moderation Queue</h1>
-                    <p>Review and manage listings that require your attention</p>
-                </div>
-
-                <div class="stat-cards">
-                    <div class="stat-card stat-total">
-                        <p class="stat-label">All</p>
-                        <h2 class="stat-value">150</h2>
-                    </div>
-                    <div class="stat-card stat-pending">
-                        <p class="stat-label">Pending Reviews</p>
-                        <h2 class="stat-value">120 <span class="stat-sub0">(+10 today)</span></h2>
-                    </div>
-                    <div class="stat-card stat-flagged">
-                        <p class="stat-label">Flagged Listings</p>
-                        <h2 class="stat-value">30 <span class="stat-sub1">(10 High Priority)</span></h2>
-                    </div>
-                    <div class="stat-card stat-reported">
-                        <p class="stat-label">Reported Listings</p>
-                        <h2 class="stat-value">12 <span class="stat-sub2">(3 Unresolved)</span></h2>
-                    </div>
-                </div>
-
-                <div class="pending-listings">
-                    <div class="panel-header">
-                        <h3>Pending Listings</h3>
-                    </div>
-
-                    <table class="listings-table">
-                        <thead>
-                            <tr>
-                                <th>Property</th>
-                                <th>Owner/Agent</th>
-                                <th>Location</th>
-                                <th>Submitted</th>
-                                <th>Priority</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pendingListingsBody">
-                            <tr>
-                                <td colspan="6">Loading listings...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <div class="modal-overlay" id="moderationOverlay" style="display:none;">
-        <div class="modal" id="moderationModal">
-            <h3 class="modal__title">Review listing</h3>
-            <p class="modal__subtitle">Approve to publish, or reject with a reason for the host.</p>
-
-            <div class="modal__field">
-                <label for="moderationReason">Cancellation message (required)</label>
-                <textarea id="moderationReason" placeholder="e.g. Photos don't match the listed unit"></textarea>
-                <div class="modal__error">A cancellation message is required to reject this listing.</div>
-            </div>
-
-            <div class="modal__actions">
-                <button class="btn btn--ghost">Cancel</button>
-                <button class="btn btn--reject">Reject</button>
-                <button class="btn btn--approve">Approve</button>
-            </div>
+      <div class="admin-topbar">
+        <button id="sidebarToggleBtn" class="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <span class="admin-portal-label">ADMIN PORTAL</span>
+        <div class="admin-search">
+          <img src="MagnifyingGlass (1).svg" alt="" class="search-icon">
+          <input type="text" placeholder="Search properties, tenants...">
         </div>
+      </div>
+
+      <section class="mod-page">
+
+        <div class="mod-header">
+          <h1>Moderation Queue</h1>
+          <p>Review and manage listings that require your attention</p>
+        </div>
+
+        <div class="mod-tabs" id="modTabs" role="tablist">
+          <button type="button" class="mod-tab mod-tab--all" data-tab="all" role="tab" aria-selected="true">
+            <span class="mod-tab-label">All</span>
+            <span class="mod-tab-count" data-count="all"></span>
+          </button>
+          <button type="button" class="mod-tab mod-tab--neutral" data-tab="pending" role="tab" aria-selected="false">
+            <span class="mod-tab-label">Pending Reviews</span>
+            <span class="mod-tab-sub">(today)</span>
+            <span class="mod-tab-count" data-count="pending"></span>
+          </button>
+          <button type="button" class="mod-tab mod-tab--warn" data-tab="flagged" role="tab" aria-selected="false">
+            <span class="mod-tab-label">Flagged Listings</span>
+            <span class="mod-tab-sub">(High Priority)</span>
+            <span class="mod-tab-count" data-count="flagged"></span>
+          </button>
+          <button type="button" class="mod-tab mod-tab--warn" data-tab="reported" role="tab" aria-selected="false">
+            <span class="mod-tab-label">Reported Listings</span>
+            <span class="mod-tab-sub">(Unresolved)</span>
+            <span class="mod-tab-count" data-count="reported"></span>
+          </button>
+        </div>
+
+        <div class="mod-panel">
+          <div class="mod-panel-header">
+            <h3 id="modPanelTitle">Pending Listings</h3>
+          </div>
+
+          <table class="mod-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Owner/Agent</th>
+                <th>Location</th>
+                <th>Submitted</th>
+                <th>Priority</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="modTableBody">
+              <tr><td colspan="6" class="mod-table-status">Loading listings…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Reused moderation modal -->
+  <div class="modal-overlay" id="moderationOverlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="moderationTitle">
+    <div class="modal" id="moderationModal">
+      <h3 class="modal__title" id="moderationTitle">Review listing</h3>
+      <p class="modal__subtitle">Approve to publish, or reject with a reason for the host.</p>
+
+      <div class="modal__field">
+        <label for="moderationReason">Rejection reason (required to reject)</label>
+        <textarea id="moderationReason" placeholder="e.g. Photos don't match the listed unit"></textarea>
+        <div class="modal__error" style="display:none;">A reason is required to reject this listing.</div>
+      </div>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost">Cancel</button>
+        <button type="button" class="btn btn--reject">Reject</button>
+        <button type="button" class="btn btn--approve">Approve</button>
+      </div>
     </div>
+  </div>
 
-    <script src="js/api.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/sidebar-toggle.js"></script>
-    <script src="js/moderation-dash.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/sidebar-toggle.js"></script>
+  <script src="js/moderation.js"></script>
 </body>
-
 </html>

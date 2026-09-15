@@ -717,7 +717,7 @@ grid-template-rows: 1fr auto;
   border: none;
   border-radius: 0;
   box-shadow: none;
-  background: transparent;
+  background: #f8fafc;
 }
 
 .thread-page [hidden] {
@@ -757,16 +757,20 @@ grid-template-rows: 1fr auto;
 
 /* ---------- panel B: chat window ---------- */
 
-/* .chat-window-view {
+.chat-window-view {
   flex: 1;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: url(images/2ec9d3cedcdc672429dc6c3f4488f997f0f190b4.png);
+  background: linear-gradient(45deg,
+  #ffffff,
+  rgba(255, 255, 255, 0.7)) center / cover no-repeat,
+  url('images/2ec9d3cedcdc672429dc6c3f4488f997f0f190b4.png')
+  center / cover no-repeat;;
   width: 100%;
-  /* margin-right: -20rem; */
-
+ margin-right: -20rem; 
+}
 
 .chat-window-placeholder {
   flex: 1;

@@ -1,11 +1,7 @@
+/* settings.js */
+
 (function () {
   "use strict";
-
-  const PROFILE_IMAGE_KEY = "havenhub_profile_image";
-  const PROFILE_FIRST_NAME_KEY = "havenhub_first_name";
-  const PROFILE_LAST_NAME_KEY = "havenhub_last_name";
-  const PROFILE_EMAIL_KEY = "havenhub_email";
-  const PROFILE_PHONE_KEY = "havenhub_phone";
 
   // --------------------------------
   // Elements
@@ -38,32 +34,43 @@
   const menuToggle = document.getElementById("menuToggle");
   const mobileMenu = document.getElementById("mobileMenu");
 
-  // --------------------------------
-  // Load saved profile data (falls back to placeholder demo values
-  // matching the Figma mock if nothing has been saved yet)
-  // --------------------------------
-
-  function loadProfile() {
-    const savedImage = localStorage.getItem(PROFILE_IMAGE_KEY);
-
-    if (savedImage) {
-      if (headerAvatar) headerAvatar.src = savedImage;
-      if (settingsAvatar) settingsAvatar.src = savedImage;
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!window.api) {
+      console.error("Settings page halted: window.api is missing. Make sure js/api.js loads before this file.");
+      return;
     }
-
-    firstNameInput.value = localStorage.getItem(PROFILE_FIRST_NAME_KEY) || "";
-
-    lastNameInput.value = localStorage.getItem(PROFILE_LAST_NAME_KEY) || "";
-
-    emailInput.value = localStorage.getItem(PROFILE_EMAIL_KEY) || "";
-
-    phoneInput.value = localStorage.getItem(PROFILE_PHONE_KEY) || "";
-  }
-  loadProfile();
+    loadProfile();
+  });
 
   // --------------------------------
-  // Change photo (updates both the header avatar and the big
-  // settings-page avatar, same pattern as script.js / saved.js)
+  // Load current profile from the API
+  // --------------------------------
+
+  async function loadProfile() {
+    try {
+      const user = await window.api.get('/users/me');
+
+      if (firstNameInput) firstNameInput.value = user.firstName ?? '';
+      if (lastNameInput) lastNameInput.value = user.lastName ?? '';
+      if (emailInput) emailInput.value = user.email ?? '';
+      if (phoneInput) phoneInput.value = user.phoneNumber ?? '';
+
+      if (user.avatarUrl) {
+        if (headerAvatar) headerAvatar.src = user.avatarUrl;
+        if (settingsAvatar) settingsAvatar.src = user.avatarUrl;
+        localStorage.setItem('userAvatarUrl', user.avatarUrl);
+      }
+    } catch (err) {
+      console.error('Could not load profile:', err);
+      // No dedicated status element on this page — surface it without
+      // blocking the rest of the page from working.
+      console.warn('Showing empty fields; you can still edit and save below.');
+    }
+  }
+
+  // --------------------------------
+  // Change photo — now uploads to the API instead of storing a
+  // base64 data URL in localStorage
   // --------------------------------
 
   function openFilePicker() {
@@ -74,50 +81,111 @@
   if (changePhotoBtn) changePhotoBtn.addEventListener("click", openFilePicker);
 
   if (profileImageInput) {
-    profileImageInput.addEventListener("change", () => {
+    profileImageInput.addEventListener("change", async () => {
       const file = profileImageInput.files[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
+      const isValidType = ['image/jpeg', 'image/png'].includes(file.type);
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+
+      if (!isValidType) {
         alert("Please select a JPG or PNG image.");
         return;
       }
-
-      const MAX_BYTES = 5 * 1024 * 1024; // 5MB
-      if (file.size > MAX_BYTES) {
+      if (!isValidSize) {
         alert("Image is too large. Please choose a file under 5MB.");
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imageData = event.target.result;
-        if (headerAvatar) headerAvatar.src = imageData;
-        if (settingsAvatar) settingsAvatar.src = imageData;
-        localStorage.setItem(PROFILE_IMAGE_KEY, imageData);
-      };
-      reader.readAsDataURL(file);
+      const localPreviewUrl = URL.createObjectURL(file);
+      const previousHeaderSrc = headerAvatar?.src;
+      const previousSettingsSrc = settingsAvatar?.src;
+      if (headerAvatar) headerAvatar.src = localPreviewUrl;
+      if (settingsAvatar) settingsAvatar.src = localPreviewUrl;
+
+      if (changePhotoBtn) changePhotoBtn.disabled = true;
+
+      try {
+        const newAvatarUrl = await uploadPhoto(file);
+        if (newAvatarUrl) {
+          if (headerAvatar) headerAvatar.src = newAvatarUrl;
+          if (settingsAvatar) settingsAvatar.src = newAvatarUrl;
+          localStorage.setItem('userAvatarUrl', newAvatarUrl);
+          window.HavenHubSession?.syncAllProfileAvatars?.(newAvatarUrl);
+        }
+      } catch (err) {
+        if (headerAvatar && previousHeaderSrc) headerAvatar.src = previousHeaderSrc;
+        if (settingsAvatar && previousSettingsSrc) settingsAvatar.src = previousSettingsSrc;
+        alert(`Photo upload failed: ${err.message}`);
+      } finally {
+        if (changePhotoBtn) changePhotoBtn.disabled = false;
+        profileImageInput.value = '';
+      }
     });
   }
 
+  async function uploadPhoto(file) {
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    const baseUrl = CONFIG.USE_MOCK_DATA ? CONFIG.MOCK_BASE_PATH : CONFIG.BASE_URL;
+    const url = `${baseUrl}/users/me/photo`;
+
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(url, { method: 'POST', headers, body: formData });
+
+    if (!response.ok) {
+      let message = `Upload failed with status ${response.status}`;
+      try {
+        const body = await response.json();
+        message = body.message || body.error || message;
+      } catch (_) { /* not JSON */ }
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    return data.avatarUrl || data.url || data.secure_url || data.photoUrl || null;
+  }
+
   // --------------------------------
-  // Save personal info
+  // Save personal info — now PUTs to the API instead of localStorage
   // --------------------------------
 
   if (personalInfoForm) {
-    personalInfoForm.addEventListener("submit", (e) => {
+    personalInfoForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      localStorage.setItem(PROFILE_FIRST_NAME_KEY, firstNameInput.value.trim());
-      localStorage.setItem(PROFILE_LAST_NAME_KEY, lastNameInput.value.trim());
-      localStorage.setItem(PROFILE_PHONE_KEY, phoneInput.value.trim());
+      const firstName = firstNameInput.value.trim();
+      const lastName = lastNameInput.value.trim();
+      const phoneNumber = phoneInput.value.trim();
+
+      if (!firstName || !lastName) {
+        alert('First and last name are required.');
+        return;
+      }
 
       const saveBtn = personalInfoForm.querySelector(".save-btn");
-      const originalText = saveBtn.textContent;
-      saveBtn.textContent = "Saved ✓";
-      setTimeout(() => {
-        saveBtn.textContent = originalText;
-      }, 1500);
+      const originalText = saveBtn ? saveBtn.textContent : '';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving…";
+      }
+
+      try {
+        await window.api.put('/users/me', { firstName, lastName, phoneNumber });
+        if (saveBtn) saveBtn.textContent = "Saved ✓";
+      } catch (err) {
+        alert(`Could not save changes: ${err.message}`);
+        if (saveBtn) saveBtn.textContent = originalText;
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          setTimeout(() => { saveBtn.textContent = originalText; }, 1500);
+        }
+      }
     });
   }
 
@@ -142,13 +210,11 @@
         : openPasswordPanel();
     });
   }
-  if (closePasswordPanel)
-    closePasswordPanel.addEventListener("click", closePasswordPanelFn);
-  if (cancelPasswordBtn)
-    cancelPasswordBtn.addEventListener("click", closePasswordPanelFn);
+  if (closePasswordPanel) closePasswordPanel.addEventListener("click", closePasswordPanelFn);
+  if (cancelPasswordBtn) cancelPasswordBtn.addEventListener("click", closePasswordPanelFn);
 
   // --------------------------------
-  // Password validation + submit
+  // Password validation + submit — now PUTs to the API
   // --------------------------------
 
   function isStrongPassword(pw) {
@@ -164,7 +230,7 @@
   }
 
   if (passwordForm) {
-    passwordForm.addEventListener("submit", (e) => {
+    passwordForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       passwordFormError.style.display = "none";
 
@@ -189,33 +255,35 @@
         return;
       }
 
-      // Replace with a real POST to the auth/password-change API
-
-      document.dispatchEvent(
-        new CustomEvent("havenhub:password-change", {
-          detail: { currentPassword: current, newPassword: next },
-        }),
-      );
-
       const updateBtn = passwordForm.querySelector(".save-btn");
-      const originalText = updateBtn.textContent;
-      updateBtn.textContent = "Updated ✓";
-      setTimeout(() => {
-        updateBtn.textContent = originalText;
-        closePasswordPanelFn();
-      }, 1200);
+      const originalText = updateBtn ? updateBtn.textContent : '';
+      if (updateBtn) updateBtn.disabled = true;
+
+      try {
+        await window.api.put('/users/me/password', { currentPassword: current, newPassword: next });
+        if (updateBtn) updateBtn.textContent = "Updated ✓";
+        setTimeout(() => {
+          if (updateBtn) updateBtn.textContent = originalText;
+          closePasswordPanelFn();
+          window.api.clearSession?.();
+          window.location.href = "login.html";
+        }, 1200);
+      } catch (err) {
+        showPasswordError(err.message);
+      } finally {
+        if (updateBtn) updateBtn.disabled = false;
+      }
     });
   }
 
   // --------------------------------
-  // Log out
+  // Log out — now actually clears the session instead of just firing
+  // a CustomEvent
   // --------------------------------
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      // TODO: replace with a real call to the auth API to invalidate
-      // the session/JWT once the backend is ready.
-      document.dispatchEvent(new CustomEvent("havenhub:logout"));
+      window.api.clearSession?.();
       window.location.href = "index.html";
     });
   }
