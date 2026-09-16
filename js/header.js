@@ -35,6 +35,50 @@
       if (avatarImg) avatarImg.src = savedAvatar;
       const settingsPreview = document.getElementById(SETTINGS_PREVIEW_ID);
       if (settingsPreview) settingsPreview.src = savedAvatar;
+
+      // ---------------- 4. Hamburger menu (mobile nav) ----------------
+
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const navLinks = document.getElementById('navLinks');
+
+function isNavOpen() {
+  return !!navLinks && navLinks.classList.contains('nav-open');
+}
+
+function openNav() {
+  if (!navLinks) return;
+  navLinks.classList.add('nav-open');
+  hamburgerBtn?.classList.add('is-active');
+  hamburgerBtn?.setAttribute('aria-expanded', 'true');
+}
+
+function closeNav() {
+  if (!navLinks) return;
+  navLinks.classList.remove('nav-open');
+  hamburgerBtn?.classList.remove('is-active');
+  hamburgerBtn?.setAttribute('aria-expanded', 'false');
+}
+
+hamburgerBtn?.addEventListener('click', () => {
+  isNavOpen() ? closeNav() : openNav();
+});
+
+// Close the mobile menu when a nav link is tapped
+navLinks?.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', closeNav);
+});
+
+// Close if the user taps/clicks outside the nav or hamburger
+document.addEventListener('click', (e) => {
+  if (!navLinks || !hamburgerBtn) return;
+  const clickedOutside = !navLinks.contains(e.target) && !hamburgerBtn.contains(e.target);
+  if (isNavOpen() && clickedOutside) closeNav();
+});
+
+// Close on Escape for accessibility
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isNavOpen()) closeNav();
+});
     }
 
     function applyUploadedPhoto(base64Data) {

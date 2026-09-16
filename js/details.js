@@ -91,6 +91,18 @@
       .replace(/\b\w/g, c => c.toUpperCase());
   }
 
+  // Naira formatting — matches the Intl.NumberFormat('en-NG', { style:
+  // 'currency', currency: 'NGN' }) convention already used in
+  // moderation.js / admin-dashboard.js, rather than the old manual
+  // "$" + toLocaleString() concatenation.
+  function formatNaira(amount) {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0
+    }).format(Number(amount) || 0);
+  }
+
   function landlordAvatarHtml(landlord) {
     const name = [landlord?.firstName, landlord?.lastName].filter(Boolean).join(' ') || 'Landlord';
     if (landlord?.avatarUrl) {
@@ -164,7 +176,7 @@
     // These fields aren't confirmed to exist on the real API — shown only
     // if actually present, never fabricated with placeholder numbers.
     const depositParts = [];
-    if (property.securityDeposit) depositParts.push(`Security Deposit: $${Number(property.securityDeposit).toLocaleString()}`);
+    if (property.securityDeposit) depositParts.push(`Security Deposit: ${formatNaira(property.securityDeposit)}`);
     if (property.minLeaseTerm) depositParts.push(`Min. Lease: ${property.minLeaseTerm}`);
     const depositLine = depositParts.join(' • ');
 
@@ -192,7 +204,7 @@
               ${property.address || property.location || 'No location address listed'} · Verified Listing
             </div>
 
-            <div class="details-price">$${monthlyPrice.toLocaleString()}/mo</div>
+            <div class="details-price">${formatNaira(monthlyPrice)}/mo</div>
 
             <div class="details-badges">
               <span class="details-badge">
@@ -240,7 +252,7 @@
           <!-- Right Column: pricing, landlord, and actions card -->
           <div class="details-side-info">
             <div class="details-sidebar-card">
-              <div class="sidebar-annual-price">$${annualPrice.toLocaleString()}/yr</div>
+              <div class="sidebar-annual-price">${formatNaira(annualPrice)}/yr</div>
               ${depositLine ? `<div class="sidebar-lease-meta">${depositLine}</div>` : ''}
 
               <div class="sidebar-landlord-label">Listed by Landlord</div>
@@ -548,11 +560,7 @@
   // --------------------------------
   showLoading();
 
-  // NOTE: api.js's base URL already includes '/api/v1' — do NOT repeat
-  // it here. The previous '/api/v1/properties/...' call was hitting
-  // '/api/v1/api/v1/properties/...' and 404ing on every property,
-  // which is why "Property not found" was showing up regardless of
-  // which listing was clicked.
+  
   window.api.get(`/properties/${propertyId}`)
     .then((property) => {
       if (!property) {

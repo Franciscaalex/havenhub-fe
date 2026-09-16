@@ -1,4 +1,4 @@
-/* settings.js */
+/* js/settings.js */
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProfile();
@@ -9,30 +9,37 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- Load current profile into the form & sidebar ---------- */
-
 async function loadProfile() {
   const statusEl = document.getElementById('profileStatus');
   try {
-    const user = await window.api.get('/users/me');
-
-    document.getElementById('firstName').value = user.firstName ?? '';
-    document.getElementById('lastName').value = user.lastName ?? '';
-    document.getElementById('emailAddress').value = user.email ?? '';
-    document.getElementById('phoneNumber').value = user.phoneNumber ?? '';
-
-    if (user.avatarUrl) {
-      document.getElementById('avatarPreview').src = user.avatarUrl;
-      localStorage.setItem('userAvatarUrl', user.avatarUrl);
+    if (!window.api || !window.api.isAuthenticated()) {
+      window.location.replace('login.html');
+      return;
     }
 
-    const sidebarName = document.getElementById('sidebarUserName');
-    if (sidebarName && user.firstName) {
-      sidebarName.textContent = user.firstName;
-    }
+    const response = await window.api.get('/users/me');
+    const user = response?.data || response?.user || response;
 
-    const sidebarAvatar = document.querySelector('.dash-profile-avatar');
-    if (sidebarAvatar && user.avatarUrl) {
-      sidebarAvatar.src = user.avatarUrl;
+    if (user) {
+      document.getElementById('firstName').value = user.firstName ?? '';
+      document.getElementById('lastName').value = user.lastName ?? '';
+      document.getElementById('emailAddress').value = user.email ?? '';
+      document.getElementById('phoneNumber').value = user.phoneNumber ?? '';
+
+      if (user.avatarUrl) {
+        document.getElementById('avatarPreview').src = user.avatarUrl;
+        localStorage.setItem('userAvatarUrl', user.avatarUrl);
+      }
+
+      const sidebarName = document.getElementById('sidebarUserName');
+      if (sidebarName && user.firstName) {
+        sidebarName.textContent = user.firstName;
+      }
+
+      const sidebarAvatar = document.querySelector('.dash-profile-avatar');
+      if (sidebarAvatar && user.avatarUrl) {
+        sidebarAvatar.src = user.avatarUrl;
+      }
     }
 
   } catch (err) {
@@ -42,7 +49,6 @@ async function loadProfile() {
 }
 
 /* ---------- Close (X) button ---------- */
-
 function wireCloseSettings() {
   document.getElementById('closeSettingsBtn')?.addEventListener('click', () => {
     if (window.history.length > 1) {
@@ -54,7 +60,6 @@ function wireCloseSettings() {
 }
 
 /* ---------- Personal information form ---------- */
-
 function wireProfileForm() {
   const form = document.getElementById('profileForm');
   const saveBtn = document.getElementById('saveChangesBtn');
@@ -72,26 +77,27 @@ function wireProfileForm() {
       return;
     }
 
-    saveBtn.disabled = true;
+    if (saveBtn) saveBtn.disabled = true;
     setStatus(statusEl, 'Saving…', '');
 
     try {
       await window.api.put('/users/me', { firstName, lastName, phoneNumber });
       setStatus(statusEl, 'Changes saved.', 'success');
 
+      localStorage.setItem('username', `${firstName} ${lastName}`);
+
       const sidebarName = document.getElementById('sidebarUserName');
       if (sidebarName) sidebarName.textContent = firstName;
 
     } catch (err) {
-      setStatus(statusEl, err.message, 'error');
-    } finally {
-      saveBtn.disabled = false;
+      setStatus(statusEl, err.message || 'Failed to save changes.', 'error');
+    }   finally {
+      if (saveBtn) saveBtn.disabled = false;
     }
   });
 }
 
 /* ---------- Change Photo ---------- */
-
 function wirePhotoUpload() {
   const changeBtn = document.getElementById('changePhotoBtn');
   const fileInput = document.getElementById('photoInput');
@@ -104,7 +110,7 @@ function wirePhotoUpload() {
     const file = fileInput.files[0];
     if (!file) return;
 
-    const isValidType = ['image/jpeg', 'image/png'].includes(file.type);
+    const isValidType = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type.toLowerCase());
     const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
 
     if (!isValidType) {
@@ -120,7 +126,7 @@ function wirePhotoUpload() {
     const previousSrc = preview.src;
     preview.src = localPreviewUrl;
 
-    changeBtn.disabled = true;
+    if (changeBtn) changeBtn.disabled = true;
     setStatus(statusEl, 'Uploading…', '');
 
     try {
@@ -128,9 +134,9 @@ function wirePhotoUpload() {
       setStatus(statusEl, 'Photo updated.', 'success');
     } catch (err) {
       preview.src = previousSrc;
-      setStatus(statusEl, err.message, 'error');
+      setStatus(statusEl, err.message || 'Upload failed.', 'error');
     } finally {
-      changeBtn.disabled = false;
+      if (changeBtn) changeBtn.disabled = false;
       fileInput.value = '';
     }
   });
@@ -140,9 +146,8 @@ async function uploadPhoto(file) {
   const formData = new FormData();
   formData.append('photo', file);
 
-  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
-  const baseUrl = CONFIG.USE_MOCK_DATA ? CONFIG.MOCK_BASE_PATH : CONFIG.BASE_URL;
-  const url = `${baseUrl}/users/me/photo`;
+  const token = localStorage.getItem('auth_token');
+  const url = 'https://onrender.com';
 
   const headers = {};
   if (token) {
@@ -160,12 +165,13 @@ async function uploadPhoto(file) {
     try {
       const body = await response.json();
       message = body.message || body.error || message;
-    } catch (_) { /* response wasn't JSON */ }
+    } catch (_) {}
     throw new Error(message);
   }
 
   const data = await response.json();
-  const newAvatarUrl = data.avatarUrl || data.url || data.secure_url || data.photoUrl;
+  const payloadData = data?.data || data;
+  const newAvatarUrl = payloadData.avatarUrl || payloadData.url || payloadData.secure_url || payloadData.photoUrl;
 
   if (newAvatarUrl) {
     document.getElementById('avatarPreview').src = newAvatarUrl;
@@ -173,17 +179,15 @@ async function uploadPhoto(file) {
     if (sidebarAvatar) sidebarAvatar.src = newAvatarUrl;
 
     localStorage.setItem('userAvatarUrl', newAvatarUrl);
-
-    window.HavenHubSession?.syncAllProfileAvatars?.(newAvatarUrl);
-  } else {
-    console.warn('Photo uploaded, but no recognized URL field was found in the response — sidebar/localStorage were NOT updated. Response body:', data);
+    if (window.HavenHubSession?.syncAllProfileAvatars) {
+      window.HavenHubSession.syncAllProfileAvatars(newAvatarUrl);
+    }
   }
 
   return data;
 }
 
 /* ---------- Change Password modal ---------- */
-
 function wirePasswordModal() {
   const overlay = document.getElementById('passwordModalOverlay');
   const openBtn = document.getElementById('openPasswordModalBtn');
@@ -194,15 +198,19 @@ function wirePasswordModal() {
   const updateBtn = document.getElementById('updatePasswordBtn');
 
   const openModal = () => {
-    overlay.hidden = false;
-    document.getElementById('currentPassword').focus();
+    if (overlay) {
+      overlay.hidden = false;
+      document.getElementById('currentPassword')?.focus();
+    }
   };
 
   const closeModal = () => {
-    overlay.hidden = true;
-    form.reset();
-    setStatus(statusEl, '', '');
-    clearInvalid('currentPassword', 'newPassword', 'confirmPassword');
+    if (overlay) {
+      overlay.hidden = true;
+      form?.reset();
+      setStatus(statusEl, '', '');
+      clearInvalid('currentPassword', 'newPassword', 'confirmPassword');
+    }
   };
 
   openBtn?.addEventListener('click', openModal);
@@ -214,7 +222,7 @@ function wirePasswordModal() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !overlay.hidden) closeModal();
+    if (e.key === 'Escape' && overlay && !overlay.hidden) closeModal();
   });
 
   form?.addEventListener('submit', async (e) => {
@@ -250,26 +258,26 @@ function wirePasswordModal() {
       return;
     }
 
-    updateBtn.disabled = true;
+    if (updateBtn) updateBtn.disabled = true;
     setStatus(statusEl, 'Updating…', '');
 
     try {
       await window.api.put('/users/me/password', { currentPassword, newPassword });
       setStatus(statusEl, 'Password updated. Redirecting to login…', 'success');
       setTimeout(() => {
+        if (window.api?.clearSession) window.api.clearSession();
         window.HavenHubSession?.logoutUser?.();
         window.location.href = 'login.html';
       }, 1500);
     } catch (err) {
-      setStatus(statusEl, err.message, 'error');
+      setStatus(statusEl, err.message || 'Failed to update password.', 'error');
     } finally {
-      updateBtn.disabled = false;
+      if (updateBtn) updateBtn.disabled = false;
     }
   });
 }
 
 /* ---------- Shared helpers ---------- */
-
 function setStatus(el, message, tone) {
   if (!el) return;
   el.textContent = message;
@@ -277,6 +285,17 @@ function setStatus(el, message, tone) {
   if (tone === 'error') el.classList.add('is-error');
   if (tone === 'success') el.classList.add('is-success');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const profileForm = document.getElementById('profileForm');
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput = document.getElementById('lastName');
+  const phoneInput = document.getElementById('phoneNumber');
+  
+  if(firstNameInput) firstNameInput.disabled = false;
+  if(lastNameInput) lastNameInput.disabled = false;
+  if(phoneInput) phoneInput.disabled = false;
+});
 
 function markInvalid(id) {
   document.getElementById(id)?.classList.add('is-invalid');

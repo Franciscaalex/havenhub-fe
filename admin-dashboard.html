@@ -10,8 +10,27 @@
         rel="stylesheet">
         <link rel="preload" href="sidenav.html" as="fetch" crossorigin>
     <link rel="icon" type="image/png" sizes="32x32" href="images/Logo Icon-Dark 1.svg">
+
+    <script>
+    (function () {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const userRole = localStorage.getItem('selectedRole'); // Expected: 'ADMIN'
+
+      if (!isLoggedIn || userRole !== 'ADMIN') {
+        console.warn("Access Denied: Unauthorized role attempting to mount Admin context.");
+        
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('isLoggedIn');
+        
+        window.location.replace('login.html?error=unauthorized');
+      }
+    })();
+  </script>
+
     <link rel="stylesheet" href="layout.css">
     <link rel="stylesheet" href="custom.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="global.css">
 </head>
 
 <body>

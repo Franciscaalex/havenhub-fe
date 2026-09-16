@@ -3,9 +3,8 @@
    ========================================================================== */
 
 (function () {
-  // Same key admin-settings.js writes to when the admin uploads a new
-  // photo (as a data URL via FileReader).
-  const AVATAR_STORAGE_KEY = 'adminAvatarPhoto';
+  // UNIFIED KEY: Set to match the exact localStorage key used in admin-settings.js
+  const AVATAR_STORAGE_KEY = 'userAvatarUrl';
 
   function loadSidenavFragment() {
     const mount = document.getElementById('sidenav-placeholder');
@@ -36,7 +35,9 @@
           mountedRoot = mount;
         }
 
+        // WIRE CONTROLLERS: Elements are now safely mounted inside the active layout context
         wireSettingsLink(mountedRoot);
+        wireLogoutButton(mountedRoot); // FIXED: Added to the execution sequence!
         applyStoredAvatar(mountedRoot);
 
         // IMPORTANT FIX: Broadcasts the loaded notification cue so sidebar-toggle.js can bind immediately
@@ -44,10 +45,6 @@
       })
       .then(() => {
         // Sequentially initialize script tracking layers down the body anchor tag elements
-        // NOTE: 'js/moderation-init.js' was removed — no such file exists, and it was
-        // being requested on every page (not just moderation.html), causing a 404 on
-        // every load. moderation.js already self-initializes via its own
-        // DOMContentLoaded listener when the page that needs it loads it directly.
         ['js/sidebar-toggle.js'].forEach((src) => {
           // Prevent resource duplication scripts if they already exist inside the document context
           if (document.querySelector(`script[src="${src}"]`)) return;
@@ -79,9 +76,43 @@
     });
   }
 
-  // Reads the stored avatar (a data URL saved by admin-settings.js) and,
-  // if present, applies it to the sidebar's .admin-avatar image so the
-  // photo carries over across page loads.
+  // FIXED: Executed seamlessly upon template load boundaries to process session clearouts
+  function wireLogoutButton(root) {
+    const logoutBtn = (root || document).querySelector('#logoutBtn');
+    if (!logoutBtn) {
+      console.warn('sidenav-loader.js: #logoutBtn not found — Log Out button not wired.');
+      return;
+    }
+ 
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log("Logout triggered. Clearing operational application context parameters.");
+
+      // Wipe core storage vectors safely
+      if (window.api && typeof window.api.clearSession === 'function') {
+        window.api.clearSession();
+      } else {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_token_expiry');
+      }
+
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('selectedRole');
+      localStorage.removeItem('username');
+      sessionStorage.clear();
+
+      if (window.HavenHubSession && typeof window.HavenHubSession.logoutUser === 'function') {
+        window.HavenHubSession.logoutUser();
+      }
+
+      // Bounce the user directly out to the auth terminal screen layout
+      window.location.href = 'login.html';
+    });
+  }
+ 
+  // Reads the stored avatar and applies it to the sidebar's image
   function applyStoredAvatar(root) {
     const avatarImg = (root || document).querySelector('.admin-avatar');
     if (!avatarImg) return;
@@ -89,16 +120,12 @@
     if (stored) avatarImg.src = stored;
   }
 
-  // Cross-tab updates: fires in *other* tabs/windows when localStorage
-  // changes here.
+  // Cross-tab updates: fires in *other* tabs/windows when localStorage changes here.
   window.addEventListener('storage', (e) => {
     if (e.key === AVATAR_STORAGE_KEY) applyStoredAvatar();
   });
 
-  // Same-tab updates: admin-settings.js dispatches this right after
-  // writing to localStorage — the native 'storage' event does not fire in
-  // the tab that made the change, so this covers the case where the admin
-  // uploads a photo and the sidenav is visible on that same page.
+  // Same-tab updates: handled right after admin writes change data parameters
   window.addEventListener('adminAvatarUpdated', () => applyStoredAvatar());
 
   function escapeHtml(str) {

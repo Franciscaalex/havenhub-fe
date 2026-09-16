@@ -1,4 +1,4 @@
-/* js/admin-settings.js */
+/* js/settings.js */
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProfile();
@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- Load current profile into the form & sidebar ---------- */
-
 async function loadProfile() {
   const statusEl = document.getElementById('profileStatus');
   try {
@@ -30,10 +29,6 @@ async function loadProfile() {
       sidebarName.textContent = user.firstName;
     }
 
-    // .dash-profile-avatar: an avatar element some dashboard pages use.
-    // .admin-avatar: the sidenav's own avatar (see sidenav.html /
-    // sidenav-loader.js) — included so this page's own embedded sidenav
-    // (if present) reflects the photo immediately too.
     applyAvatarEverywhere(user.avatarUrl);
 
   } catch (err) {
@@ -43,7 +38,6 @@ async function loadProfile() {
 }
 
 /* ---------- Close (X) button ---------- */
-
 function wireCloseSettings() {
   document.getElementById('closeSettingsBtn')?.addEventListener('click', () => {
     if (window.history.length > 1) {
@@ -55,7 +49,6 @@ function wireCloseSettings() {
 }
 
 /* ---------- Personal information form ---------- */
-
 function wireProfileForm() {
   const form = document.getElementById('profileForm');
   const saveBtn = document.getElementById('saveChangesBtn');
@@ -73,7 +66,7 @@ function wireProfileForm() {
       return;
     }
 
-    saveBtn.disabled = true;
+    if (saveBtn) saveBtn.disabled = true;
     setStatus(statusEl, 'Saving…', '');
 
     try {
@@ -83,21 +76,15 @@ function wireProfileForm() {
       const sidebarName = document.getElementById('sidebarUserName');
       if (sidebarName) sidebarName.textContent = firstName;
 
-      // Removed: form.reset() — it was wiping the fields back to blank
-      // right after a successful save. The inputs already correctly
-      // hold the values the user just submitted, so there's nothing to
-      // reset them to; leave them as-is.
-
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
     } finally {
-      saveBtn.disabled = false;
+      if (saveBtn) saveBtn.disabled = false;
     }
   });
 }
 
 /* ---------- Change Photo ---------- */
-
 function wirePhotoUpload() {
   const changeBtn = document.getElementById('changePhotoBtn');
   const fileInput = document.getElementById('photoInput');
@@ -126,7 +113,7 @@ function wirePhotoUpload() {
     const previousSrc = preview.src;
     preview.src = localPreviewUrl;
 
-    changeBtn.disabled = true;
+    if (changeBtn) changeBtn.disabled = true;
     setStatus(statusEl, 'Uploading…', '');
 
     try {
@@ -136,7 +123,7 @@ function wirePhotoUpload() {
       preview.src = previousSrc;
       setStatus(statusEl, err.message, 'error');
     } finally {
-      changeBtn.disabled = false;
+      if (changeBtn) changeBtn.disabled = false;
       fileInput.value = '';
     }
   });
@@ -146,9 +133,9 @@ async function uploadPhoto(file) {
   const formData = new FormData();
   formData.append('photo', file);
 
-  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
-  const baseUrl = CONFIG.USE_MOCK_DATA ? CONFIG.MOCK_BASE_PATH : CONFIG.BASE_URL;
-  const url = `${baseUrl}/users/me/photo`;
+  // Directly retrieve from local configurations to prevent hidden reference crashes
+  const token = localStorage.getItem('auth_token');
+  const url = 'https://onrender.com';
 
   const headers = {};
   if (token) {
@@ -166,12 +153,13 @@ async function uploadPhoto(file) {
     try {
       const body = await response.json();
       message = body.message || body.error || message;
-    } catch (_) { /* response wasn't JSON */ }
+    } catch (_) {}
     throw new Error(message);
   }
 
   const data = await response.json();
-  const newAvatarUrl = data.avatarUrl || data.url || data.secure_url || data.photoUrl;
+  const responseData = data?.data || data;
+  const newAvatarUrl = responseData.avatarUrl || responseData.url || responseData.secure_url || responseData.photoUrl;
 
   if (newAvatarUrl) {
     document.getElementById('avatarPreview').src = newAvatarUrl;
@@ -179,14 +167,7 @@ async function uploadPhoto(file) {
     applyAvatarEverywhere(newAvatarUrl);
 
     localStorage.setItem('userAvatarUrl', newAvatarUrl);
-
-    // Cross-page: sidenav-loader.js reads 'userAvatarUrl' from localStorage
-    // on every page load, so other pages pick this up automatically.
-    // Same-page: the native 'storage' event doesn't fire in the tab that
-    // made the change, so broadcast this for sidenav-loader.js's listener
-    // in case this page's own sidenav needs to update without a reload.
     window.dispatchEvent(new Event('adminAvatarUpdated'));
-
     window.HavenHubSession?.syncAllProfileAvatars?.(newAvatarUrl);
   } else {
     console.warn('Photo uploaded, but no recognized URL field was found in the response body:', data);
@@ -195,10 +176,7 @@ async function uploadPhoto(file) {
   return data;
 }
 
-// Updates every avatar element this page knows about — the dashboard-style
-// '.dash-profile-avatar' element some pages use, and the sidenav's own
-// '.admin-avatar' image (see sidenav.html) if this page's sidenav has
-// already mounted by the time this runs.
+/* ---------- Apply Avatar Everywhere Utility ---------- */
 function applyAvatarEverywhere(avatarUrl) {
   if (!avatarUrl) return;
   document.querySelectorAll('.dash-profile-avatar, .admin-avatar').forEach(img => {
@@ -207,7 +185,6 @@ function applyAvatarEverywhere(avatarUrl) {
 }
 
 /* ---------- Change Password modal ---------- */
-
 function wirePasswordModal() {
   const overlay = document.getElementById('passwordModalOverlay');
   const openBtn = document.getElementById('openPasswordModalBtn');
@@ -218,15 +195,19 @@ function wirePasswordModal() {
   const updateBtn = document.getElementById('updatePasswordBtn');
 
   const openModal = () => {
-    overlay.hidden = false;
-    document.getElementById('currentPassword').focus();
+    if (overlay) {
+      overlay.hidden = false;
+      document.getElementById('currentPassword')?.focus();
+    }
   };
 
   const closeModal = () => {
-    overlay.hidden = true;
-    form.reset();
-    setStatus(statusEl, '', '');
-    clearInvalid('currentPassword', 'newPassword', 'confirmPassword');
+    if (overlay) {
+      overlay.hidden = true;
+      form?.reset();
+      setStatus(statusEl, '', '');
+      clearInvalid('currentPassword', 'newPassword', 'confirmPassword');
+    }
   };
 
   openBtn?.addEventListener('click', openModal);
@@ -238,7 +219,7 @@ function wirePasswordModal() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !overlay.hidden) closeModal();
+    if (e.key === 'Escape' && overlay && !overlay.hidden) closeModal();
   });
 
   form?.addEventListener('submit', async (e) => {
@@ -274,7 +255,7 @@ function wirePasswordModal() {
       return;
     }
 
-    updateBtn.disabled = true;
+    if (updateBtn) updateBtn.disabled = true;
     setStatus(statusEl, 'Updating…', '');
 
     try {
@@ -287,13 +268,12 @@ function wirePasswordModal() {
     } catch (err) {
       setStatus(statusEl, err.message, 'error');
     } finally {
-      updateBtn.disabled = false;
+      if (updateBtn) updateBtn.disabled = false;
     }
   });
 }
 
 /* ---------- Shared helpers ---------- */
-
 function setStatus(el, message, tone) {
   if (!el) return;
   el.textContent = message;

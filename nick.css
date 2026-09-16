@@ -588,6 +588,12 @@ margin-left: -3.5rem;
   gap: 1rem;
 }
 
+@media (max-width: 768px){
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 420px) {
   .grid {
     gap: 10px;

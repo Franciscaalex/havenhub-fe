@@ -38,7 +38,7 @@ body {
    ========================================================= */
 
 .admin-sidebar {
-  width: 290px;
+  /* width: 290px; */
   height: 100vh;
   background-color: #032d4b; /* Matched to dark navy background color mix in the image */
   border-top-right-radius: 36px; /* Enhanced curvature anchor boundary */
@@ -66,11 +66,6 @@ body {
 .admin-sidebar::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-}
-.admin-sidebar .nav-link.active{
-    background: #ffffff;
-    color: #1a1a1a;
-    border-radius: 30px;
 }
 /* =========================================================
    SIDEBAR LOGO
@@ -115,6 +110,11 @@ body {
 
 .sidebar-nav li {
   margin-bottom: 8px;
+}
+
+.sidebar-nav.active{
+    background: #ffffff;
+    color: #1a1a1a;
 }
 
 .nav-link {
